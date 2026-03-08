@@ -7,7 +7,6 @@ import com.hyundai.dms.entity.Employee;
 import com.hyundai.dms.mapper.CustomerMapper;
 import com.hyundai.dms.repository.CustomerRepository;
 import com.hyundai.dms.repository.DealerRepository;
-import com.hyundai.dms.repository.EmployeeRepository;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDate;
@@ -19,24 +18,25 @@ public class CustomerService {
 
     private final CustomerRepository customerRepository;
     private final DealerRepository dealerRepository;
-    private final EmployeeRepository employeeRepository;
+    private final LeadAssignmentService leadAssignmentService;
 
     public CustomerService(CustomerRepository customerRepository,
                            DealerRepository dealerRepository,
-                           EmployeeRepository employeeRepository) {
+                           LeadAssignmentService leadAssignmentService) {
 
         this.customerRepository = customerRepository;
         this.dealerRepository = dealerRepository;
-        this.employeeRepository = employeeRepository;
+        this.leadAssignmentService = leadAssignmentService;
     }
 
     public CustomerDTO createCustomer(CustomerDTO dto) {
 
+        // Validate dealer
         Dealer dealer = dealerRepository.findById(dto.getDealerId())
                 .orElseThrow(() -> new RuntimeException("Dealer not found"));
 
-        Employee employee = employeeRepository.findById(dto.getEmployeeId())
-                .orElseThrow(() -> new RuntimeException("Employee not found"));
+        // Automatically assign employee
+        Employee employee = leadAssignmentService.assignEmployee(dto.getDealerId());
 
         Customer customer = CustomerMapper.toEntity(dto);
 
@@ -53,6 +53,7 @@ public class CustomerService {
     }
 
     public List<CustomerDTO> getAllCustomers() {
+
         return customerRepository.findAll()
                 .stream()
                 .map(CustomerMapper::toDTO)

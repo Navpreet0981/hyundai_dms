@@ -7,6 +7,6 @@ import java.util.List;
 
 public interface EmployeeRepository extends JpaRepository<Employee, Long> {
 
-//    List<Employee> findByDealerIdAndActiveTrueOrderByEmployeeIdAsc(Long dealerId);
+    List<Employee> findByDealerDealerIdAndActiveTrueOrderByEmployeeIdAsc(Long dealerId);
 
 }
