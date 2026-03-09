@@ -78,22 +78,22 @@ Customers can be created from:
 -Stores car model and variant information.
 
 ### Booking
--Stores booking information when a customer purchases a vehicle.
+Stores booking information when a customer purchases a vehicle.
 
 ---
 
 ## Lead Flow
--New Lead → Contacted → Test Drive → Negotiation → Booked → Delivered
+New Lead → Contacted → Test Drive → Negotiation → Booked → Delivered
 
 ---
 
 ## Example API Endpoints
--POST /dealers
--POST /employees
--POST /customers
--GET /vehicles
--POST /bookings
--GET /analytics/dealer-performance
+POST /dealers
+POST /employees
+POST /customers
+GET /vehicles
+POST /bookings
+GET /analytics/dealer-performance
 
 
 ---
