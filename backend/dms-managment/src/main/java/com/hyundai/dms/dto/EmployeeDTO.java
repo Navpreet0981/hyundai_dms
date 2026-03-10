@@ -13,6 +13,7 @@ public class EmployeeDTO {
     private String name;
     private String email;
     private String phone;
+    private String password;
     private EmployeeRole role;
     private Long dealerId;
 }

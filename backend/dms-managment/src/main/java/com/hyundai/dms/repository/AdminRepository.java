@@ -1,12 +1,12 @@
 package com.hyundai.dms.repository;
 
-import com.hyundai.dms.entity.Dealer;
+import com.hyundai.dms.entity.Admin;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 
 import java.util.Optional;
 
 @Repository
-public interface DealerRepository extends JpaRepository<Dealer, Long> {
-    Optional<Dealer> findByEmail(String email);
+public interface AdminRepository extends JpaRepository<Admin, Long> {
+    Optional<Admin> findByEmail(String email);
 }

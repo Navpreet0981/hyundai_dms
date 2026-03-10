@@ -12,6 +12,8 @@ import com.hyundai.dms.enums.EmployeeRole;
 @Builder
 public class Employee {
 
+    private String password;
+
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long employeeId;

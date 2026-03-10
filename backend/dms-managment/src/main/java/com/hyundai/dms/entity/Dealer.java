@@ -18,6 +18,8 @@ public class Dealer {
     @JoinColumn(name = "admin_id")
     private Admin admin;
 
+    private String password;
+
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long dealerId;
