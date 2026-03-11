@@ -13,7 +13,7 @@ import java.util.Date;
 public class JwtService {
 
     private final String SECRET_KEY =
-            "hyundaihyundaihyundaihyundaihyundai12345"; // must be long
+            "hyundaihyundaihyundaihyundaihyundai1234efvcevcececececefce4rcerwevc56tgy6tbv5"; // must be long
 
     private Key getSigningKey() {
         return Keys.hmacShaKeyFor(SECRET_KEY.getBytes());
