@@ -32,6 +32,7 @@ public class SecurityConfig {
 
                         // Dealer + Admin APIs
                         .requestMatchers("/employees/**").hasAnyRole("ADMIN", "DEALER")
+                        .requestMatchers("/dealer/**").hasRole("DEALER")
 
                         // Employee APIs
                         .requestMatchers(

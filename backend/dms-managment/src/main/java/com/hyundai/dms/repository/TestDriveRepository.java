@@ -13,4 +13,5 @@ public interface TestDriveRepository extends JpaRepository<TestDrive, Long> {
 
     List<TestDrive> findByCustomerCustomerId(Long customerId);
 
+    long countByDealerDealerId(Long dealerId);
 }

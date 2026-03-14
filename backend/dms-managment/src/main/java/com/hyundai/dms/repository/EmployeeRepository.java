@@ -10,4 +10,5 @@ public interface EmployeeRepository extends JpaRepository<Employee, Long> {
 
     List<Employee> findByDealerDealerIdAndActiveTrueOrderByEmployeeIdAsc(Long dealerId);
     Optional<Employee> findByEmail(String email);
+    long countByDealerDealerId(Long dealerId);
 }
