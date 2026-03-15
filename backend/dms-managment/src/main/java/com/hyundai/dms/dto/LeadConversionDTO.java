@@ -1,4 +1,4 @@
-package com.hyundai.dms.analytics;
+package com.hyundai.dms.dto;
 
 import lombok.*;
 

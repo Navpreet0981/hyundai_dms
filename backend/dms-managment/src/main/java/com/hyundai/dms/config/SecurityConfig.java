@@ -20,7 +20,9 @@ public class SecurityConfig {
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
 
         http
+                .cors(cors -> {})
                 .csrf(csrf -> csrf.disable())
+
                 .authorizeHttpRequests(auth -> auth
 
                         // Public endpoints
@@ -30,8 +32,11 @@ public class SecurityConfig {
                         .requestMatchers("/dealers/**").hasRole("ADMIN")
                         .requestMatchers("/admin/**").hasRole("ADMIN")
 
-                        // Dealer + Admin APIs
-                        .requestMatchers("/employees/**").hasAnyRole("ADMIN", "DEALER")
+                        // Dealer + Admin + Employee
+                        .requestMatchers("/employees/**",
+                                "/cars/**",
+                                "/variants/**").hasAnyRole("ADMIN","DEALER","EMPLOYEE")
+
                         .requestMatchers("/dealer/**").hasRole("DEALER")
 
                         // Employee APIs
@@ -39,14 +44,13 @@ public class SecurityConfig {
                                 "/customers/**",
                                 "/testdrives/**",
                                 "/bookings/**",
-                                "/service-requests/**"
-                        ).hasRole("EMPLOYEE")
+                                "/service-requests/**",
+                                "/employee/**"
+                        ).hasAnyRole("ADMIN","EMPLOYEE")
 
-                        // Everything else requires authentication
                         .anyRequest().authenticated()
                 )
 
-                // Add JWT filter
                 .addFilterBefore(jwtFilter, UsernamePasswordAuthenticationFilter.class);
 
         return http.build();

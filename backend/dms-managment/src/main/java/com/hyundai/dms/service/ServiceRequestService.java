@@ -61,6 +61,10 @@ public class ServiceRequestService {
                 .collect(Collectors.toList());
     }
 
+    public long getTotalServiceRequests() {
+        return requestRepository.count();
+    }
+
     public ServiceRequestDTO getRequestById(Long id) {
 
         ServiceRequest request = requestRepository.findById(id)

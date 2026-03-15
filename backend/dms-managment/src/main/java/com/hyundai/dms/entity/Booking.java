@@ -13,7 +13,6 @@ import java.time.LocalDate;
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
-
 public class Booking {
 
     @Id
@@ -29,17 +28,14 @@ public class Booking {
     @JoinColumn(name = "employee_id")
     private Employee employee;
 
-    // Customer who made the booking
     @ManyToOne
     @JoinColumn(name = "customer_id")
     private Customer customer;
 
-    // Dealer handling the booking
     @ManyToOne
     @JoinColumn(name = "dealer_id")
     private Dealer dealer;
 
-    // Variant being booked
     @ManyToOne
     @JoinColumn(name = "variant_id")
     private CarVariant carVariant;

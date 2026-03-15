@@ -5,6 +5,7 @@ import com.hyundai.dms.entity.Dealer;
 import com.hyundai.dms.entity.Employee;
 import com.hyundai.dms.repository.DealerRepository;
 import com.hyundai.dms.repository.EmployeeRepository;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -20,6 +21,36 @@ public class EmployeeService {
                            DealerRepository dealerRepository) {
         this.employeeRepository = employeeRepository;
         this.dealerRepository = dealerRepository;
+    }
+
+
+    public EmployeeDTO getLoggedInEmployee(){
+
+        String email = SecurityContextHolder
+                .getContext()
+                .getAuthentication()
+                .getName();
+
+        Employee employee = employeeRepository
+                .findByEmail(email)
+                .orElseThrow(() -> new RuntimeException("Employee not found"));
+
+        EmployeeDTO dto = new EmployeeDTO();
+
+        dto.setEmployeeId(employee.getEmployeeId());
+        dto.setName(employee.getName());
+        dto.setEmail(employee.getEmail());
+        dto.setPhone(employee.getPhone());
+        dto.setRole(employee.getRole());
+
+        if(employee.getDealer()!=null){
+            dto.setDealerId(employee.getDealer().getDealerId());
+            dto.setDealerName(employee.getDealer().getDealerName());
+            dto.setDealerCity(employee.getDealer().getCity());
+            dto.setDealerState(employee.getDealer().getState());
+        }
+
+        return dto;
     }
 
     public EmployeeDTO createEmployee(EmployeeDTO dto) {
@@ -47,15 +78,24 @@ public class EmployeeService {
                 .collect(Collectors.toList());
     }
 
-    private EmployeeDTO mapToDTO(Employee employee) {
+    private EmployeeDTO mapToDTO(Employee employee){
 
         EmployeeDTO dto = new EmployeeDTO();
 
+        dto.setEmployeeId(employee.getEmployeeId());
         dto.setName(employee.getName());
         dto.setEmail(employee.getEmail());
         dto.setPhone(employee.getPhone());
         dto.setRole(employee.getRole());
-        dto.setDealerId(employee.getDealer().getDealerId());
+
+        if(employee.getDealer()!=null){
+
+            dto.setDealerId(employee.getDealer().getDealerId());
+            dto.setDealerName(employee.getDealer().getDealerName());
+            dto.setDealerCity(employee.getDealer().getCity());
+            dto.setDealerState(employee.getDealer().getState());
+
+        }
 
         return dto;
     }

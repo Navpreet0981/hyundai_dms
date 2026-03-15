@@ -3,7 +3,7 @@ package com.hyundai.dms.service.impl;
 import com.hyundai.dms.entity.Employee;
 import com.hyundai.dms.repository.CustomerRepository;
 import com.hyundai.dms.repository.EmployeeRepository;
-import com.hyundai.dms.service.LeadAssignmentService;
+import com.hyundai.dms.repository.LeadAssignmentService;
 import org.springframework.stereotype.Service;
 
 import java.util.List;

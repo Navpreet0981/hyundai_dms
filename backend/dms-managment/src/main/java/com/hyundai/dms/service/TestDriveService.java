@@ -48,7 +48,7 @@ public class TestDriveService {
 
         TestDrive testDrive = TestDrive.builder()
                 .testDriveDate(dto.getTestDriveDate())
-                .status(dto.getStatus())
+                .status(TestDriveStatus.valueOf(dto.getStatus().toUpperCase()))
                 .customer(customer)
                 .dealer(dealer)
                 .employee(employee)
@@ -59,7 +59,9 @@ public class TestDriveService {
 
         return TestDriveMapper.toDTO(saved);
     }
-
+    public long getTotalTestDrives() {
+        return testDriveRepository.count();
+    }
     public List<TestDriveDTO> getAllTestDrives() {
 
         return testDriveRepository.findAll()

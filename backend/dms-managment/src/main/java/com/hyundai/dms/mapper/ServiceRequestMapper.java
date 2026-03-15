@@ -5,16 +5,22 @@ import com.hyundai.dms.entity.ServiceRequest;
 
 public class ServiceRequestMapper {
 
-    public static ServiceRequestDTO toDTO(ServiceRequest request) {
+    public static ServiceRequestDTO toDTO(ServiceRequest sr){
 
         return ServiceRequestDTO.builder()
-                .serviceRequestId(request.getServiceRequestId())
-                .serviceDate(request.getServiceDate())
-                .issueDescription(request.getIssueDescription())
-                .status(request.getStatus())
-                .customerId(request.getCustomer().getCustomerId())
-                .dealerId(request.getDealer().getDealerId())
-                .variantId(request.getCarVariant().getVariantId())
+                .serviceRequestId(sr.getServiceRequestId())
+                .serviceDate(sr.getServiceDate())
+                .issueDescription(sr.getIssueDescription())
+                .status(sr.getStatus())
+
+                .customerId(sr.getCustomer().getCustomerId())
+                .dealerId(sr.getDealer().getDealerId())
+                .variantId(sr.getCarVariant().getVariantId())
+
+                .customerName(sr.getCustomer().getName())
+                .variantName(sr.getCarVariant().getVariantName())
+                .dealerName(sr.getDealer().getDealerName())
+
                 .build();
     }
 }

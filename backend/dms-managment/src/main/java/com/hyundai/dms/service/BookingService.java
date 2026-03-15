@@ -31,6 +31,10 @@ public class BookingService {
         this.variantRepository = variantRepository;
     }
 
+    public long getTotalBookings() {
+        return bookingRepository.count();
+    }
+
     public BookingDTO createBooking(BookingDTO dto) {
 
         Customer customer = customerRepository.findById(dto.getCustomerId())

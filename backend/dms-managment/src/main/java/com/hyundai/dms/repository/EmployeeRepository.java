@@ -1,5 +1,6 @@
 package com.hyundai.dms.repository;
 
+import com.hyundai.dms.entity.Dealer;
 import com.hyundai.dms.entity.Employee;
 import org.springframework.data.jpa.repository.JpaRepository;
 
@@ -11,4 +12,5 @@ public interface EmployeeRepository extends JpaRepository<Employee, Long> {
     List<Employee> findByDealerDealerIdAndActiveTrueOrderByEmployeeIdAsc(Long dealerId);
     Optional<Employee> findByEmail(String email);
     long countByDealerDealerId(Long dealerId);
+    Long countByDealer(Dealer dealer);
 }

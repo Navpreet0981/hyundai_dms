@@ -1,5 +1,6 @@
-package com.hyundai.dms.analytics;
+package com.hyundai.dms.service.impl;
 
+import com.hyundai.dms.dto.DashboardDTO;
 import com.hyundai.dms.repository.*;
 import org.springframework.stereotype.Service;
 

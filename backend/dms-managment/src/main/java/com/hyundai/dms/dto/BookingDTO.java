@@ -19,10 +19,12 @@ public class BookingDTO {
     private BookingStatus status;
 
     private Long customerId;
-
     private Long dealerId;
-
     private Long employeeId;
-
     private Long variantId;
+
+    private String customerName;
+    private String variantName;
+    private String dealerName;
+    private String employeeName;
 }

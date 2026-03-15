@@ -1,18 +1,29 @@
 package com.hyundai.dms.service;
 
+import com.hyundai.dms.dto.DealerPerformanceDTO;
 import com.hyundai.dms.entity.Dealer;
+import com.hyundai.dms.repository.BookingRepository;
+import com.hyundai.dms.repository.CustomerRepository;
 import com.hyundai.dms.repository.DealerRepository;
+import com.hyundai.dms.repository.EmployeeRepository;
 import org.springframework.stereotype.Service;
 
+import java.util.ArrayList;
 import java.util.List;
 
 @Service
 public class DealerService {
 
     private final DealerRepository dealerRepository;
+    private final BookingRepository bookingRepository;
+    private final CustomerRepository customerRepository;
+    private final EmployeeRepository employeeRepository;
 
-    public DealerService(DealerRepository dealerRepository) {
+    public DealerService(DealerRepository dealerRepository, BookingRepository bookingRepository, CustomerRepository customerRepository, EmployeeRepository employeeRepository) {
         this.dealerRepository = dealerRepository;
+        this.bookingRepository = bookingRepository;
+        this.customerRepository = customerRepository;
+        this.employeeRepository = employeeRepository;
     }
 
     // Save dealer
@@ -33,5 +44,38 @@ public class DealerService {
     // Delete dealer
     public void deleteDealer(Long id) {
         dealerRepository.deleteById(id);
+    }
+
+    public List<DealerPerformanceDTO> getDealerPerformance(){
+
+        List<Dealer> dealers = dealerRepository.findAll();
+        List<DealerPerformanceDTO> result = new ArrayList<>();
+
+        for(Dealer d : dealers){
+
+            Long employees = employeeRepository.countByDealer(d);
+            Long leads = customerRepository.countByDealer(d);
+            Long bookings = bookingRepository.countByDealer(d);
+
+            double conversion = 0;
+
+            if(leads > 0){
+                conversion = (bookings * 100.0) / leads;
+            }
+
+            result.add(
+                    DealerPerformanceDTO.builder()
+                            .dealerId(d.getDealerId())
+                            .dealerName(d.getDealerName())
+                            .totalEmployees(employees)
+                            .totalLeads(leads)
+                            .totalBookings(bookings)
+                            .conversionRate(Math.round(conversion*100)/100.0)
+                            .active(d.isActive())
+                            .build()
+            );
+        }
+
+        return result;
     }
 }

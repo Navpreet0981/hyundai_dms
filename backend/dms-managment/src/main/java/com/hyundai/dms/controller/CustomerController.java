@@ -35,4 +35,12 @@ public class CustomerController {
     public void deleteCustomer(@PathVariable Long id) {
         customerService.deleteCustomer(id);
     }
+
+    @PutMapping("/{id}/status")
+    public CustomerDTO updateLeadStatus(
+            @PathVariable Long id,
+            @RequestParam String status
+    ){
+        return customerService.updateLeadStatus(id,status);
+    }
 }

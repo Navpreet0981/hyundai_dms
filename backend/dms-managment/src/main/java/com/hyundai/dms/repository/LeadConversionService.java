@@ -1,4 +1,6 @@
-package com.hyundai.dms.analytics;
+package com.hyundai.dms.repository;
+
+import com.hyundai.dms.dto.LeadConversionDTO;
 
 public interface LeadConversionService {
 

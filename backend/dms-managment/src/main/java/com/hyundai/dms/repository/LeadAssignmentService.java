@@ -1,4 +1,4 @@
-package com.hyundai.dms.service;
+package com.hyundai.dms.repository;
 
 import com.hyundai.dms.entity.Employee;
 

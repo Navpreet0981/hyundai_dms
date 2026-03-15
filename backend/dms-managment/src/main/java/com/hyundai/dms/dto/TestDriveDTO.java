@@ -1,8 +1,6 @@
 package com.hyundai.dms.dto;
 
-import com.hyundai.dms.enums.TestDriveStatus;
 import lombok.*;
-
 import java.time.LocalDate;
 
 @Getter
@@ -10,19 +8,23 @@ import java.time.LocalDate;
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
+
 public class TestDriveDTO {
 
     private Long testDriveId;
 
     private LocalDate testDriveDate;
 
-    private TestDriveStatus status;
+    private String status;
 
     private Long customerId;
-
     private Long dealerId;
-
     private Long employeeId;
-
     private Long variantId;
+
+    private String customerName;
+    private String variantName;
+    private String dealerName;
+    private String employeeName;
+
 }

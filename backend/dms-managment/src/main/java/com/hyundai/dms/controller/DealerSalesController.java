@@ -1,5 +1,7 @@
-package com.hyundai.dms.analytics;
+package com.hyundai.dms.controller;
 
+import com.hyundai.dms.dto.SalesAnalyticsDTO;
+import com.hyundai.dms.repository.SalesAnalyticsService;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;

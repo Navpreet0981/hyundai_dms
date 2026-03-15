@@ -11,10 +11,17 @@ public class BookingMapper {
                 .bookingId(booking.getBookingId())
                 .bookingDate(booking.getBookingDate())
                 .status(booking.getStatus())
+
                 .customerId(booking.getCustomer().getCustomerId())
                 .dealerId(booking.getDealer().getDealerId())
                 .employeeId(booking.getEmployee().getEmployeeId())
                 .variantId(booking.getCarVariant().getVariantId())
+
+                .customerName(booking.getCustomer().getName())
+                .variantName(booking.getCarVariant().getVariantName())
+                .dealerName(booking.getDealer().getDealerName())
+                .employeeName(booking.getEmployee().getName())
+
                 .build();
     }
 }

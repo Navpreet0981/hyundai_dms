@@ -25,4 +25,10 @@ public class EmployeeController {
     public List<EmployeeDTO> getAllEmployees() {
         return employeeService.getAllEmployees();
     }
+
+    // GET logged-in employee profile
+    @GetMapping("/me")
+    public EmployeeDTO getCurrentEmployee(){
+        return employeeService.getLoggedInEmployee();
+    }
 }

@@ -10,10 +10,23 @@ import lombok.*;
 @Builder
 public class EmployeeDTO {
 
+    private Long employeeId;
+
     private String name;
+
     private String email;
+
     private String phone;
-    private String password;
+
     private EmployeeRole role;
+
+    // Dealer Info
     private Long dealerId;
+
+    private String dealerName;
+
+    private String dealerCity;
+
+    private String dealerState;
+
 }

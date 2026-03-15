@@ -2,6 +2,7 @@ package com.hyundai.dms.repository;
 
 import com.hyundai.dms.entity.TestDrive;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Query;
 
 import java.util.List;
 
@@ -14,4 +15,6 @@ public interface TestDriveRepository extends JpaRepository<TestDrive, Long> {
     List<TestDrive> findByCustomerCustomerId(Long customerId);
 
     long countByDealerDealerId(Long dealerId);
+    @Query("SELECT COUNT(t) FROM TestDrive t")
+    Long getTotalTestDrives();
 }
