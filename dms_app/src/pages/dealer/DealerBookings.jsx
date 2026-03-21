@@ -1,9 +1,9 @@
 import { useEffect, useState } from "react";
 import api from "../../api/axiosClient";
-import EmployeeLayout from "../../layouts/EmployeeLayout";
+import DealerLayout from "../../layouts/DealerLayout";
 import { SkeletonTable } from "../../components/Skeleton";
 
-export default function Bookings() {
+export default function DealerBookings() {
   const [bookings, setBookings] = useState([]);
   const [loading, setLoading] = useState(true);
 
@@ -18,36 +18,39 @@ export default function Bookings() {
 
   const updateStatus = (id, status) => {
     api.put(`/bookings/${id}/status?status=${status}`)
-      .then(() => setBookings(prev => prev.map(b => b.bookingId === id ? { ...b, status } : b)));
+      .then(() => loadBookings())
+      .catch(err => console.log(err));
   };
 
   return (
-    <EmployeeLayout>
+    <DealerLayout>
       <div className="space-y-6">
 
         <h2 className="text-xl sm:text-2xl font-semibold text-gray-800 dark:text-gray-200">Bookings</h2>
 
         {loading ? (
-          <SkeletonTable rows={5} cols={6} />
+          <SkeletonTable rows={5} cols={5} />
         ) : (
           <div className="bg-white dark:bg-slate-900 border border-gray-200 dark:border-slate-800 rounded-xl shadow-sm overflow-x-auto">
-            <table className="w-full text-sm min-w-[650px]">
+            <table className="w-full text-sm min-w-[600px]">
               <thead className="bg-gray-50 dark:bg-slate-800 text-gray-600 dark:text-gray-300">
                 <tr>
                   <th className="p-4 text-left">Customer</th>
                   <th className="p-4 text-left">Variant</th>
-                  <th className="p-4 text-left">Dealer</th>
+                  <th className="p-4 text-left">Employee</th>
                   <th className="p-4 text-left">Date</th>
                   <th className="p-4 text-left">Status</th>
                   <th className="p-4 text-left">Actions</th>
                 </tr>
               </thead>
               <tbody>
-                {bookings.map(b => (
+                {bookings.length === 0 ? (
+                  <tr><td colSpan="6" className="text-center p-6 text-gray-500">No bookings found</td></tr>
+                ) : bookings.map(b => (
                   <tr key={b.bookingId} className="border-t border-gray-200 dark:border-slate-800 hover:bg-gray-50 dark:hover:bg-slate-800 transition">
-                    <td className="p-4 text-gray-800 dark:text-gray-200">{b.customerName}</td>
+                    <td className="p-4 font-medium text-gray-800 dark:text-gray-200">{b.customerName}</td>
                     <td className="p-4 text-gray-600 dark:text-gray-300">{b.variantName}</td>
-                    <td className="p-4 text-gray-600 dark:text-gray-300">{b.dealerName}</td>
+                    <td className="p-4 text-gray-600 dark:text-gray-300">{b.employeeName}</td>
                     <td className="p-4 text-gray-600 dark:text-gray-300">{b.bookingDate}</td>
                     <td className="p-4">
                       <span className="px-3 py-1 text-xs rounded-full bg-green-100 text-green-700 dark:bg-green-900 dark:text-green-300">{b.status}</span>
@@ -67,6 +70,6 @@ export default function Bookings() {
         )}
 
       </div>
-    </EmployeeLayout>
+    </DealerLayout>
   );
 }

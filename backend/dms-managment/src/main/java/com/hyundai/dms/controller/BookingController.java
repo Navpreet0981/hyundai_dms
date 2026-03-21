@@ -1,6 +1,8 @@
 package com.hyundai.dms.controller;
 
 import com.hyundai.dms.dto.BookingDTO;
+import com.hyundai.dms.entity.Booking;
+import com.hyundai.dms.enums.BookingStatus;
 import com.hyundai.dms.service.BookingService;
 import org.springframework.web.bind.annotation.*;
 
@@ -34,5 +36,11 @@ public class BookingController {
     @DeleteMapping("/{id}")
     public void deleteBooking(@PathVariable Long id) {
         bookingService.deleteBooking(id);
+    }
+
+    @PutMapping("/{id}/status")
+    public Booking updateStatus(@PathVariable Long id,
+                                @RequestParam BookingStatus status) {
+        return bookingService.updateStatus(id, status);
     }
 }

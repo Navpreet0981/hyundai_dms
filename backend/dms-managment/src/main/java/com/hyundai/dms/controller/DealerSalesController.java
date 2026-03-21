@@ -1,28 +1,38 @@
 package com.hyundai.dms.controller;
 
 import com.hyundai.dms.dto.SalesAnalyticsDTO;
-import com.hyundai.dms.repository.SalesAnalyticsService;
+import com.hyundai.dms.security.util.CurrentUserUtil;
+import com.hyundai.dms.service.SalesAnalyticsService;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
 @RestController
-@RequestMapping("/dealer/sales")
+@RequestMapping("/dealer/revenue")
 public class DealerSalesController {
 
     private final SalesAnalyticsService salesAnalyticsService;
+    private final CurrentUserUtil currentUserUtil;
 
-    public DealerSalesController(SalesAnalyticsService salesAnalyticsService) {
+    public DealerSalesController(SalesAnalyticsService salesAnalyticsService,
+                                 CurrentUserUtil currentUserUtil) {
         this.salesAnalyticsService = salesAnalyticsService;
+        this.currentUserUtil = currentUserUtil;
     }
 
-    @GetMapping("/monthly/{dealerId}")
-    public List<SalesAnalyticsDTO> getMonthlySales(@PathVariable Long dealerId) {
+    @GetMapping("/monthly")
+    public List<SalesAnalyticsDTO> getMonthlySales() {
+
+        Long dealerId = currentUserUtil.getLoggedInDealerId();
+
         return salesAnalyticsService.getMonthlySalesByDealer(dealerId);
     }
 
-    @GetMapping("/yearly/{dealerId}")
-    public List<SalesAnalyticsDTO> getYearlySales(@PathVariable Long dealerId) {
+    @GetMapping("/yearly")
+    public List<SalesAnalyticsDTO> getYearlySales() {
+
+        Long dealerId = currentUserUtil.getLoggedInDealerId();
+
         return salesAnalyticsService.getYearlySalesByDealer(dealerId);
     }
 }

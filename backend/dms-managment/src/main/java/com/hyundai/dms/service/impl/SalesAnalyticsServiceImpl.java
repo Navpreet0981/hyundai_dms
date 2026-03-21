@@ -2,7 +2,7 @@ package com.hyundai.dms.service.impl;
 
 import com.hyundai.dms.dto.AdminSalesSummaryDTO;
 import com.hyundai.dms.dto.SalesAnalyticsDTO;
-import com.hyundai.dms.repository.SalesAnalyticsService;
+import com.hyundai.dms.service.SalesAnalyticsService;
 import com.hyundai.dms.repository.BookingRepository;
 import com.hyundai.dms.repository.TestDriveRepository;
 import org.springframework.stereotype.Service;

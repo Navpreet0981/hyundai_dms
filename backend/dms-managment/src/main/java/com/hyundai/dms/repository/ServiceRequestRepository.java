@@ -11,4 +11,13 @@ public interface ServiceRequestRepository extends JpaRepository<ServiceRequest, 
 
     List<ServiceRequest> findByCustomerCustomerId(Long customerId);
 
+
+    List<ServiceRequest> findByEmployeeEmployeeId(Long employeeId);
+
+
+    long countByEmployeeEmployeeId(Long employeeId);
+
+    long countByEmployeeDealerDealerId(Long dealerId);
+
+    long countByDealerDealerId(Long dealerId);
 }

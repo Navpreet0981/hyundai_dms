@@ -17,6 +17,11 @@ public interface BookingRepository extends JpaRepository<Booking, Long> {
 
     Long countByDealer(Dealer dealer);
 
+    long countByEmployeeEmployeeId(Long employeeId);
+
+    long countByEmployeeDealerDealerId(Long dealerId);
+
+
     long countByDealerDealerId(Long dealerId);
     @Query("SELECT MONTH(b.bookingDate), COUNT(b) FROM Booking b GROUP BY MONTH(b.bookingDate)")
     List<Object[]> getMonthlySales();
@@ -39,4 +44,7 @@ public interface BookingRepository extends JpaRepository<Booking, Long> {
 
     @Query("SELECT COUNT(b) FROM Booking b")
     Long getTotalBookings();
+
+    @Query("SELECT COALESCE(SUM(v.price),0) FROM Booking b JOIN b.carVariant v WHERE b.dealer.dealerId = :dealerId")
+    Double getTotalRevenueByDealer(Long dealerId);
 }

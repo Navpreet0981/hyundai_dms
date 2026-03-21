@@ -36,10 +36,10 @@ public class EmployeeDashboardController {
 
         Map<String,Object> data = new HashMap<>();
 
-        data.put("totalLeads", customerService.getTotalLeads());
-        data.put("testDrives", testDriveService.getTotalTestDrives());
-        data.put("bookings", bookingService.getTotalBookings());
-        data.put("services", serviceRequestService.getTotalServiceRequests());
+        data.put("totalLeads", customerService.getTotalLeadsByRole());
+        data.put("testDrives", testDriveService.getTotalTestDrivesByRole());
+        data.put("bookings", bookingService.getTotalBookingsByRole());
+        data.put("services", serviceRequestService.getTotalServiceRequestsByRole());
 
         return data;
     }

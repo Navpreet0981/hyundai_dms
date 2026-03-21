@@ -51,7 +51,15 @@ export default function Sidebar() {
     ],
 
     DEALER: [
-      { name: "Dashboard", path: "/dealer", icon: LayoutDashboard }
+      { name: "Dashboard", path: "/dealer", icon: LayoutDashboard },
+      { name: "Employees", path: "/dealer/employees", icon: UserCog },
+      { name: "Leads", path: "/dealer/leads", icon: Users },
+      { name: "Customers", path: "/dealer/customers", icon: User },
+      { name: "Test Drives", path: "/dealer/testdrives", icon: Car },
+      { name: "Bookings", path: "/dealer/bookings", icon: CalendarCheck },
+      { name: "Performance", path: "/dealer/performance", icon: TrendingUp },
+      { name: "Reports", path: "/dealer/reports", icon: BarChart3 },
+      { name: "Profile", path: "/dealer/profile", icon: User }
     ]
 
   }

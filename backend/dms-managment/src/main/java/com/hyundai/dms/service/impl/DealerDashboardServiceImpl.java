@@ -4,6 +4,8 @@ import com.hyundai.dms.dto.DealerDashboardDTO;
 import com.hyundai.dms.dto.LeadConversionDTO;
 import com.hyundai.dms.entity.Dealer;
 import com.hyundai.dms.repository.*;
+import com.hyundai.dms.service.DealerDashboardService;
+import com.hyundai.dms.service.LeadConversionService;
 import org.springframework.stereotype.Service;
 
 @Service

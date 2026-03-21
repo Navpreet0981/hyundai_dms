@@ -5,6 +5,7 @@ import com.hyundai.dms.entity.*;
 import com.hyundai.dms.enums.TestDriveStatus;
 import com.hyundai.dms.mapper.TestDriveMapper;
 import com.hyundai.dms.repository.*;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -97,5 +98,32 @@ public class TestDriveService {
 
     public void deleteTestDrive(Long id) {
         testDriveRepository.deleteById(id);
+    }
+
+    public long getTotalTestDrivesByRole() {
+
+        String email = SecurityContextHolder.getContext().getAuthentication().getName();
+        String role = SecurityContextHolder.getContext().getAuthentication()
+                .getAuthorities().iterator().next().getAuthority();
+
+        if (role.equals("ROLE_ADMIN")) {
+            return testDriveRepository.count();
+        }
+
+        if (role.equals("ROLE_EMPLOYEE")) {
+            Employee employee = employeeRepository.findByEmail(email)
+                    .orElseThrow(() -> new RuntimeException("Employee not found"));
+
+            return testDriveRepository.countByEmployeeEmployeeId(employee.getEmployeeId());
+        }
+
+        if (role.equals("ROLE_DEALER")) {
+            Dealer dealer = dealerRepository.findByEmail(email)
+                    .orElseThrow(() -> new RuntimeException("Dealer not found"));
+
+            return testDriveRepository.countByEmployeeDealerDealerId(dealer.getDealerId());
+        }
+
+        throw new RuntimeException("Unauthorized");
     }
 }

@@ -1,5 +1,6 @@
 package com.hyundai.dms.entity;
 
+import com.hyundai.dms.enums.EmployeeStatus;
 import jakarta.persistence.*;
 import lombok.*;
 import com.hyundai.dms.enums.EmployeeRole;
@@ -32,4 +33,7 @@ public class Employee {
     @ManyToOne
     @JoinColumn(name = "dealer_id")
     private Dealer dealer;
+
+    @Enumerated(EnumType.STRING)
+    private EmployeeStatus status;
 }

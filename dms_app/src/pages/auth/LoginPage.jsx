@@ -4,169 +4,177 @@ import { User, Building2, Shield } from "lucide-react";
 
 export default function LoginPage() {
 
-const [email,setEmail] = useState("");
-const [password,setPassword] = useState("");
-const [role,setRole] = useState("ADMIN");
-const [loading,setLoading] = useState(false);
+    const [email, setEmail] = useState("");
+    const [password, setPassword] = useState("");
+    const [role, setRole] = useState("ADMIN");
+    const [loading, setLoading] = useState(false);
 
-const login = async () => {
+    const login = async () => {
 
-try{
+        try {
 
-setLoading(true);
+            setLoading(true);
 
-const res = await api.post("/auth/login",{
-email,
-password,
-role
-});
+            const res = await api.post("/auth/login", {
+                email,
+                password,
+                role
+            });
 
-localStorage.setItem("token",res.data.token);
-localStorage.setItem("role",role);
+            const token = res.data.token || res.data.accessToken || res.data.jwt;
+            localStorage.setItem("token", token);
+            localStorage.setItem("role", role);
 
-if(role==="ADMIN") window.location.href="/admin";
-if(role==="DEALER") window.location.href="/dealer";
-if(role==="EMPLOYEE") window.location.href="/leads";
+            // store role-specific IDs from the response
+            if (res.data.dealerId) localStorage.setItem("dealerId", res.data.dealerId);
+            if (res.data.employeeId) localStorage.setItem("employeeId", res.data.employeeId);
 
-}catch(err){
+            // small delay ensures localStorage is flushed before reload
+            setTimeout(() => {
+              if (role === "ADMIN") window.location.href = "/admin";
+              if (role === "DEALER") window.location.href = "/dealer";
+              if (role === "EMPLOYEE") window.location.href = "/employee-dashboard";
+            }, 50);
 
-alert("Invalid Credentials")
+        } catch (err) {
 
-}finally{
-setLoading(false);
-}
+            alert("Invalid Credentials")
 
-};
+        } finally {
+            setLoading(false);
+        }
 
-return(
+    };
 
-<div className="flex min-h-screen">
+    return (
 
-{/* LEFT BRAND PANEL */}
+        <div className="flex min-h-screen">
 
-<div className="hidden lg:flex flex-col justify-center items-center w-1/2 bg-slate-900 text-white p-12 relative">
+            {/* LEFT BRAND PANEL */}
 
-{/* LOGO TOP LEFT */}
+            <div className="hidden lg:flex flex-col justify-center items-center w-1/2 bg-slate-900 text-white p-12 relative">
 
-<img
-src="/hmi_logo.png"
-alt="Hyundai"
-className="absolute top-6 left-6 w-32"
-/>
+                {/* LOGO TOP LEFT */}
 
-<h1 className="text-4xl font-bold mb-4">
-Hyundai DMS
-</h1>
+                <img
+                    src="/hmi_logo.png"
+                    alt="Hyundai"
+                    className="absolute top-6 left-6 w-32"
+                />
 
-<p className="text-slate-300 text-center max-w-md">
-Dealer Management System for managing leads, bookings,
-test drives and service operations across dealerships.
-</p>
+                <h1 className="text-4xl font-bold mb-4">
+                    Hyundai DMS
+                </h1>
 
-<p className="text-sm text-slate-400 mt-8">
-Hyundai Motor India
-</p>
+                <p className="text-slate-300 text-center max-w-md">
+                    Dealer Management System for managing leads, bookings,
+                    test drives and service operations across dealerships.
+                </p>
 
-</div>
+                <p className="text-sm text-slate-400 mt-8">
+                    Hyundai Motor India
+                </p>
 
-
-{/* RIGHT LOGIN PANEL */}
-
-<div className="flex justify-center items-center w-full lg:w-1/2 bg-gray-100 dark:bg-slate-950">
-
-<div className="bg-white dark:bg-slate-900 border border-gray-200 dark:border-slate-800 shadow-xl rounded-xl p-10 w-[420px]">
-
-<h2 className="text-2xl font-semibold text-center text-gray-800 dark:text-gray-200 mb-6">
-Login to DMS
-</h2>
+            </div>
 
 
-{/* ROLE BUTTONS */}
+            {/* RIGHT LOGIN PANEL */}
 
-<div className="grid grid-cols-3 gap-3 mb-6">
+            <div className="flex justify-center items-center w-full lg:w-1/2 bg-gray-100 dark:bg-slate-950">
 
-<button
-onClick={()=>setRole("ADMIN")}
-className={`flex flex-col items-center justify-center p-3 rounded-lg border transition transform hover:scale-105
-${role==="ADMIN"
-?"bg-slate-900 text-white border-blue-600 shadow-lg"
-:"border-gray-300 dark:border-slate-700 text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-slate-800"}`}
->
-<Shield size={20}/>
-<span className="text-xs mt-1">Admin</span>
-</button>
+                <div className="bg-white dark:bg-slate-900 border border-gray-200 dark:border-slate-800 shadow-xl rounded-xl p-10 w-[420px]">
 
-<button
-onClick={()=>setRole("DEALER")}
-className={`flex flex-col items-center justify-center p-3 rounded-lg border transition transform hover:scale-105
-${role==="DEALER"
-?"bg-slate-900 text-white border-blue-600 shadow-lg"
-:"border-gray-300 dark:border-slate-700 text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-slate-800"}`}
->
-<Building2 size={20}/>
-<span className="text-xs mt-1">Dealer</span>
-</button>
-
-<button
-onClick={()=>setRole("EMPLOYEE")}
-className={`flex flex-col items-center justify-center p-3 rounded-lg border transition transform hover:scale-105
-${role==="EMPLOYEE"
-?"bg-slate-900 text-white border-blue-600 shadow-lg"
-:"border-gray-300 dark:border-slate-700 text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-slate-800"}`}
->
-<User size={20}/>
-<span className="text-xs mt-1">Employee</span>
-</button>
-
-</div>
+                    <h2 className="text-2xl font-semibold text-center text-gray-800 dark:text-gray-200 mb-6">
+                        Login to DMS
+                    </h2>
 
 
-{/* EMAIL */}
+                    {/* ROLE BUTTONS */}
 
-<input
-className="w-full border border-gray-300 dark:border-slate-700 bg-white dark:bg-slate-800 text-gray-800 dark:text-gray-200 p-3 rounded-lg mb-3 focus:outline-none focus:ring-2 focus:ring-blue-500"
-placeholder="Email"
-onChange={(e)=>setEmail(e.target.value)}
-/>
+                    <div className="grid grid-cols-3 gap-3 mb-6">
+
+                        <button
+                            onClick={() => setRole("ADMIN")}
+                            className={`flex flex-col items-center justify-center p-3 rounded-lg border transition transform hover:scale-105
+${role === "ADMIN"
+                                    ? "bg-slate-900 text-white border-blue-600 shadow-lg"
+                                    : "border-gray-300 dark:border-slate-700 text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-slate-800"}`}
+                        >
+                            <Shield size={20} />
+                            <span className="text-xs mt-1">Admin</span>
+                        </button>
+
+                        <button
+                            onClick={() => setRole("DEALER")}
+                            className={`flex flex-col items-center justify-center p-3 rounded-lg border transition transform hover:scale-105
+${role === "DEALER"
+                                    ? "bg-slate-900 text-white border-blue-600 shadow-lg"
+                                    : "border-gray-300 dark:border-slate-700 text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-slate-800"}`}
+                        >
+                            <Building2 size={20} />
+                            <span className="text-xs mt-1">Dealer</span>
+                        </button>
+
+                        <button
+                            onClick={() => setRole("EMPLOYEE")}
+                            className={`flex flex-col items-center justify-center p-3 rounded-lg border transition transform hover:scale-105
+${role === "EMPLOYEE"
+                                    ? "bg-slate-900 text-white border-blue-600 shadow-lg"
+                                    : "border-gray-300 dark:border-slate-700 text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-slate-800"}`}
+                        >
+                            <User size={20} />
+                            <span className="text-xs mt-1">Employee</span>
+                        </button>
+
+                    </div>
 
 
-{/* PASSWORD */}
+                    {/* EMAIL */}
 
-<input
-className="w-full border border-gray-300 dark:border-slate-700 bg-white dark:bg-slate-800 text-gray-800 dark:text-gray-200 p-3 rounded-lg mb-5 focus:outline-none focus:ring-2 focus:ring-blue-500"
-type="password"
-placeholder="Password"
-onChange={(e)=>setPassword(e.target.value)}
-/>
-
-
-{/* LOGIN BUTTON */}
-
-<button
-onClick={login}
-disabled={loading}
-className="w-full bg-slate-900 hover:bg-slate-700 text-white py-3 rounded-lg font-medium flex justify-center items-center gap-2 transition"
->
-
-{loading && (
-<div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
-)}
-
-{loading ? "Logging in..." : "Login"}
-
-</button>
+                    <input
+                        className="w-full border border-gray-300 dark:border-slate-700 bg-white dark:bg-slate-800 text-gray-800 dark:text-gray-200 p-3 rounded-lg mb-3 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                        placeholder="Email"
+                        onChange={(e) => setEmail(e.target.value)}
+                    />
 
 
-<p className="text-center text-xs text-gray-400 mt-6">
-Hyundai Dealer Management System
-</p>
+                    {/* PASSWORD */}
 
-</div>
+                    <input
+                        className="w-full border border-gray-300 dark:border-slate-700 bg-white dark:bg-slate-800 text-gray-800 dark:text-gray-200 p-3 rounded-lg mb-5 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                        type="password"
+                        placeholder="Password"
+                        onChange={(e) => setPassword(e.target.value)}
+                    />
 
-</div>
 
-</div>
+                    {/* LOGIN BUTTON */}
 
-);
+                    <button
+                        onClick={login}
+                        disabled={loading}
+                        className="w-full bg-slate-900 hover:bg-slate-700 text-white py-3 rounded-lg font-medium flex justify-center items-center gap-2 transition"
+                    >
+
+                        {loading && (
+                            <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+                        )}
+
+                        {loading ? "Logging in..." : "Login"}
+
+                    </button>
+
+
+                    <p className="text-center text-xs text-gray-400 mt-6">
+                        Hyundai Dealer Management System
+                    </p>
+
+                </div>
+
+            </div>
+
+        </div>
+
+    );
 
 }

@@ -17,4 +17,8 @@ public interface TestDriveRepository extends JpaRepository<TestDrive, Long> {
     long countByDealerDealerId(Long dealerId);
     @Query("SELECT COUNT(t) FROM TestDrive t")
     Long getTotalTestDrives();
+
+    long countByEmployeeEmployeeId(Long employeeId);
+
+    long countByEmployeeDealerDealerId(Long dealerId);
 }

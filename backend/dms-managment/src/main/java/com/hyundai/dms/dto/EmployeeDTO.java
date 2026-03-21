@@ -29,4 +29,6 @@ public class EmployeeDTO {
 
     private String dealerState;
 
+    private String status;
+
 }

@@ -1,4 +1,4 @@
-package com.hyundai.dms.repository;
+package com.hyundai.dms.service;
 
 import com.hyundai.dms.dto.LeadConversionDTO;
 

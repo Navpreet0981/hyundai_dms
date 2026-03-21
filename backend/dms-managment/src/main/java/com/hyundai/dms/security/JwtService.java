@@ -13,14 +13,14 @@ import java.util.Date;
 public class JwtService {
 
     private final String SECRET_KEY =
-            "hyundaihyundaihyundaihyundaihyundai1234efvcevcececececefce4rcerwevc56tgy6tbv5"; // must be long
-
+            "hyundaihyundaihyundaihyundaihyundai1234efvcevcececececefce4rcerwevc56tgy6tbv5";
     private Key getSigningKey() {
         return Keys.hmacShaKeyFor(SECRET_KEY.getBytes());
     }
 
     public String generateToken(String email, String role) {
 
+        System.out.println("ROLE:- " + role);
         return Jwts.builder()
                 .setSubject(email)
                 .claim("role", role)
@@ -47,5 +47,18 @@ public class JwtService {
     public String extractRole(String token) {
 
         return extractAllClaims(token).get("role", String.class);
+    }
+
+    public boolean validateToken(String token) {
+        try {
+            Claims claims = extractAllClaims(token);
+
+            // check expiration
+            return !claims.getExpiration().before(new Date());
+
+        } catch (Exception e) {
+            // token invalid / tampered / expired
+            return false;
+        }
     }
 }

@@ -9,8 +9,6 @@ import com.hyundai.dms.mapper.CustomerMapper;
 import com.hyundai.dms.repository.CustomerRepository;
 import com.hyundai.dms.repository.DealerRepository;
 import com.hyundai.dms.repository.EmployeeRepository;
-import com.hyundai.dms.repository.LeadAssignmentService;
-
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 
@@ -24,44 +22,35 @@ public class CustomerService {
     private final CustomerRepository customerRepository;
     private final DealerRepository dealerRepository;
     private final EmployeeRepository employeeRepository;
-    private final LeadAssignmentService leadAssignmentService;
 
     public CustomerService(
             CustomerRepository customerRepository,
             DealerRepository dealerRepository,
-            EmployeeRepository employeeRepository,
-            LeadAssignmentService leadAssignmentService) {
+            EmployeeRepository employeeRepository) {
 
         this.customerRepository = customerRepository;
         this.dealerRepository = dealerRepository;
         this.employeeRepository = employeeRepository;
-        this.leadAssignmentService = leadAssignmentService;
     }
 
+    // ✅ CREATE CUSTOMER (Employee)
     public CustomerDTO createCustomer(CustomerDTO dto) {
 
-        // Get logged in employee email from JWT
         String email = SecurityContextHolder
                 .getContext()
                 .getAuthentication()
                 .getName();
 
-        // Find employee
         Employee employee = employeeRepository
                 .findByEmail(email)
                 .orElseThrow(() -> new RuntimeException("Employee not found"));
 
-        // Dealer comes from employee
         Dealer dealer = employee.getDealer();
 
-        // Convert DTO → Entity
         Customer customer = CustomerMapper.toEntity(dto);
 
-        // Set relationships
         customer.setEmployee(employee);
         customer.setDealer(dealer);
-
-        // Default lead values
         customer.setLeadStatus(LeadStatus.NEW);
         customer.setCreatedDate(LocalDate.now());
 
@@ -70,37 +59,132 @@ public class CustomerService {
         return CustomerMapper.toDTO(saved);
     }
 
+    // ✅ ROLE-BASED FETCH (CORE LOGIC)
     public List<CustomerDTO> getAllCustomers() {
 
-        return customerRepository
-                .findAll()
-                .stream()
-                .map(CustomerMapper::toDTO)
-                .collect(Collectors.toList());
+        String email = SecurityContextHolder.getContext()
+                .getAuthentication()
+                .getName();
+
+        String role = SecurityContextHolder.getContext()
+                .getAuthentication()
+                .getAuthorities()
+                .iterator()
+                .next()
+                .getAuthority();
+
+        // ✅ ADMIN → all
+        if (role.equals("ROLE_ADMIN")) {
+            return customerRepository.findAll()
+                    .stream()
+                    .map(this::mapToDTO)
+                    .collect(Collectors.toList());
+        }
+
+        // ✅ EMPLOYEE → own leads
+        if (role.equals("ROLE_EMPLOYEE")) {
+
+            Employee employee = employeeRepository.findByEmail(email)
+                    .orElseThrow(() -> new RuntimeException("Employee not found"));
+
+            return customerRepository.findByEmployee_EmployeeId(employee.getEmployeeId())
+                    .stream()
+                    .map(this::mapToDTO)
+                    .collect(Collectors.toList());
+        }
+
+        // ✅ DEALER → all leads under dealer
+        if (role.equals("ROLE_DEALER")) {
+
+            Dealer dealer = dealerRepository.findByEmail(email)
+                    .orElseThrow(() -> new RuntimeException("Dealer not found"));
+
+            return customerRepository.findByEmployee_Dealer_DealerId(dealer.getDealerId())
+                    .stream()
+                    .map(this::mapToDTO)
+                    .collect(Collectors.toList());
+        }
+
+        throw new RuntimeException("Unauthorized access");
     }
 
+    // ✅ SECURE GET BY ID
     public CustomerDTO getCustomerById(Long id) {
 
-        Customer customer = customerRepository
-                .findById(id)
+        Customer customer = customerRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Customer not found"));
 
-        return CustomerMapper.toDTO(customer);
+        String email = SecurityContextHolder.getContext().getAuthentication().getName();
+        String role = SecurityContextHolder.getContext().getAuthentication()
+                .getAuthorities().iterator().next().getAuthority();
+
+        if (role.equals("ROLE_EMPLOYEE")) {
+            if (!customer.getEmployee().getEmail().equals(email)) {
+                throw new RuntimeException("Unauthorized");
+            }
+        }
+
+        if (role.equals("ROLE_DEALER")) {
+            if (!customer.getDealer().getEmail().equals(email)) {
+                throw new RuntimeException("Unauthorized");
+            }
+        }
+
+        return mapToDTO(customer);
     }
 
-    public long getTotalLeads() {
-        return customerRepository.count();
-    }
 
     public void deleteCustomer(Long id) {
-        customerRepository.deleteById(id);
+
+        Customer customer = customerRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Customer not found"));
+
+        String email = SecurityContextHolder.getContext().getAuthentication().getName();
+        String role = SecurityContextHolder.getContext().getAuthentication()
+                .getAuthorities().iterator().next().getAuthority();
+
+        if (role.equals("ROLE_EMPLOYEE")) {
+            if (customer.getEmployee() == null ||
+                    !customer.getEmployee().getEmail().equals(email)) {
+                throw new RuntimeException("Unauthorized");
+            }
+        }
+
+        if (role.equals("ROLE_DEALER")) {
+            if (customer.getDealer() == null ||
+                    !customer.getDealer().getEmail().equals(email)) {
+                throw new RuntimeException("Unauthorized");
+            }
+        }
+
+        customerRepository.delete(customer);
     }
+
 
     public CustomerDTO updateLeadStatus(Long id, String status) {
 
-        Customer customer = customerRepository
-                .findById(id)
+        Customer customer = customerRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Customer not found"));
+
+        String email = SecurityContextHolder.getContext().getAuthentication().getName();
+        String role = SecurityContextHolder.getContext().getAuthentication()
+                .getAuthorities().iterator().next().getAuthority();
+
+        // ✅ EMPLOYEE restriction
+        if (role.equals("ROLE_EMPLOYEE")) {
+            if (customer.getEmployee() == null ||
+                    !customer.getEmployee().getEmail().equals(email)) {
+                throw new RuntimeException("Unauthorized");
+            }
+        }
+
+        // ✅ DEALER restriction
+        if (role.equals("ROLE_DEALER")) {
+            if (customer.getDealer() == null ||
+                    !customer.getDealer().getEmail().equals(email)) {
+                throw new RuntimeException("Unauthorized");
+            }
+        }
 
         LeadStatus newStatus;
 
@@ -114,6 +198,75 @@ public class CustomerService {
 
         Customer saved = customerRepository.save(customer);
 
-        return CustomerMapper.toDTO(saved);
+        return mapToDTO(saved);
+    }
+
+    private CustomerDTO mapToDTO(Customer c) {
+
+        CustomerDTO dto = new CustomerDTO();
+
+        dto.setCustomerId(c.getCustomerId());
+        dto.setName(c.getName());
+        dto.setEmail(c.getEmail());
+        dto.setPhone(c.getPhone());
+        dto.setCity(c.getCity());
+        dto.setLeadSource(c.getLeadSource());
+        dto.setInterestedModel(c.getInterestedModel());
+        dto.setLeadStatus(c.getLeadStatus());
+        dto.setCreatedDate(c.getCreatedDate());
+
+        if (c.getDealer() != null) {
+            dto.setDealerId(c.getDealer().getDealerId());
+        }
+
+        if (c.getEmployee() != null) {
+            dto.setEmployeeId(c.getEmployee().getEmployeeId());
+            dto.setEmployeeName(c.getEmployee().getName());
+        }
+
+        return dto;
+    }
+
+    public long getTotalLeads() {
+        return customerRepository.count();
+    }
+
+    public long getTotalLeadsByRole() {
+
+        String email = SecurityContextHolder.getContext()
+                .getAuthentication()
+                .getName();
+
+        String role = SecurityContextHolder.getContext()
+                .getAuthentication()
+                .getAuthorities()
+                .iterator()
+                .next()
+                .getAuthority();
+
+        // ✅ ADMIN → all
+        if (role.equals("ROLE_ADMIN")) {
+            return customerRepository.count();
+        }
+
+        // ✅ EMPLOYEE → own
+        if (role.equals("ROLE_EMPLOYEE")) {
+
+            Employee employee = employeeRepository.findByEmail(email)
+                    .orElseThrow(() -> new RuntimeException("Employee not found"));
+
+            return customerRepository.countByEmployee_EmployeeId(employee.getEmployeeId());
+        }
+
+        // ✅ DEALER → all under dealer
+        if (role.equals("ROLE_DEALER")) {
+
+            Dealer dealer = dealerRepository.findByEmail(email)
+                    .orElseThrow(() -> new RuntimeException("Dealer not found"));
+
+            return customerRepository.countByEmployee_Dealer_DealerId(dealer.getDealerId());
+        }
+
+        throw new RuntimeException("Unauthorized");
     }
 }

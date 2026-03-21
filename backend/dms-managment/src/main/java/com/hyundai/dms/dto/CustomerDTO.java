@@ -33,4 +33,6 @@ public class CustomerDTO {
     private Long dealerId;
 
     private Long employeeId;
+
+    private String employeeName;
 }

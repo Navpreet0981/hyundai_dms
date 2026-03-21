@@ -25,28 +25,30 @@ public class SecurityConfig {
 
                 .authorizeHttpRequests(auth -> auth
 
-                        // Public endpoints
+                        // Public
                         .requestMatchers("/auth/**").permitAll()
+
+                        // DEALER FIRST (VERY IMPORTANT)
+                        .requestMatchers("/dealer/**").hasRole("DEALER")
 
                         // Admin APIs
                         .requestMatchers("/dealers/**").hasRole("ADMIN")
                         .requestMatchers("/admin/**").hasRole("ADMIN")
 
-                        // Dealer + Admin + Employee
-                        .requestMatchers("/employees/**",
+                        // Shared APIs
+                        .requestMatchers(
+                                "/employees/**",
                                 "/cars/**",
-                                "/variants/**").hasAnyRole("ADMIN","DEALER","EMPLOYEE")
+                                "/variants/**"
+                        ).hasAnyRole("ADMIN","DEALER","EMPLOYEE")
 
-                        .requestMatchers("/dealer/**").hasRole("DEALER")
-
-                        // Employee APIs
                         .requestMatchers(
                                 "/customers/**",
                                 "/testdrives/**",
                                 "/bookings/**",
                                 "/service-requests/**",
                                 "/employee/**"
-                        ).hasAnyRole("ADMIN","EMPLOYEE")
+                        ).hasAnyRole("ADMIN","EMPLOYEE","DEALER")
 
                         .anyRequest().authenticated()
                 )

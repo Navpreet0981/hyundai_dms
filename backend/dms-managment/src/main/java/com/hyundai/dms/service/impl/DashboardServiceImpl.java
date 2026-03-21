@@ -2,6 +2,7 @@ package com.hyundai.dms.service.impl;
 
 import com.hyundai.dms.dto.DashboardDTO;
 import com.hyundai.dms.repository.*;
+import com.hyundai.dms.service.DashboardService;
 import org.springframework.stereotype.Service;
 
 @Service

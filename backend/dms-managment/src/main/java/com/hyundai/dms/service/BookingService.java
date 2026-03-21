@@ -2,8 +2,10 @@ package com.hyundai.dms.service;
 
 import com.hyundai.dms.dto.BookingDTO;
 import com.hyundai.dms.entity.*;
+import com.hyundai.dms.enums.BookingStatus;
 import com.hyundai.dms.mapper.BookingMapper;
 import com.hyundai.dms.repository.*;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -81,5 +83,42 @@ public class BookingService {
 
     public void deleteBooking(Long id) {
         bookingRepository.deleteById(id);
+    }
+
+    public Booking updateStatus(Long id, BookingStatus status){
+
+        Booking booking = bookingRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Booking not found"));
+
+        booking.setStatus(status);
+
+        return bookingRepository.save(booking);
+    }
+
+    public long getTotalBookingsByRole() {
+
+        String email = SecurityContextHolder.getContext().getAuthentication().getName();
+        String role = SecurityContextHolder.getContext().getAuthentication()
+                .getAuthorities().iterator().next().getAuthority();
+
+        if (role.equals("ROLE_ADMIN")) {
+            return bookingRepository.count();
+        }
+
+        if (role.equals("ROLE_EMPLOYEE")) {
+            Employee employee = employeeRepository.findByEmail(email)
+                    .orElseThrow(() -> new RuntimeException("Employee not found"));
+
+            return bookingRepository.countByEmployeeEmployeeId(employee.getEmployeeId());
+        }
+
+        if (role.equals("ROLE_DEALER")) {
+            Dealer dealer = dealerRepository.findByEmail(email)
+                    .orElseThrow(() -> new RuntimeException("Dealer not found"));
+
+            return bookingRepository.countByEmployeeDealerDealerId(dealer.getDealerId());
+        }
+
+        throw new RuntimeException("Unauthorized");
     }
 }

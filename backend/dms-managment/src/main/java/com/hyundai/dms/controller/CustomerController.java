@@ -41,6 +41,6 @@ public class CustomerController {
             @PathVariable Long id,
             @RequestParam String status
     ){
-        return customerService.updateLeadStatus(id,status);
+        return customerService.updateLeadStatus(id, status);
     }
 }

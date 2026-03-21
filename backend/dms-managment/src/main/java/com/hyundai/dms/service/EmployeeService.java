@@ -3,6 +3,7 @@ package com.hyundai.dms.service;
 import com.hyundai.dms.dto.EmployeeDTO;
 import com.hyundai.dms.entity.Dealer;
 import com.hyundai.dms.entity.Employee;
+import com.hyundai.dms.enums.EmployeeStatus;
 import com.hyundai.dms.repository.DealerRepository;
 import com.hyundai.dms.repository.EmployeeRepository;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -16,6 +17,15 @@ public class EmployeeService {
 
     private final EmployeeRepository employeeRepository;
     private final DealerRepository dealerRepository;
+
+    public List<EmployeeDTO> getEmployeesByDealer(Long dealerId) {
+
+        return employeeRepository
+                .findByDealer_DealerIdAndStatus(dealerId, EmployeeStatus.ACTIVE)
+                .stream()
+                .map(this::mapToDTO)
+                .collect(Collectors.toList());
+    }
 
     public EmployeeService(EmployeeRepository employeeRepository,
                            DealerRepository dealerRepository) {
@@ -67,7 +77,7 @@ public class EmployeeService {
         employee.setActive(true);
 
         Employee saved = employeeRepository.save(employee);
-
+        employee.setStatus(EmployeeStatus.ACTIVE);
         return mapToDTO(saved);
     }
 
@@ -87,7 +97,7 @@ public class EmployeeService {
         dto.setEmail(employee.getEmail());
         dto.setPhone(employee.getPhone());
         dto.setRole(employee.getRole());
-
+        dto.setStatus(employee.getStatus() != null ? employee.getStatus().name() : null);
         if(employee.getDealer()!=null){
 
             dto.setDealerId(employee.getDealer().getDealerId());
@@ -98,5 +108,30 @@ public class EmployeeService {
         }
 
         return dto;
+    }
+
+    public void deleteEmployee(Long employeeId) {
+
+        String email = SecurityContextHolder.getContext()
+                .getAuthentication()
+                .getName();
+
+        Dealer dealer = dealerRepository.findByEmail(email)
+                .orElseThrow(() -> new RuntimeException("Dealer not found"));
+
+        Employee employee = employeeRepository.findById(employeeId)
+                .orElseThrow(() -> new RuntimeException("Employee not found"));
+
+        // 🔒 SECURITY CHECK
+        if (employee.getDealer() == null ||
+                !employee.getDealer().getDealerId().equals(dealer.getDealerId())) {
+
+            throw new RuntimeException("Unauthorized");
+        }
+
+        // ✅ SOFT DELETE
+        employee.setStatus(EmployeeStatus.INACTIVE);
+
+        employeeRepository.save(employee);
     }
 }

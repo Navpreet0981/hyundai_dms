@@ -26,18 +26,22 @@ public class ServiceRequest {
 
     private String status;
 
-    // Customer requesting service
+
     @ManyToOne
     @JoinColumn(name = "customer_id")
     private Customer customer;
 
-    // Dealer handling service
+
     @ManyToOne
     @JoinColumn(name = "dealer_id")
     private Dealer dealer;
 
-    // Variant of the vehicle
+
     @ManyToOne
     @JoinColumn(name = "variant_id")
     private CarVariant carVariant;
+
+    @ManyToOne
+    @JoinColumn(name = "employee_id", nullable = false)
+    private Employee employee;
 }

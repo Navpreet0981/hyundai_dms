@@ -2,7 +2,7 @@ package com.hyundai.dms.controller;
 
 import com.hyundai.dms.dto.DashboardDTO;
 import com.hyundai.dms.dto.DealerPerformanceDTO;
-import com.hyundai.dms.repository.DashboardService;
+import com.hyundai.dms.service.DashboardService;
 import com.hyundai.dms.service.DealerService;
 import org.springframework.web.bind.annotation.*;
 
