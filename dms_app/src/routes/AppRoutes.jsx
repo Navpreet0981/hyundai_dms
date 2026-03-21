@@ -21,6 +21,7 @@ import DealerBookings from "../pages/dealer/DealerBookings";
 import DealerPerformance from "../pages/dealer/DealerPerformance";
 import DealerReports from "../pages/dealer/DealerReports";
 import DealerProfile from "../pages/dealer/DealerProfile";
+import DealerCars from "../pages/dealer/DealerCars";
 
 import Leads from "../pages/employee/Leads";
 import TestDrives from "../pages/employee/TestDrives";
@@ -116,6 +117,10 @@ export default function AppRoutes() {
 
         <Route path="/dealer/profile" element={
           <ProtectedRoute role="DEALER"><DealerProfile /></ProtectedRoute>
+        } />
+
+        <Route path="/dealer/cars" element={
+          <ProtectedRoute role="DEALER"><DealerCars /></ProtectedRoute>
         } />
 
         {/* ================= EMPLOYEE ROUTES ================= */}

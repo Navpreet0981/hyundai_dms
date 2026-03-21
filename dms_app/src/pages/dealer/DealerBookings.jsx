@@ -3,6 +3,10 @@ import api from "../../api/axiosClient";
 import DealerLayout from "../../layouts/DealerLayout";
 import { SkeletonTable } from "../../components/Skeleton";
 
+const btnPrimary = "px-3 py-1 text-xs bg-slate-700 hover:bg-slate-600 text-white rounded transition-colors";
+const btnOutline = "px-3 py-1 text-xs border border-slate-300 dark:border-slate-600 text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-700 rounded transition-colors";
+const btnDanger = "px-3 py-1 text-xs text-red-500 dark:text-red-400 border border-red-200 dark:border-red-800 hover:bg-red-50 dark:hover:bg-red-900/20 rounded transition-colors";
+
 export default function DealerBookings() {
   const [bookings, setBookings] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -33,33 +37,35 @@ export default function DealerBookings() {
         ) : (
           <div className="bg-white dark:bg-slate-900 border border-gray-200 dark:border-slate-800 rounded-xl shadow-sm overflow-x-auto">
             <table className="w-full text-sm min-w-[600px]">
-              <thead className="bg-gray-50 dark:bg-slate-800 text-gray-600 dark:text-gray-300">
+              <thead className="bg-gray-50 dark:bg-slate-800 text-gray-500 dark:text-gray-400">
                 <tr>
-                  <th className="p-4 text-left">Customer</th>
-                  <th className="p-4 text-left">Variant</th>
-                  <th className="p-4 text-left">Employee</th>
-                  <th className="p-4 text-left">Date</th>
-                  <th className="p-4 text-left">Status</th>
-                  <th className="p-4 text-left">Actions</th>
+                  <th className="p-4 text-left font-medium">Customer</th>
+                  <th className="p-4 text-left font-medium">Variant</th>
+                  <th className="p-4 text-left font-medium">Employee</th>
+                  <th className="p-4 text-left font-medium">Date</th>
+                  <th className="p-4 text-left font-medium">Status</th>
+                  <th className="p-4 text-left font-medium">Actions</th>
                 </tr>
               </thead>
               <tbody>
                 {bookings.length === 0 ? (
-                  <tr><td colSpan="6" className="text-center p-6 text-gray-500">No bookings found</td></tr>
+                  <tr><td colSpan="6" className="text-center p-6 text-gray-400">No bookings found</td></tr>
                 ) : bookings.map(b => (
-                  <tr key={b.bookingId} className="border-t border-gray-200 dark:border-slate-800 hover:bg-gray-50 dark:hover:bg-slate-800 transition">
+                  <tr key={b.bookingId} className="border-t border-gray-100 dark:border-slate-800 hover:bg-gray-50 dark:hover:bg-slate-800/50 transition">
                     <td className="p-4 font-medium text-gray-800 dark:text-gray-200">{b.customerName}</td>
-                    <td className="p-4 text-gray-600 dark:text-gray-300">{b.variantName}</td>
-                    <td className="p-4 text-gray-600 dark:text-gray-300">{b.employeeName}</td>
-                    <td className="p-4 text-gray-600 dark:text-gray-300">{b.bookingDate}</td>
+                    <td className="p-4 text-gray-500 dark:text-gray-400">{b.variantName}</td>
+                    <td className="p-4 text-gray-500 dark:text-gray-400">{b.employeeName}</td>
+                    <td className="p-4 text-gray-500 dark:text-gray-400">{b.bookingDate}</td>
                     <td className="p-4">
-                      <span className="px-3 py-1 text-xs rounded-full bg-green-100 text-green-700 dark:bg-green-900 dark:text-green-300">{b.status}</span>
+                      <span className="px-2.5 py-1 text-xs rounded-full bg-slate-100 dark:bg-slate-700 text-slate-600 dark:text-slate-300">
+                        {b.status}
+                      </span>
                     </td>
                     <td className="p-4">
-                      <div className="flex flex-wrap gap-2">
-                        <button className="px-3 py-1 text-xs bg-blue-600 hover:bg-blue-700 text-white rounded" onClick={() => updateStatus(b.bookingId, "CONFIRMED")}>Confirm</button>
-                        <button className="px-3 py-1 text-xs bg-green-600 hover:bg-green-700 text-white rounded" onClick={() => updateStatus(b.bookingId, "DELIVERED")}>Deliver</button>
-                        <button className="px-3 py-1 text-xs bg-red-500 hover:bg-red-600 text-white rounded" onClick={() => updateStatus(b.bookingId, "CANCELLED")}>Cancel</button>
+                      <div className="flex flex-wrap gap-1.5">
+                        <button className={btnPrimary} onClick={() => updateStatus(b.bookingId, "CONFIRMED")}>Confirm Booking</button>
+                        <button className={btnOutline} onClick={() => updateStatus(b.bookingId, "DELIVERED")}>Mark Delivered</button>
+                        <button className={btnDanger} onClick={() => updateStatus(b.bookingId, "CANCELLED")}>Cancel</button>
                       </div>
                     </td>
                   </tr>

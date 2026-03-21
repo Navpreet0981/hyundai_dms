@@ -1,18 +1,19 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import api from "../../api/axiosClient";
 import EmployeeLayout from "../../layouts/EmployeeLayout";
 
 export default function AddCustomer() {
   const [form, setForm] = useState({
-    name: "",
-    phone: "",
-    email: "",
-    city: "",
-    state: "",
-    address: "",
-    interestedModel: "",
-    leadSource: "SHOWROOM"
+    name: "", phone: "", email: "", city: "", state: "", address: "",
+    interestedModel: "", leadSource: "SHOWROOM"
   });
+  const [cars, setCars] = useState([]);
+
+  useEffect(() => {
+    api.get("/cars")
+      .then(res => setCars(res.data))
+      .catch(err => console.log(err));
+  }, []);
 
   const handleChange = (e) => {
     let { name, value } = e.target;
@@ -55,11 +56,8 @@ export default function AddCustomer() {
           <div className="space-y-4">
 
             <input
-              name="name"
-              required
-              placeholder="Customer Name"
-              value={form.name}
-              onChange={handleChange}
+              name="name" required placeholder="Customer Name"
+              value={form.name} onChange={handleChange}
               className="w-full border border-gray-300 dark:border-slate-700 bg-white dark:bg-slate-800 text-gray-800 dark:text-gray-200 p-3 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
             />
 
@@ -68,69 +66,47 @@ export default function AddCustomer() {
                 +91
               </span>
               <input
-                name="phone"
-                required
-                placeholder="10 digit phone"
-                value={form.phone}
-                onChange={handleChange}
-                maxLength={10}
+                name="phone" required placeholder="10 digit phone"
+                value={form.phone} onChange={handleChange} maxLength={10}
                 className="w-full border border-gray-300 dark:border-slate-700 bg-white dark:bg-slate-800 text-gray-800 dark:text-gray-200 p-3 rounded-r-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
               />
             </div>
 
             <input
-              name="email"
-              type="email"
-              required
-              placeholder="Email"
-              value={form.email}
-              onChange={handleChange}
+              name="email" type="email" required placeholder="Email"
+              value={form.email} onChange={handleChange}
               className="w-full border border-gray-300 dark:border-slate-700 bg-white dark:bg-slate-800 text-gray-800 dark:text-gray-200 p-3 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
             />
 
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <input
-                name="city"
-                placeholder="City"
-                value={form.city}
-                onChange={handleChange}
+                name="city" placeholder="City" value={form.city} onChange={handleChange}
                 className="w-full border border-gray-300 dark:border-slate-700 bg-white dark:bg-slate-800 text-gray-800 dark:text-gray-200 p-3 rounded-lg"
               />
               <input
-                name="state"
-                placeholder="State"
-                value={form.state}
-                onChange={handleChange}
+                name="state" placeholder="State" value={form.state} onChange={handleChange}
                 className="w-full border border-gray-300 dark:border-slate-700 bg-white dark:bg-slate-800 text-gray-800 dark:text-gray-200 p-3 rounded-lg"
               />
             </div>
 
             <input
-              name="address"
-              placeholder="Address"
-              value={form.address}
-              onChange={handleChange}
+              name="address" placeholder="Address" value={form.address} onChange={handleChange}
               className="w-full border border-gray-300 dark:border-slate-700 bg-white dark:bg-slate-800 text-gray-800 dark:text-gray-200 p-3 rounded-lg"
             />
 
+            {/* INTERESTED MODEL — fetched from /cars */}
             <select
-              name="interestedModel"
-              value={form.interestedModel}
-              onChange={handleChange}
+              name="interestedModel" value={form.interestedModel} onChange={handleChange}
               className="w-full border border-gray-300 dark:border-slate-700 bg-white dark:bg-slate-800 text-gray-800 dark:text-gray-200 p-3 rounded-lg"
             >
-              <option value="">Select Model</option>
-              <option value="Creta">Creta</option>
-              <option value="i20">i20</option>
-              <option value="Venue">Venue</option>
-              <option value="Verna">Verna</option>
-              <option value="Alcazar">Alcazar</option>
+              <option value="">Select Interested Model</option>
+              {cars.map(car => (
+                <option key={car.carId} value={car.modelName}>{car.modelName}</option>
+              ))}
             </select>
 
             <select
-              name="leadSource"
-              value={form.leadSource}
-              onChange={handleChange}
+              name="leadSource" value={form.leadSource} onChange={handleChange}
               className="w-full border border-gray-300 dark:border-slate-700 bg-white dark:bg-slate-800 text-gray-800 dark:text-gray-200 p-3 rounded-lg"
             >
               <option value="SHOWROOM">Showroom Walk-in</option>
@@ -141,7 +117,7 @@ export default function AddCustomer() {
 
             <button
               onClick={saveCustomer}
-              className="w-full bg-blue-600 hover:bg-blue-700 text-white py-3 rounded-lg font-medium transition"
+              className="w-full bg-slate-700 hover:bg-slate-600 text-white py-3 rounded-lg font-medium transition-colors"
             >
               Save Customer
             </button>

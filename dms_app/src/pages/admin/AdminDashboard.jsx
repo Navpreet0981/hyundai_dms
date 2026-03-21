@@ -21,36 +21,36 @@ export default function AdminDashboard() {
     { name: "Dealers", value: data.totalDealers || 0 },
     { name: "Employees", value: data.totalEmployees || 0 }
   ];
-  const COLORS = ["#3B82F6", "#10B981"];
+  const COLORS = ["#0071e3", "#30d158"];
 
   return (
     <AdminLayout>
       <div className="space-y-6 sm:space-y-8">
 
-        <h1 className="text-xl sm:text-2xl font-semibold text-gray-800 dark:text-gray-200">Admin Dashboard</h1>
+        <h1 className="apple-title">Admin Dashboard</h1>
 
-        <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-4 sm:gap-6">
+        <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-4">
           {loading ? Array.from({ length: 4 }).map((_, i) => <SkeletonCard key={i} />) : (
-            <>
-              {[
-                { label: "Dealers", value: data.totalDealers || 0, color: "text-blue-600", Icon: Building2, iconColor: "text-blue-500" },
-                { label: "Employees", value: data.totalEmployees || 0, color: "text-purple-600", Icon: Users, iconColor: "text-purple-500" },
-                { label: "Customers", value: data.totalCustomers || 0, color: "text-green-600", Icon: User, iconColor: "text-green-500" },
-                { label: "Bookings", value: data.totalBookings || 0, color: "text-yellow-500", Icon: CalendarCheck, iconColor: "text-yellow-500" }
-              ].map(({ label, value, color, Icon, iconColor }, i) => (
-                <div key={i} className="bg-white dark:bg-slate-900 border border-gray-200 dark:border-slate-800 rounded-xl p-5 sm:p-6 shadow-sm hover:shadow-lg transition flex justify-between items-center h-28">
-                  <div>
-                    <p className="text-sm text-gray-500">{label}</p>
-                    <p className={`text-2xl sm:text-3xl font-bold ${color}`}>{value}</p>
-                  </div>
-                  <Icon className={`${iconColor} shrink-0`} size={28} />
+            [
+              { label: "Dealers",   value: data.totalDealers   || 0, color: "text-[#0071e3]", bg: "bg-[#0071e3]/10", Icon: Building2 },
+              { label: "Employees", value: data.totalEmployees || 0, color: "text-[#bf5af2]", bg: "bg-[#bf5af2]/10", Icon: Users },
+              { label: "Customers", value: data.totalCustomers || 0, color: "text-[#30d158]", bg: "bg-[#30d158]/10", Icon: User },
+              { label: "Bookings",  value: data.totalBookings  || 0, color: "text-[#ff9f0a]", bg: "bg-[#ff9f0a]/10", Icon: CalendarCheck },
+            ].map(({ label, value, color, bg, Icon }, i) => (
+              <div key={i} className="apple-card p-5 sm:p-6 h-28 flex justify-between items-center hover:shadow-apple transition-shadow duration-200">
+                <div>
+                  <p className="text-xs text-[#86868b] font-medium mb-1">{label}</p>
+                  <p className={`text-3xl font-semibold tracking-tight ${color}`}>{value}</p>
                 </div>
-              ))}
-            </>
+                <div className={`w-11 h-11 rounded-2xl ${bg} flex items-center justify-center`}>
+                  <Icon size={20} className={color} />
+                </div>
+              </div>
+            ))
           )}
         </div>
 
-        <div className="grid grid-cols-1 xl:grid-cols-2 gap-4 sm:gap-6">
+        <div className="grid grid-cols-1 xl:grid-cols-2 gap-4">
           {loading ? (
             <>
               <SkeletonChart />
@@ -58,27 +58,27 @@ export default function AdminDashboard() {
             </>
           ) : (
             <>
-              <div className="bg-white dark:bg-slate-900 border border-gray-200 dark:border-slate-800 rounded-xl shadow-sm p-5 sm:p-6 h-[300px] sm:h-[360px]">
-                <h2 className="text-base sm:text-lg font-semibold text-gray-700 dark:text-gray-200 mb-4 sm:mb-6">Monthly Bookings</h2>
+              <div className="apple-card p-5 sm:p-6 h-[300px] sm:h-[360px]">
+                <h2 className="text-sm font-semibold text-[#1d1d1f] dark:text-[#f5f5f7] mb-5">Monthly Bookings</h2>
                 <ResponsiveContainer width="100%" height="85%">
                   <BarChart data={chartData} margin={{ top: 10, right: 10, left: -10, bottom: 5 }}>
-                    <XAxis dataKey="period" tick={{ fontSize: 11 }} />
-                    <YAxis tick={{ fontSize: 11 }} />
-                    <Tooltip />
-                    <Bar dataKey="totalBookings" fill="#3B82F6" radius={[8, 8, 0, 0]} />
+                    <XAxis dataKey="period" tick={{ fontSize: 11, fill: "#86868b" }} axisLine={false} tickLine={false} />
+                    <YAxis tick={{ fontSize: 11, fill: "#86868b" }} axisLine={false} tickLine={false} />
+                    <Tooltip contentStyle={{ borderRadius: "12px", border: "1px solid #e5e5ea", fontSize: 12 }} />
+                    <Bar dataKey="totalBookings" fill="#0071e3" radius={[6, 6, 0, 0]} />
                   </BarChart>
                 </ResponsiveContainer>
               </div>
-              <div className="bg-white dark:bg-slate-900 border border-gray-200 dark:border-slate-800 rounded-xl shadow-sm p-5 sm:p-6 h-[300px] sm:h-[360px]">
-                <h2 className="text-base sm:text-lg font-semibold text-gray-700 dark:text-gray-200 mb-4 sm:mb-6">Organization Distribution</h2>
+              <div className="apple-card p-5 sm:p-6 h-[300px] sm:h-[360px]">
+                <h2 className="text-sm font-semibold text-[#1d1d1f] dark:text-[#f5f5f7] mb-5">Organization Distribution</h2>
                 <ResponsiveContainer width="100%" height="85%">
                   <PieChart>
-                    <Pie data={pieData} dataKey="value" nameKey="name" outerRadius={80} label>
+                    <Pie data={pieData} dataKey="value" nameKey="name" outerRadius={90} innerRadius={45} paddingAngle={3} label>
                       {pieData.map((_, index) => (
                         <Cell key={index} fill={COLORS[index % COLORS.length]} />
                       ))}
                     </Pie>
-                    <Legend />
+                    <Legend iconType="circle" iconSize={8} />
                   </PieChart>
                 </ResponsiveContainer>
               </div>

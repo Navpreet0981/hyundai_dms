@@ -1,3 +1,4 @@
-body{
-  @apply bg-gray-100 dark:bg-slate-950;
+/* Global overrides — Apple-style system */
+body {
+  @apply bg-[#f5f5f7] dark:bg-[#000000];
 }

@@ -1,26 +1,21 @@
+import { useState } from "react";
 import Sidebar from "../components/Sidebar";
 import Navbar from "../components/Navbar";
 
 export default function EmployeeLayout({ children }) {
+  const [mobileOpen, setMobileOpen] = useState(false);
 
   return (
-    <div className="flex min-h-screen bg-gray-100 dark:bg-slate-950">
-
-      <Sidebar />
-
-      <div className="flex-1 flex flex-col">
-
-        <Navbar />
-
-        <main className="flex-1 overflow-y-auto p-6">
+    <div className="flex h-screen bg-[#f5f5f7] dark:bg-black overflow-hidden">
+      <Sidebar mobileOpen={mobileOpen} onMobileClose={() => setMobileOpen(false)} />
+      <div className="flex-1 flex flex-col min-w-0">
+        <Navbar onMenuToggle={() => setMobileOpen(true)} />
+        <main className="flex-1 overflow-y-auto p-5 sm:p-7">
           <div className="max-w-7xl mx-auto">
             {children}
           </div>
         </main>
-
       </div>
-
     </div>
   );
-
 }

@@ -3,178 +3,133 @@ import api from "../../api/axiosClient";
 import { User, Building2, Shield } from "lucide-react";
 
 export default function LoginPage() {
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [role, setRole] = useState("ADMIN");
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState("");
 
-    const [email, setEmail] = useState("");
-    const [password, setPassword] = useState("");
-    const [role, setRole] = useState("ADMIN");
-    const [loading, setLoading] = useState(false);
+  const login = async () => {
+    if (!email || !password) { setError("Please enter your email and password."); return; }
+    setError("");
+    try {
+      setLoading(true);
+      const res = await api.post("/auth/login", { email, password, role });
+      const token = res.data.token || res.data.accessToken || res.data.jwt;
+      localStorage.setItem("token", token);
+      localStorage.setItem("role", role);
+      if (res.data.dealerId)    localStorage.setItem("dealerId", res.data.dealerId);
+      if (res.data.employeeId)  localStorage.setItem("employeeId", res.data.employeeId);
+      setTimeout(() => {
+        if (role === "ADMIN")    window.location.href = "/admin";
+        if (role === "DEALER")   window.location.href = "/dealer";
+        if (role === "EMPLOYEE") window.location.href = "/employee-dashboard";
+      }, 50);
+    } catch {
+      setError("Invalid credentials. Please try again.");
+    } finally {
+      setLoading(false);
+    }
+  };
 
-    const login = async () => {
+  const handleKeyDown = (e) => { if (e.key === "Enter") login(); };
 
-        try {
+  const roles = [
+    { id: "ADMIN",    label: "Admin",    Icon: Shield },
+    { id: "DEALER",   label: "Dealer",   Icon: Building2 },
+    { id: "EMPLOYEE", label: "Employee", Icon: User },
+  ];
 
-            setLoading(true);
+  return (
+    <div className="min-h-screen bg-[#f5f5f7] dark:bg-black flex items-center justify-center px-4">
 
-            const res = await api.post("/auth/login", {
-                email,
-                password,
-                role
-            });
+      {/* Subtle background gradient */}
+      <div className="absolute inset-0 overflow-hidden pointer-events-none">
+        <div className="absolute -top-40 -right-40 w-96 h-96 bg-[#0071e3]/5 rounded-full blur-3xl" />
+        <div className="absolute -bottom-40 -left-40 w-96 h-96 bg-[#0071e3]/5 rounded-full blur-3xl" />
+      </div>
 
-            const token = res.data.token || res.data.accessToken || res.data.jwt;
-            localStorage.setItem("token", token);
-            localStorage.setItem("role", role);
+      <div className="relative w-full max-w-[400px]">
 
-            // store role-specific IDs from the response
-            if (res.data.dealerId) localStorage.setItem("dealerId", res.data.dealerId);
-            if (res.data.employeeId) localStorage.setItem("employeeId", res.data.employeeId);
+        {/* Logo + Brand */}
+        <div className="text-center mb-8">
+          <img src="/hmi_logo.png" alt="Hyundai" className="w-20 mx-auto mb-5 object-contain" />
+          <h1 className="text-2xl font-semibold text-[#1d1d1f] dark:text-[#f5f5f7] tracking-tight">
+            Dealer Management
+          </h1>
+          <p className="text-sm text-[#86868b] mt-1">Sign in to your workspace</p>
+        </div>
 
-            // small delay ensures localStorage is flushed before reload
-            setTimeout(() => {
-              if (role === "ADMIN") window.location.href = "/admin";
-              if (role === "DEALER") window.location.href = "/dealer";
-              if (role === "EMPLOYEE") window.location.href = "/employee-dashboard";
-            }, 50);
+        {/* Card */}
+        <div className="bg-white dark:bg-[#1c1c1e] rounded-2xl border border-[#e5e5ea] dark:border-[#2c2c2e] shadow-apple p-8">
 
-        } catch (err) {
-
-            alert("Invalid Credentials")
-
-        } finally {
-            setLoading(false);
-        }
-
-    };
-
-    return (
-
-        <div className="flex min-h-screen">
-
-            {/* LEFT BRAND PANEL */}
-
-            <div className="hidden lg:flex flex-col justify-center items-center w-1/2 bg-slate-900 text-white p-12 relative">
-
-                {/* LOGO TOP LEFT */}
-
-                <img
-                    src="/hmi_logo.png"
-                    alt="Hyundai"
-                    className="absolute top-6 left-6 w-32"
-                />
-
-                <h1 className="text-4xl font-bold mb-4">
-                    Hyundai DMS
-                </h1>
-
-                <p className="text-slate-300 text-center max-w-md">
-                    Dealer Management System for managing leads, bookings,
-                    test drives and service operations across dealerships.
-                </p>
-
-                <p className="text-sm text-slate-400 mt-8">
-                    Hyundai Motor India
-                </p>
-
+          {/* Role selector */}
+          <div className="mb-6">
+            <p className="text-xs font-medium text-[#86868b] uppercase tracking-wider mb-3">Sign in as</p>
+            <div className="grid grid-cols-3 gap-2">
+              {roles.map(({ id, label, Icon }) => (
+                <button
+                  key={id}
+                  onClick={() => setRole(id)}
+                  className={`flex flex-col items-center justify-center gap-1.5 py-3 px-2 rounded-xl border text-xs font-medium transition-all duration-200
+                    ${role === id
+                      ? "bg-[#0071e3] border-[#0071e3] text-white shadow-sm"
+                      : "bg-[#f5f5f7] dark:bg-[#2c2c2e] border-[#e5e5ea] dark:border-[#3a3a3c] text-[#86868b] hover:border-[#0071e3] hover:text-[#0071e3] dark:hover:text-[#0071e3]"
+                    }`}
+                >
+                  <Icon size={16} />
+                  {label}
+                </button>
+              ))}
             </div>
+          </div>
 
+          {/* Fields */}
+          <div className="space-y-3 mb-5">
+            <input
+              className="apple-input"
+              type="email"
+              placeholder="Email address"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              onKeyDown={handleKeyDown}
+              autoComplete="email"
+            />
+            <input
+              className="apple-input"
+              type="password"
+              placeholder="Password"
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              onKeyDown={handleKeyDown}
+              autoComplete="current-password"
+            />
+          </div>
 
-            {/* RIGHT LOGIN PANEL */}
+          {/* Error */}
+          {error && (
+            <p className="text-xs text-red-500 mb-4 text-center">{error}</p>
+          )}
 
-            <div className="flex justify-center items-center w-full lg:w-1/2 bg-gray-100 dark:bg-slate-950">
-
-                <div className="bg-white dark:bg-slate-900 border border-gray-200 dark:border-slate-800 shadow-xl rounded-xl p-10 w-[420px]">
-
-                    <h2 className="text-2xl font-semibold text-center text-gray-800 dark:text-gray-200 mb-6">
-                        Login to DMS
-                    </h2>
-
-
-                    {/* ROLE BUTTONS */}
-
-                    <div className="grid grid-cols-3 gap-3 mb-6">
-
-                        <button
-                            onClick={() => setRole("ADMIN")}
-                            className={`flex flex-col items-center justify-center p-3 rounded-lg border transition transform hover:scale-105
-${role === "ADMIN"
-                                    ? "bg-slate-900 text-white border-blue-600 shadow-lg"
-                                    : "border-gray-300 dark:border-slate-700 text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-slate-800"}`}
-                        >
-                            <Shield size={20} />
-                            <span className="text-xs mt-1">Admin</span>
-                        </button>
-
-                        <button
-                            onClick={() => setRole("DEALER")}
-                            className={`flex flex-col items-center justify-center p-3 rounded-lg border transition transform hover:scale-105
-${role === "DEALER"
-                                    ? "bg-slate-900 text-white border-blue-600 shadow-lg"
-                                    : "border-gray-300 dark:border-slate-700 text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-slate-800"}`}
-                        >
-                            <Building2 size={20} />
-                            <span className="text-xs mt-1">Dealer</span>
-                        </button>
-
-                        <button
-                            onClick={() => setRole("EMPLOYEE")}
-                            className={`flex flex-col items-center justify-center p-3 rounded-lg border transition transform hover:scale-105
-${role === "EMPLOYEE"
-                                    ? "bg-slate-900 text-white border-blue-600 shadow-lg"
-                                    : "border-gray-300 dark:border-slate-700 text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-slate-800"}`}
-                        >
-                            <User size={20} />
-                            <span className="text-xs mt-1">Employee</span>
-                        </button>
-
-                    </div>
-
-
-                    {/* EMAIL */}
-
-                    <input
-                        className="w-full border border-gray-300 dark:border-slate-700 bg-white dark:bg-slate-800 text-gray-800 dark:text-gray-200 p-3 rounded-lg mb-3 focus:outline-none focus:ring-2 focus:ring-blue-500"
-                        placeholder="Email"
-                        onChange={(e) => setEmail(e.target.value)}
-                    />
-
-
-                    {/* PASSWORD */}
-
-                    <input
-                        className="w-full border border-gray-300 dark:border-slate-700 bg-white dark:bg-slate-800 text-gray-800 dark:text-gray-200 p-3 rounded-lg mb-5 focus:outline-none focus:ring-2 focus:ring-blue-500"
-                        type="password"
-                        placeholder="Password"
-                        onChange={(e) => setPassword(e.target.value)}
-                    />
-
-
-                    {/* LOGIN BUTTON */}
-
-                    <button
-                        onClick={login}
-                        disabled={loading}
-                        className="w-full bg-slate-900 hover:bg-slate-700 text-white py-3 rounded-lg font-medium flex justify-center items-center gap-2 transition"
-                    >
-
-                        {loading && (
-                            <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
-                        )}
-
-                        {loading ? "Logging in..." : "Login"}
-
-                    </button>
-
-
-                    <p className="text-center text-xs text-gray-400 mt-6">
-                        Hyundai Dealer Management System
-                    </p>
-
-                </div>
-
-            </div>
+          {/* Submit */}
+          <button
+            onClick={login}
+            disabled={loading}
+            className="apple-btn-primary w-full flex items-center justify-center gap-2"
+          >
+            {loading && (
+              <div className="w-4 h-4 border-2 border-white/40 border-t-white rounded-full animate-spin" />
+            )}
+            {loading ? "Signing in…" : "Sign In"}
+          </button>
 
         </div>
 
-    );
+        <p className="text-center text-xs text-[#86868b] mt-6">
+          Hyundai Motor India · DMS
+        </p>
 
+      </div>
+    </div>
+  );
 }

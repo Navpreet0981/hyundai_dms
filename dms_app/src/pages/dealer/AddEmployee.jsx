@@ -103,15 +103,15 @@ export default function AddEmployee() {
             <button
               onClick={saveEmployee}
               disabled={loading}
-              className="w-full bg-blue-600 hover:bg-blue-700 text-white py-3 rounded-lg font-medium transition flex justify-center items-center gap-2"
+              className="w-full bg-slate-700 hover:bg-slate-600 text-white py-3 rounded-lg font-medium transition-colors flex justify-center items-center gap-2"
             >
               {loading && <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />}
-              Add Employee
+              Save Employee
             </button>
 
             <button
               onClick={() => navigate("/dealer/employees")}
-              className="w-full border border-gray-300 dark:border-slate-700 text-gray-700 dark:text-gray-300 py-3 rounded-lg font-medium transition hover:bg-gray-50 dark:hover:bg-slate-800"
+              className="w-full border border-gray-300 dark:border-slate-600 text-gray-600 dark:text-gray-300 py-3 rounded-lg font-medium transition-colors hover:bg-gray-50 dark:hover:bg-slate-800"
             >
               Cancel
             </button>
