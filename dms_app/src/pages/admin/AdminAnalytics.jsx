@@ -1,8 +1,10 @@
 import { useEffect, useState } from "react";
 import api from "../../api/axiosClient";
 import AdminLayout from "../../layouts/AdminLayout";
-import { BarChart, Bar, XAxis, YAxis, Tooltip, CartesianGrid, PieChart, Pie, Cell, ResponsiveContainer } from "recharts";
+import { BarChart, Bar, XAxis, YAxis, Tooltip, PieChart, Pie, Cell, ResponsiveContainer } from "recharts";
 import { SkeletonChart, SkeletonTable } from "../../components/Skeleton";
+
+const COLORS = ["#0071e3", "#0ea5e9", "#34c759", "#ff9f0a"];
 
 export default function AdminAnalytics() {
   const [monthlySales, setMonthlySales] = useState([]);
@@ -20,36 +22,33 @@ export default function AdminAnalytics() {
     ]).finally(() => setLoading(false));
   }, []);
 
-  const COLORS = ["#002c5f", "#0ea5e9", "#22c55e", "#f97316"];
-
   return (
     <AdminLayout>
       <div className="space-y-6">
 
-        <h2 className="text-xl sm:text-2xl font-bold text-gray-800 dark:text-gray-200">Analytics Dashboard</h2>
+        <div>
+          <h1 className="apple-title">Analytics Dashboard</h1>
+          <p className="apple-subtitle mt-1">Lead conversion and dealer performance insights</p>
+        </div>
 
         <div className="grid grid-cols-1 xl:grid-cols-2 gap-4 sm:gap-6">
           {loading ? (
-            <>
-              <SkeletonChart />
-              <SkeletonChart />
-            </>
+            <><SkeletonChart /><SkeletonChart /></>
           ) : (
             <>
-              <div className="bg-white dark:bg-slate-900 border border-gray-200 dark:border-slate-800 rounded-xl p-5 sm:p-6 shadow-sm">
-                <h3 className="mb-4 font-semibold text-gray-700 dark:text-gray-200">Monthly Sales</h3>
+              <div className="apple-card p-5 sm:p-6">
+                <h3 className="text-sm font-semibold text-[#1d1d1f] dark:text-[#f5f5f7] mb-4">Monthly Sales</h3>
                 <ResponsiveContainer width="100%" height={280}>
                   <BarChart data={monthlySales}>
-                    <CartesianGrid strokeDasharray="3 3" />
-                    <XAxis dataKey="period" tick={{ fontSize: 11 }} />
-                    <YAxis tick={{ fontSize: 11 }} />
-                    <Tooltip />
-                    <Bar dataKey="totalBookings" fill="#002c5f" />
+                    <XAxis dataKey="period" tick={{ fontSize: 11, fill: "#86868b" }} axisLine={false} tickLine={false} />
+                    <YAxis tick={{ fontSize: 11, fill: "#86868b" }} axisLine={false} tickLine={false} />
+                    <Tooltip contentStyle={{ borderRadius: "12px", border: "1px solid #e5e5ea", boxShadow: "0 4px 20px rgba(0,0,0,0.08)" }} />
+                    <Bar dataKey="totalBookings" fill="#0071e3" radius={[6, 6, 0, 0]} />
                   </BarChart>
                 </ResponsiveContainer>
               </div>
-              <div className="bg-white dark:bg-slate-900 border border-gray-200 dark:border-slate-800 rounded-xl p-5 sm:p-6 shadow-sm">
-                <h3 className="mb-4 font-semibold text-gray-700 dark:text-gray-200">Lead Sources</h3>
+              <div className="apple-card p-5 sm:p-6">
+                <h3 className="text-sm font-semibold text-[#1d1d1f] dark:text-[#f5f5f7] mb-4">Lead Sources</h3>
                 <ResponsiveContainer width="100%" height={280}>
                   <PieChart>
                     <Pie data={leadSources} dataKey="count" nameKey="source" outerRadius={100} label>
@@ -57,7 +56,7 @@ export default function AdminAnalytics() {
                         <Cell key={index} fill={COLORS[index % COLORS.length]} />
                       ))}
                     </Pie>
-                    <Tooltip />
+                    <Tooltip contentStyle={{ borderRadius: "12px", border: "1px solid #e5e5ea", boxShadow: "0 4px 20px rgba(0,0,0,0.08)" }} />
                   </PieChart>
                 </ResponsiveContainer>
               </div>
@@ -66,19 +65,19 @@ export default function AdminAnalytics() {
         </div>
 
         {loading ? (
-          <SkeletonTable rows={3} cols={3} />
+          <SkeletonTable rows={3} />
         ) : (
-          <div className="bg-white dark:bg-slate-900 border border-gray-200 dark:border-slate-800 rounded-xl p-5 sm:p-6 shadow-sm">
-            <h3 className="font-semibold mb-4 text-gray-700 dark:text-gray-200">Lead Conversion</h3>
+          <div className="apple-card p-5 sm:p-6">
+            <h3 className="text-sm font-semibold text-[#1d1d1f] dark:text-[#f5f5f7] mb-4">Lead Conversion</h3>
             <div className="grid grid-cols-3 gap-4 sm:gap-6 text-center">
               {[
-                { label: "Total Leads", value: conversion.totalLeads || 0, color: "text-blue-600" },
+                { label: "Total Leads", value: conversion.totalLeads || 0, color: "text-[#0071e3]" },
                 { label: "Test Drives", value: conversion.testDrives || 0, color: "text-purple-600" },
-                { label: "Bookings", value: conversion.bookings || 0, color: "text-green-600" }
+                { label: "Bookings", value: conversion.bookings || 0, color: "text-[#34c759]" }
               ].map((item, i) => (
-                <div key={i}>
-                  <p className="text-xs sm:text-sm text-gray-500">{item.label}</p>
-                  <p className={`text-lg sm:text-xl font-bold ${item.color}`}>{item.value}</p>
+                <div key={i} className="apple-card p-4">
+                  <p className="apple-label mb-1">{item.label}</p>
+                  <p className={`text-2xl font-semibold tracking-tight ${item.color}`}>{item.value}</p>
                 </div>
               ))}
             </div>
@@ -86,28 +85,32 @@ export default function AdminAnalytics() {
         )}
 
         {loading ? (
-          <SkeletonTable rows={5} cols={5} />
+          <SkeletonTable rows={5} />
         ) : (
-          <div className="bg-white dark:bg-slate-900 border border-gray-200 dark:border-slate-800 rounded-xl p-5 sm:p-6 shadow-sm overflow-x-auto">
-            <h3 className="mb-4 font-semibold text-gray-700 dark:text-gray-200">Dealer Performance</h3>
+          <div className="apple-card overflow-x-auto">
+            <div className="p-5 sm:p-6 border-b border-[#e5e5ea] dark:border-[#2c2c2e]">
+              <h3 className="text-sm font-semibold text-[#1d1d1f] dark:text-[#f5f5f7]">Dealer Performance</h3>
+            </div>
             <table className="w-full text-left min-w-[500px]">
-              <thead className="border-b border-gray-200 dark:border-slate-800">
-                <tr className="text-gray-600 dark:text-gray-300 text-sm">
-                  <th className="p-3">Dealer</th>
-                  <th className="p-3">Employees</th>
-                  <th className="p-3">Leads</th>
-                  <th className="p-3">Bookings</th>
-                  <th className="p-3">Conversion</th>
+              <thead className="border-b border-[#e5e5ea] dark:border-[#2c2c2e]">
+                <tr>
+                  <th className="apple-table-header">Dealer</th>
+                  <th className="apple-table-header">Employees</th>
+                  <th className="apple-table-header">Leads</th>
+                  <th className="apple-table-header">Bookings</th>
+                  <th className="apple-table-header">Conversion</th>
                 </tr>
               </thead>
               <tbody>
-                {dealerPerformance.map((d, i) => (
-                  <tr key={i} className="border-b border-gray-200 dark:border-slate-800 hover:bg-gray-50 dark:hover:bg-slate-800">
-                    <td className="p-3 font-medium text-gray-800 dark:text-gray-200">{d.dealerName}</td>
-                    <td className="p-3 text-gray-600 dark:text-gray-300">{d.totalEmployees}</td>
-                    <td className="p-3 text-gray-600 dark:text-gray-300">{d.totalLeads}</td>
-                    <td className="p-3 text-gray-600 dark:text-gray-300">{d.totalBookings}</td>
-                    <td className="p-3 font-semibold text-blue-600">{d.conversionRate}%</td>
+                {dealerPerformance.length === 0 ? (
+                  <tr><td colSpan="5" className="text-center py-10 apple-subtitle">No data available</td></tr>
+                ) : dealerPerformance.map((d, i) => (
+                  <tr key={i} className="apple-table-row">
+                    <td className="apple-table-cell font-medium">{d.dealerName}</td>
+                    <td className="apple-table-cell text-[#86868b]">{d.totalEmployees}</td>
+                    <td className="apple-table-cell text-[#86868b]">{d.totalLeads}</td>
+                    <td className="apple-table-cell text-[#86868b]">{d.totalBookings}</td>
+                    <td className="apple-table-cell font-semibold text-[#0071e3]">{d.conversionRate}%</td>
                   </tr>
                 ))}
               </tbody>

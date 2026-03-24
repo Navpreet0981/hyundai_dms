@@ -8,6 +8,8 @@ import com.hyundai.dms.repository.DealerRepository;
 import com.hyundai.dms.repository.EmployeeRepository;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 
 import java.util.List;
 import java.util.stream.Collectors;
@@ -133,5 +135,71 @@ public class EmployeeService {
         employee.setStatus(EmployeeStatus.INACTIVE);
 
         employeeRepository.save(employee);
+    }
+
+    public Page<EmployeeDTO> getEmployeesPaged(String search, Pageable pageable) {
+
+        String email = SecurityContextHolder.getContext()
+                .getAuthentication()
+                .getName();
+
+        String role = SecurityContextHolder.getContext()
+                .getAuthentication()
+                .getAuthorities()
+                .iterator()
+                .next()
+                .getAuthority();
+
+        // ✅ ADMIN → all employees
+        if (role.equals("ROLE_ADMIN")) {
+
+            if (search != null && !search.isEmpty()) {
+                return employeeRepository
+                        .searchAll(search.toLowerCase(), pageable)
+                        .map(this::mapToDTO);
+            }
+
+            return employeeRepository.findAll(pageable)
+                    .map(this::mapToDTO);
+        }
+
+        // ✅ DEALER → own ACTIVE employees
+        if (role.equals("ROLE_DEALER")) {
+
+            Dealer dealer = dealerRepository.findByEmail(email)
+                    .orElseThrow(() -> new RuntimeException("Dealer not found"));
+
+            if (search != null && !search.isEmpty()) {
+                return employeeRepository
+                        .searchByDealer(
+                                dealer.getDealerId(),
+                                EmployeeStatus.ACTIVE,
+                                search.toLowerCase(),
+                                pageable
+                        )
+                        .map(this::mapToDTO);
+            }
+
+            return employeeRepository
+                    .findByDealer_DealerIdAndStatus(
+                            dealer.getDealerId(),
+                            EmployeeStatus.ACTIVE,
+                            pageable
+                    )
+                    .map(this::mapToDTO);
+        }
+
+        // ✅ EMPLOYEE → self
+        if (role.equals("ROLE_EMPLOYEE")) {
+
+            Employee employee = employeeRepository.findByEmail(email)
+                    .orElseThrow(() -> new RuntimeException("Employee not found"));
+
+            return employeeRepository
+                    .findByEmployeeId(employee.getEmployeeId(), pageable)
+                    .map(this::mapToDTO);
+        }
+
+        throw new RuntimeException("Unauthorized access");
     }
 }

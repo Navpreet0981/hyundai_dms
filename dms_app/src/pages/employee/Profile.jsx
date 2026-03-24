@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import api from "../../api/axiosClient";
 import EmployeeLayout from "../../layouts/EmployeeLayout";
 import { SkeletonProfile } from "../../components/Skeleton";
+import { Users, Car, CalendarCheck } from "lucide-react";
 
 export default function Profile() {
   const [profile, setProfile] = useState({});
@@ -17,50 +18,65 @@ export default function Profile() {
     ]).finally(() => setLoading(false));
   }, []);
 
+  const statItems = [
+    { label: "Leads", value: stats.leads, Icon: Users, bg: "bg-blue-50 dark:bg-blue-900/20", color: "text-[#0071e3]" },
+    { label: "Test Drives", value: stats.testDrives, Icon: Car, bg: "bg-purple-50 dark:bg-purple-900/20", color: "text-purple-600" },
+    { label: "Bookings", value: stats.bookings, Icon: CalendarCheck, bg: "bg-green-50 dark:bg-green-900/20", color: "text-[#34c759]" }
+  ];
+
   return (
     <EmployeeLayout>
       <div className="flex justify-center px-2 sm:px-0">
         {loading ? (
           <SkeletonProfile />
         ) : (
-          <div className="w-full max-w-xl bg-white dark:bg-slate-900 border border-gray-200 dark:border-slate-800 rounded-xl shadow-sm p-5 sm:p-6 space-y-6">
+          <div className="w-full max-w-xl space-y-4">
 
-            <h1 className="text-xl font-semibold text-gray-800 dark:text-gray-200 text-center">Profile</h1>
+            <h1 className="apple-title text-center">My Profile</h1>
 
-            <div>
-              <h2 className="text-sm font-semibold text-gray-700 dark:text-gray-300 mb-3">Employee Details</h2>
-              <div className="space-y-2 text-sm text-gray-600 dark:text-gray-300">
-                <p><b>Name:</b> {profile.name}</p>
-                <p><b>Email:</b> {profile.email}</p>
-                <p><b>Phone:</b> {profile.phone}</p>
-                <p><b>Role:</b> {profile.role}</p>
+            <div className="apple-card p-5 sm:p-6 space-y-4">
+              <h2 className="apple-label">Employee Details</h2>
+              <div className="space-y-3">
+                {[
+                  { label: "Name", value: profile.name },
+                  { label: "Email", value: profile.email },
+                  { label: "Phone", value: profile.phone },
+                  { label: "Role", value: profile.role }
+                ].map(({ label, value }) => (
+                  <div key={label} className="flex justify-between items-center py-2 border-b border-[#e5e5ea] dark:border-[#2c2c2e] last:border-0">
+                    <span className="apple-subtitle text-sm">{label}</span>
+                    <span className="text-sm font-medium text-[#1d1d1f] dark:text-[#f5f5f7]">{value || "—"}</span>
+                  </div>
+                ))}
               </div>
             </div>
 
-            <div>
-              <h2 className="text-sm font-semibold text-gray-700 dark:text-gray-300 mb-3">Dealer Information</h2>
-              <div className="space-y-2 text-sm text-gray-600 dark:text-gray-300">
-                <p><b>Dealer:</b> {profile.dealerName}</p>
-                <p><b>City:</b> {profile.dealerCity}</p>
-                <p><b>State:</b> {profile.dealerState}</p>
+            <div className="apple-card p-5 sm:p-6 space-y-4">
+              <h2 className="apple-label">Dealer Information</h2>
+              <div className="space-y-3">
+                {[
+                  { label: "Dealer", value: profile.dealerName },
+                  { label: "City", value: profile.dealerCity },
+                  { label: "State", value: profile.dealerState }
+                ].map(({ label, value }) => (
+                  <div key={label} className="flex justify-between items-center py-2 border-b border-[#e5e5ea] dark:border-[#2c2c2e] last:border-0">
+                    <span className="apple-subtitle text-sm">{label}</span>
+                    <span className="text-sm font-medium text-[#1d1d1f] dark:text-[#f5f5f7]">{value || "—"}</span>
+                  </div>
+                ))}
               </div>
             </div>
 
-            <div>
-              <h2 className="text-sm font-semibold text-gray-700 dark:text-gray-300 mb-4">Performance Summary</h2>
-              <div className="grid grid-cols-3 gap-3 sm:gap-4">
-                <div className="bg-blue-100 dark:bg-blue-900/30 text-center p-3 sm:p-4 rounded-lg">
-                  <p className="text-xs text-gray-600 dark:text-gray-300">Leads</p>
-                  <p className="text-lg font-semibold text-blue-600">{stats.leads}</p>
-                </div>
-                <div className="bg-purple-100 dark:bg-purple-900/30 text-center p-3 sm:p-4 rounded-lg">
-                  <p className="text-xs text-gray-600 dark:text-gray-300">Test Drives</p>
-                  <p className="text-lg font-semibold text-purple-600">{stats.testDrives}</p>
-                </div>
-                <div className="bg-green-100 dark:bg-green-900/30 text-center p-3 sm:p-4 rounded-lg">
-                  <p className="text-xs text-gray-600 dark:text-gray-300">Bookings</p>
-                  <p className="text-lg font-semibold text-green-600">{stats.bookings}</p>
-                </div>
+            <div className="apple-card p-5 sm:p-6 space-y-4">
+              <h2 className="apple-label">Performance Summary</h2>
+              <div className="grid grid-cols-3 gap-3">
+                {statItems.map(({ label, value, Icon, bg, color }) => (
+                  <div key={label} className={`${bg} rounded-2xl p-4 flex flex-col items-center gap-2`}>
+                    <div className={`${color}`}><Icon size={20} /></div>
+                    <p className={`text-2xl font-semibold tracking-tight ${color}`}>{value}</p>
+                    <p className="apple-label text-center">{label}</p>
+                  </div>
+                ))}
               </div>
             </div>
 

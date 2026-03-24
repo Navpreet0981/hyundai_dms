@@ -6,7 +6,8 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 
 import java.util.List;
-
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 public interface BookingRepository extends JpaRepository<Booking, Long> {
 
     List<Booking> findByDealerDealerId(Long dealerId);
@@ -21,6 +22,11 @@ public interface BookingRepository extends JpaRepository<Booking, Long> {
 
     long countByEmployeeDealerDealerId(Long dealerId);
 
+    // EMPLOYEE → own bookings
+    Page<Booking> findByEmployeeEmployeeId(Long employeeId, Pageable pageable);
+
+    // DEALER → bookings under dealer
+    Page<Booking> findByEmployeeDealerDealerId(Long dealerId, Pageable pageable);
 
     long countByDealerDealerId(Long dealerId);
     @Query("SELECT MONTH(b.bookingDate), COUNT(b) FROM Booking b GROUP BY MONTH(b.bookingDate)")

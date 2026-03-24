@@ -4,6 +4,8 @@ import EmployeeLayout from "../../layouts/EmployeeLayout";
 import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, PieChart, Pie, Cell, Legend } from "recharts";
 import { SkeletonCard, SkeletonChart } from "../../components/Skeleton";
 
+const COLORS = ["#0071e3", "#8b5cf6", "#34c759"];
+
 export default function Reports() {
   const [leads, setLeads] = useState([]);
   const [testDrives, setTestDrives] = useState([]);
@@ -18,73 +20,66 @@ export default function Reports() {
     ]).finally(() => setLoading(false));
   }, []);
 
-  const stats = [
-    { name: "Leads", value: leads.length },
-    { name: "Test Drives", value: testDrives.length },
-    { name: "Bookings", value: bookings.length }
+  const kpiItems = [
+    { label: "Leads Handled", value: leads.length, color: "text-[#0071e3]" },
+    { label: "Test Drives", value: testDrives.length, color: "text-purple-600" },
+    { label: "Bookings", value: bookings.length, color: "text-[#34c759]" }
   ];
+
   const chartData = [
     { name: "Leads", count: leads.length },
     { name: "Test Drives", count: testDrives.length },
     { name: "Bookings", count: bookings.length }
   ];
-  const COLORS = ["#3B82F6", "#8B5CF6", "#10B981"];
 
   return (
     <EmployeeLayout>
       <div className="space-y-6">
 
         <div>
-          <h1 className="text-xl sm:text-2xl font-semibold text-gray-800 dark:text-gray-200">Sales Reports</h1>
-          <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">Employee performance analytics</p>
+          <h1 className="apple-title">Sales Reports</h1>
+          <p className="apple-subtitle mt-1">Employee performance analytics</p>
         </div>
 
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 sm:gap-6">
-          {loading ? Array.from({ length: 3 }).map((_, i) => <SkeletonCard key={i} />) : (
-            <>
-              {[
-                { label: "Leads Handled", value: leads.length, color: "text-blue-600" },
-                { label: "Test Drives", value: testDrives.length, color: "text-purple-600" },
-                { label: "Bookings", value: bookings.length, color: "text-green-600" }
-              ].map((item, i) => (
-                <div key={i} className="bg-white dark:bg-slate-900 border border-gray-200 dark:border-slate-800 rounded-xl shadow-sm p-5 sm:p-6">
-                  <p className="text-sm text-gray-500 dark:text-gray-400">{item.label}</p>
-                  <p className={`text-2xl sm:text-3xl font-semibold mt-2 ${item.color}`}>{item.value}</p>
-                </div>
-              ))}
-            </>
-          )}
+          {loading
+            ? Array.from({ length: 3 }).map((_, i) => <SkeletonCard key={i} />)
+            : kpiItems.map((item, i) => (
+              <div key={i} className="apple-card p-5 sm:p-6 h-28 flex flex-col justify-center">
+                <p className="apple-label">{item.label}</p>
+                <p className={`text-3xl font-semibold tracking-tight mt-1 ${item.color}`}>{item.value}</p>
+              </div>
+            ))
+          }
         </div>
 
         <div className="grid grid-cols-1 xl:grid-cols-2 gap-4 sm:gap-6">
           {loading ? (
-            <>
-              <SkeletonChart />
-              <SkeletonChart />
-            </>
+            <><SkeletonChart /><SkeletonChart /></>
           ) : (
             <>
-              <div className="bg-white dark:bg-slate-900 border border-gray-200 dark:border-slate-800 rounded-xl shadow-sm p-5 sm:p-6">
-                <h2 className="text-sm font-semibold text-gray-700 dark:text-gray-300 mb-4">Activity Overview</h2>
+              <div className="apple-card p-5 sm:p-6">
+                <h2 className="text-sm font-semibold text-[#1d1d1f] dark:text-[#f5f5f7] mb-4">Activity Overview</h2>
                 <ResponsiveContainer width="100%" height={260}>
                   <BarChart data={chartData}>
-                    <XAxis dataKey="name" tick={{ fontSize: 11 }} />
-                    <YAxis tick={{ fontSize: 11 }} />
-                    <Tooltip />
-                    <Bar dataKey="count" fill="#3B82F6" radius={[6, 6, 0, 0]} />
+                    <XAxis dataKey="name" tick={{ fontSize: 11, fill: "#86868b" }} axisLine={false} tickLine={false} />
+                    <YAxis tick={{ fontSize: 11, fill: "#86868b" }} axisLine={false} tickLine={false} />
+                    <Tooltip contentStyle={{ borderRadius: "12px", border: "1px solid #e5e5ea", boxShadow: "0 4px 20px rgba(0,0,0,0.08)" }} />
+                    <Bar dataKey="count" fill="#0071e3" radius={[6, 6, 0, 0]} />
                   </BarChart>
                 </ResponsiveContainer>
               </div>
-              <div className="bg-white dark:bg-slate-900 border border-gray-200 dark:border-slate-800 rounded-xl shadow-sm p-5 sm:p-6">
-                <h2 className="text-sm font-semibold text-gray-700 dark:text-gray-300 mb-4">Conversion Breakdown</h2>
+              <div className="apple-card p-5 sm:p-6">
+                <h2 className="text-sm font-semibold text-[#1d1d1f] dark:text-[#f5f5f7] mb-4">Conversion Breakdown</h2>
                 <ResponsiveContainer width="100%" height={260}>
                   <PieChart>
-                    <Pie data={stats} dataKey="value" nameKey="name" outerRadius={80} label>
-                      {stats.map((_, index) => (
+                    <Pie data={chartData} dataKey="count" nameKey="name" outerRadius={80} label>
+                      {chartData.map((_, index) => (
                         <Cell key={index} fill={COLORS[index % COLORS.length]} />
                       ))}
                     </Pie>
                     <Legend />
+                    <Tooltip contentStyle={{ borderRadius: "12px", border: "1px solid #e5e5ea", boxShadow: "0 4px 20px rgba(0,0,0,0.08)" }} />
                   </PieChart>
                 </ResponsiveContainer>
               </div>

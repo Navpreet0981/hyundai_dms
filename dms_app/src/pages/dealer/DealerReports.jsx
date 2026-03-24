@@ -4,6 +4,8 @@ import DealerLayout from "../../layouts/DealerLayout";
 import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, PieChart, Pie, Cell, Legend } from "recharts";
 import { SkeletonCard, SkeletonChart } from "../../components/Skeleton";
 
+const COLORS = ["#0071e3", "#bf5af2", "#30d158"];
+
 export default function DealerReports() {
   const [leads, setLeads] = useState([]);
   const [testDrives, setTestDrives] = useState([]);
@@ -20,77 +22,62 @@ export default function DealerReports() {
     ]).finally(() => setLoading(false));
   }, []);
 
-  const stats = [
-    { name: "Leads", value: leads.length },
-    { name: "Test Drives", value: testDrives.length },
-    { name: "Bookings", value: bookings.length }
+  const kpis = [
+    { label: "Leads",      value: leads.length,      color: "#0071e3", bg: "bg-[#0071e3]/10" },
+    { label: "Test Drives",value: testDrives.length,  color: "#bf5af2", bg: "bg-[#bf5af2]/10" },
+    { label: "Bookings",   value: bookings.length,    color: "#30d158", bg: "bg-[#30d158]/10" },
   ];
-  const COLORS = ["#3B82F6", "#8B5CF6", "#10B981"];
+
+  const pieData = kpis.map(k => ({ name: k.label, value: k.value }));
 
   return (
     <DealerLayout>
-      <div className="space-y-6">
-
+      <div className="space-y-5">
         <div>
-          <h1 className="text-xl sm:text-2xl font-semibold text-gray-800 dark:text-gray-200">Dealer Reports</h1>
-          <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">Dealership performance analytics</p>
+          <h1 className="apple-title">Dealer Reports</h1>
+          <p className="apple-subtitle mt-1">Dealership performance analytics</p>
         </div>
 
-        {/* KPI CARDS */}
-        <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 sm:gap-6">
-          {loading ? Array.from({ length: 3 }).map((_, i) => <SkeletonCard key={i} />) : (
-            <>
-              {[
-                { label: "Leads", value: leads.length, color: "text-blue-600" },
-                { label: "Test Drives", value: testDrives.length, color: "text-purple-600" },
-                { label: "Bookings", value: bookings.length, color: "text-green-600" }
-              ].map((item, i) => (
-                <div key={i} className="bg-white dark:bg-slate-900 border border-gray-200 dark:border-slate-800 rounded-xl shadow-sm p-5 sm:p-6">
-                  <p className="text-sm text-gray-500 dark:text-gray-400">{item.label}</p>
-                  <p className={`text-2xl sm:text-3xl font-semibold mt-2 ${item.color}`}>{item.value}</p>
-                </div>
-              ))}
-            </>
-          )}
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+          {loading ? Array.from({ length: 3 }).map((_, i) => <SkeletonCard key={i} />) : kpis.map((k, i) => (
+            <div key={i} className="apple-card p-5 sm:p-6 h-28 flex justify-between items-center hover:shadow-apple transition-shadow">
+              <div>
+                <p className="text-xs text-[#86868b] font-medium mb-1">{k.label}</p>
+                <p className="text-3xl font-semibold tracking-tight" style={{ color: k.color }}>{k.value}</p>
+              </div>
+              <div className={`w-11 h-11 rounded-2xl ${k.bg}`} />
+            </div>
+          ))}
         </div>
 
-        {/* CHARTS */}
-        <div className="grid grid-cols-1 xl:grid-cols-2 gap-4 sm:gap-6">
-          {loading ? (
+        <div className="grid grid-cols-1 xl:grid-cols-2 gap-4">
+          {loading ? <><SkeletonChart /><SkeletonChart /></> : (
             <>
-              <SkeletonChart />
-              <SkeletonChart />
-            </>
-          ) : (
-            <>
-              <div className="bg-white dark:bg-slate-900 border border-gray-200 dark:border-slate-800 rounded-xl shadow-sm p-5 sm:p-6">
-                <h2 className="text-sm font-semibold text-gray-700 dark:text-gray-300 mb-4">Monthly Bookings</h2>
+              <div className="apple-card p-5 sm:p-6">
+                <h2 className="text-sm font-semibold text-[#1d1d1f] dark:text-[#f5f5f7] mb-4">Monthly Bookings</h2>
                 <ResponsiveContainer width="100%" height={260}>
                   <BarChart data={monthly}>
-                    <XAxis dataKey="period" tick={{ fontSize: 11 }} />
-                    <YAxis tick={{ fontSize: 11 }} />
-                    <Tooltip />
-                    <Bar dataKey="totalBookings" fill="#3B82F6" radius={[6, 6, 0, 0]} />
+                    <XAxis dataKey="period" tick={{ fontSize: 11, fill: "#86868b" }} axisLine={false} tickLine={false} />
+                    <YAxis tick={{ fontSize: 11, fill: "#86868b" }} axisLine={false} tickLine={false} />
+                    <Tooltip contentStyle={{ borderRadius: "12px", border: "1px solid #e5e5ea", fontSize: 12 }} />
+                    <Bar dataKey="totalBookings" fill="#0071e3" radius={[6, 6, 0, 0]} />
                   </BarChart>
                 </ResponsiveContainer>
               </div>
-              <div className="bg-white dark:bg-slate-900 border border-gray-200 dark:border-slate-800 rounded-xl shadow-sm p-5 sm:p-6">
-                <h2 className="text-sm font-semibold text-gray-700 dark:text-gray-300 mb-4">Conversion Breakdown</h2>
+              <div className="apple-card p-5 sm:p-6">
+                <h2 className="text-sm font-semibold text-[#1d1d1f] dark:text-[#f5f5f7] mb-4">Conversion Breakdown</h2>
                 <ResponsiveContainer width="100%" height={260}>
                   <PieChart>
-                    <Pie data={stats} dataKey="value" nameKey="name" outerRadius={80} label>
-                      {stats.map((_, index) => (
-                        <Cell key={index} fill={COLORS[index % COLORS.length]} />
-                      ))}
+                    <Pie data={pieData} dataKey="value" nameKey="name" outerRadius={90} innerRadius={45} paddingAngle={3} label>
+                      {pieData.map((_, i) => <Cell key={i} fill={COLORS[i % COLORS.length]} />)}
                     </Pie>
-                    <Legend />
+                    <Legend iconType="circle" iconSize={8} />
                   </PieChart>
                 </ResponsiveContainer>
               </div>
             </>
           )}
         </div>
-
       </div>
     </DealerLayout>
   );

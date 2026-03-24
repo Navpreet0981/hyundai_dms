@@ -7,6 +7,9 @@ import com.hyundai.dms.service.BookingService;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 
 @RestController
 @RequestMapping("/bookings")
@@ -42,5 +45,13 @@ public class BookingController {
     public Booking updateStatus(@PathVariable Long id,
                                 @RequestParam BookingStatus status) {
         return bookingService.updateStatus(id, status);
+    }
+    @GetMapping("/paged")
+    public Page<BookingDTO> getBookingsPaged(
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "10") int size
+    ) {
+        Pageable pageable = PageRequest.of(page, size);
+        return bookingService.getBookingsPaged(pageable);
     }
 }

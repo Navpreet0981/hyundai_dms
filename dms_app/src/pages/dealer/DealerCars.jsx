@@ -8,48 +8,39 @@ export default function DealerCars() {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    api.get("/cars")
-      .then(res => setCars(res.data))
-      .catch(err => console.log(err))
-      .finally(() => setLoading(false));
+    api.get("/cars").then(res => setCars(res.data)).catch(err => console.log(err)).finally(() => setLoading(false));
   }, []);
 
   return (
     <DealerLayout>
-      <div className="max-w-7xl mx-auto space-y-6">
+      <div className="space-y-5">
+        <h1 className="apple-title">Available Cars</h1>
 
-        <h1 className="text-2xl font-semibold text-gray-800 dark:text-gray-200">Available Cars</h1>
-
-        {loading ? (
-          <SkeletonTable rows={5} cols={4} />
-        ) : (
-          <div className="bg-white dark:bg-slate-900 border border-gray-200 dark:border-slate-800 rounded-xl shadow-sm overflow-x-auto">
+        {loading ? <SkeletonTable rows={5} /> : (
+          <div className="apple-card overflow-x-auto">
             <table className="w-full text-left min-w-[480px]">
-              <thead className="border-b border-gray-200 dark:border-slate-800">
-                <tr className="text-gray-600 dark:text-gray-300 text-sm">
-                  <th className="p-4">Model</th>
-                  <th className="p-4">Fuel Type</th>
-                  <th className="p-4">Transmission</th>
-                  <th className="p-4">Base Price</th>
+              <thead className="border-b border-[#e5e5ea] dark:border-[#2c2c2e]">
+                <tr>
+                  {["Model","Fuel Type","Transmission","Base Price"].map((h, i) => (
+                    <th key={i} className="apple-table-header">{h}</th>
+                  ))}
                 </tr>
               </thead>
               <tbody>
-                {cars.map(car => (
-                  <tr key={car.carId} className="border-b border-gray-200 dark:border-slate-800 hover:bg-gray-50 dark:hover:bg-slate-800 transition">
-                    <td className="p-4 font-medium text-gray-800 dark:text-gray-200">{car.modelName}</td>
-                    <td className="p-4 text-gray-600 dark:text-gray-300">{car.fuelType}</td>
-                    <td className="p-4 text-gray-600 dark:text-gray-300">{car.transmission}</td>
-                    <td className="p-4 text-gray-600 dark:text-gray-300">₹{car.basePrice?.toLocaleString()}</td>
+                {cars.length === 0 ? (
+                  <tr><td colSpan="4" className="text-center py-10 text-[#86868b] text-sm">No cars available</td></tr>
+                ) : cars.map(car => (
+                  <tr key={car.carId} className="apple-table-row">
+                    <td className="apple-table-cell font-medium">{car.modelName}</td>
+                    <td className="apple-table-cell text-[#86868b]">{car.fuelType}</td>
+                    <td className="apple-table-cell text-[#86868b]">{car.transmission}</td>
+                    <td className="apple-table-cell text-[#86868b]">₹{car.basePrice?.toLocaleString()}</td>
                   </tr>
                 ))}
-                {cars.length === 0 && (
-                  <tr><td colSpan="4" className="p-6 text-center text-gray-500">No cars available.</td></tr>
-                )}
               </tbody>
             </table>
           </div>
         )}
-
       </div>
     </DealerLayout>
   );

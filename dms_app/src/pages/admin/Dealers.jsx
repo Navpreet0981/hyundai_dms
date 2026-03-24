@@ -1,23 +1,40 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, useCallback } from "react";
 import api from "../../api/axiosClient";
 import AdminLayout from "../../layouts/AdminLayout";
-import { PlusCircle, X } from "lucide-react";
+import { PlusCircle, X, Search } from "lucide-react";
 import { SkeletonTable } from "../../components/Skeleton";
+import usePagination from "../../hooks/usePagination";
+import Pagination from "../../components/Pagination";
+
+function buildUrl(page, size, search) {
+  const params = new URLSearchParams({ page, size });
+  if (search.trim()) params.set("search", search.trim());
+  return `/dealers/paged?${params.toString()}`;
+}
 
 export default function Dealers() {
-  const [dealers, setDealers] = useState([]);
-  const [loading, setLoading] = useState(true);
-  const [showModal, setShowModal] = useState(false);
+  const [dealers, setDealers]       = useState([]);
+  const [loading, setLoading]       = useState(true);
+  const [showModal, setShowModal]   = useState(false);
+  const [search, setSearch]         = useState("");
+  const [debouncedSearch, setDebouncedSearch] = useState("");
   const [form, setForm] = useState({ dealerName: "", email: "", phone: "", city: "", state: "", address: "" });
+  const { page, size, totalPages, setPage, setTotalPages } = usePagination(0, 10);
 
-  const loadDealers = () => {
-    api.get("/dealers")
-      .then(res => setDealers(res.data))
+  useEffect(() => {
+    const t = setTimeout(() => { setDebouncedSearch(search); setPage(0); }, 400);
+    return () => clearTimeout(t);
+  }, [search, setPage]);
+
+  const fetchData = useCallback(() => {
+    setLoading(true);
+    api.get(buildUrl(page, size, debouncedSearch))
+      .then(res => { setDealers(res.data.content); setTotalPages(res.data.totalPages); })
       .catch(err => console.log(err))
       .finally(() => setLoading(false));
-  };
+  }, [page, size, debouncedSearch, setTotalPages]);
 
-  useEffect(() => { loadDealers(); }, []);
+  useEffect(() => { fetchData(); }, [fetchData]);
 
   const handleChange = (e) => setForm({ ...form, [e.target.name]: e.target.value });
 
@@ -26,64 +43,79 @@ export default function Dealers() {
       .then(() => {
         setShowModal(false);
         setForm({ dealerName: "", email: "", phone: "", city: "", state: "", address: "" });
-        loadDealers();
+        fetchData();
       })
       .catch(err => console.log(err));
   };
 
   const deleteDealer = (id) => {
-    api.delete(`/dealers/${id}`).then(() => loadDealers()).catch(err => console.log(err));
+    api.delete(`/dealers/${id}`).then(() => fetchData()).catch(err => console.log(err));
   };
-
-  const inputCls = "w-full border border-gray-300 dark:border-slate-700 bg-white dark:bg-slate-800 text-gray-800 dark:text-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-slate-400";
 
   return (
     <AdminLayout>
-      <div className="max-w-7xl mx-auto space-y-6">
+      <div className="space-y-5">
 
         <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3">
-          <h1 className="text-2xl font-semibold text-gray-800 dark:text-gray-200">Dealers</h1>
-          <button
-            onClick={() => setShowModal(true)}
-            className="flex items-center gap-2 bg-slate-700 hover:bg-slate-600 text-white px-4 py-2 rounded-lg text-sm transition-colors"
-          >
-            <PlusCircle size={16} /> Add Dealer
-          </button>
+          <h1 className="apple-title">Dealers</h1>
+
+          <div className="flex items-center gap-2 flex-wrap">
+            <div className="relative">
+              <Search size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-[#86868b]" />
+              <input
+                type="text"
+                placeholder="Search dealers…"
+                value={search}
+                onChange={e => setSearch(e.target.value)}
+                className="pl-8 pr-3 py-2 text-sm rounded-xl border border-[#e5e5ea] dark:border-[#3a3a3c]
+                  bg-white dark:bg-[#2c2c2e] text-[#1d1d1f] dark:text-[#f5f5f7]
+                  placeholder-[#86868b] focus:outline-none focus:ring-2 focus:ring-[#0071e3]
+                  w-52 transition-all"
+              />
+            </div>
+            <button
+              onClick={() => setShowModal(true)}
+              className="apple-btn-primary flex items-center gap-2"
+            >
+              <PlusCircle size={15} /> Add Dealer
+            </button>
+          </div>
         </div>
 
         {loading ? (
-          <SkeletonTable rows={5} cols={6} />
+          <SkeletonTable rows={5} />
         ) : (
-          <div className="bg-white dark:bg-slate-900 border border-gray-200 dark:border-slate-800 rounded-xl shadow-sm overflow-x-auto">
+          <div className="apple-card overflow-x-auto">
             <table className="w-full text-left min-w-[640px]">
-              <thead className="border-b border-gray-100 dark:border-slate-800 bg-gray-50 dark:bg-slate-800">
-                <tr className="text-gray-500 dark:text-gray-400 text-sm">
-                  <th className="p-4 font-medium">Dealer Name</th>
-                  <th className="p-4 font-medium">Phone</th>
-                  <th className="p-4 font-medium">Email</th>
-                  <th className="p-4 font-medium">City</th>
-                  <th className="p-4 font-medium">Status</th>
-                  <th className="p-4 font-medium">Actions</th>
+              <thead className="border-b border-[#e5e5ea] dark:border-[#2c2c2e]">
+                <tr>
+                  {["Dealer Name","Phone","Email","City","Status",""].map((h, i) => (
+                    <th key={i} className="apple-table-header">{h}</th>
+                  ))}
                 </tr>
               </thead>
               <tbody>
                 {dealers.length === 0 ? (
-                  <tr><td colSpan="6" className="text-center p-6 text-gray-400">No dealers found</td></tr>
-                ) : dealers.map((dealer) => (
-                  <tr key={dealer.dealerId} className="border-t border-gray-100 dark:border-slate-800 hover:bg-gray-50 dark:hover:bg-slate-800/50 transition">
-                    <td className="p-4 font-medium text-gray-800 dark:text-gray-200">{dealer.dealerName}</td>
-                    <td className="p-4 text-gray-500 dark:text-gray-400">{dealer.phone}</td>
-                    <td className="p-4 text-gray-500 dark:text-gray-400">{dealer.email}</td>
-                    <td className="p-4 text-gray-500 dark:text-gray-400">{dealer.city}</td>
-                    <td className="p-4">
-                      <span className={`px-2.5 py-1 text-xs rounded-full ${dealer.active ? "bg-slate-100 dark:bg-slate-700 text-slate-600 dark:text-slate-300" : "bg-gray-100 dark:bg-slate-800 text-gray-400"}`}>
-                        {dealer.active ? "Active" : "Inactive"}
+                  <tr><td colSpan="6" className="text-center py-10 text-[#86868b] text-sm">
+                    {debouncedSearch ? `No dealers found for "${debouncedSearch}"` : "No dealers found"}
+                  </td></tr>
+                ) : dealers.map(d => (
+                  <tr key={d.dealerId} className="apple-table-row">
+                    <td className="apple-table-cell font-medium">{d.dealerName}</td>
+                    <td className="apple-table-cell text-[#86868b]">{d.phone}</td>
+                    <td className="apple-table-cell text-[#86868b]">{d.email}</td>
+                    <td className="apple-table-cell text-[#86868b]">{d.city}</td>
+                    <td className="apple-table-cell">
+                      <span className={`apple-badge ${d.active
+                        ? "bg-[#d1fae5] dark:bg-[#052e16] text-[#065f46] dark:text-[#34d399]"
+                        : "bg-[#f5f5f7] dark:bg-[#2c2c2e] text-[#86868b]"}`}>
+                        {d.active ? "Active" : "Inactive"}
                       </span>
                     </td>
-                    <td className="p-4">
+                    <td className="apple-table-cell">
                       <button
-                        onClick={() => deleteDealer(dealer.dealerId)}
-                        className="text-xs text-red-500 dark:text-red-400 border border-red-200 dark:border-red-800 hover:bg-red-50 dark:hover:bg-red-900/20 px-3 py-1 rounded transition-colors"
+                        onClick={() => deleteDealer(d.dealerId)}
+                        className="text-xs text-red-500 border border-red-200 dark:border-red-900 hover:bg-red-50 dark:hover:bg-red-900/20 px-3 py-1 rounded-lg transition-colors"
                       >
                         Remove
                       </button>
@@ -92,31 +124,38 @@ export default function Dealers() {
                 ))}
               </tbody>
             </table>
+            <Pagination page={page} totalPages={totalPages} setPage={setPage} />
           </div>
         )}
 
       </div>
 
+      {/* ADD DEALER MODAL */}
       {showModal && (
-        <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-50 px-4">
-          <div className="bg-white dark:bg-slate-900 rounded-xl shadow-lg w-full max-w-md p-6 space-y-4 border border-gray-200 dark:border-slate-700">
-            <div className="flex justify-between items-center">
-              <h2 className="text-base font-semibold text-gray-800 dark:text-gray-200">Add New Dealer</h2>
-              <button onClick={() => setShowModal(false)} className="text-gray-400 hover:text-gray-600 dark:hover:text-gray-200"><X size={18} /></button>
+        <div className="fixed inset-0 bg-black/40 backdrop-blur-sm flex items-center justify-center z-50 px-4">
+          <div className="apple-card w-full max-w-md p-6 space-y-3 shadow-apple-lg">
+            <div className="flex justify-between items-center mb-1">
+              <h2 className="text-base font-semibold text-[#1d1d1f] dark:text-[#f5f5f7]">Add New Dealer</h2>
+              <button
+                onClick={() => setShowModal(false)}
+                className="p-1.5 rounded-lg hover:bg-[#f5f5f7] dark:hover:bg-[#2c2c2e] text-[#86868b] transition-colors"
+              >
+                <X size={16} />
+              </button>
             </div>
-            {["dealerName", "email", "phone", "city", "state", "address"].map(field => (
+            {["dealerName","email","phone","city","state","address"].map(field => (
               <input
                 key={field}
                 name={field}
                 placeholder={field.charAt(0).toUpperCase() + field.slice(1).replace(/([A-Z])/g, ' $1')}
                 value={form[field]}
                 onChange={handleChange}
-                className={inputCls}
+                className="apple-input"
               />
             ))}
             <div className="flex gap-3 pt-1">
-              <button onClick={() => setShowModal(false)} className="flex-1 border border-gray-300 dark:border-slate-600 text-gray-600 dark:text-gray-300 py-2 rounded-lg text-sm hover:bg-gray-50 dark:hover:bg-slate-800 transition-colors">Cancel</button>
-              <button onClick={addDealer} className="flex-1 bg-slate-700 hover:bg-slate-600 text-white py-2 rounded-lg text-sm transition-colors">Create Dealer</button>
+              <button onClick={() => setShowModal(false)} className="apple-btn-secondary flex-1">Cancel</button>
+              <button onClick={addDealer} className="apple-btn-primary flex-1">Create Dealer</button>
             </div>
           </div>
         </div>

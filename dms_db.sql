@@ -18,3 +18,33 @@ SET dealer_name = 'Hyundai Haryana',
     address = 'Model Town, Jind',
     active = true
 WHERE email = 'dealer3@hyundai.com';
+
+select * from admins;
+INSERT INTO admins (name, email, password, role, active)
+VALUES (
+    'System Admin',
+    'admin@hyundai.com',
+    'admin123',
+    'ADMIN',
+    true
+);
+describe admins;
+describe customers;
+
+show tables;
+
+select * from test_drives;
+select * from admins;
+select * from dealers;
+UPDATE dealers
+SET password = '123456',
+    admin_id = 1
+WHERE dealer_id = 2;
+
+select * from customers;
+select * from employees;
+
+SET SQL_SAFE_UPDATES = 0;
+UPDATE employees SET status = 'ACTIVE' WHERE status IS NULL;
+SET SQL_SAFE_UPDATES = 1;
+ALTER TABLE service_requests ADD COLUMN employee_id BIGINT;

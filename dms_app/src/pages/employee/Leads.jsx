@@ -4,11 +4,6 @@ import EmployeeLayout from "../../layouts/EmployeeLayout";
 import { useNavigate } from "react-router-dom";
 import { SkeletonTable } from "../../components/Skeleton";
 
-// Shared button styles
-const btnPrimary = "px-3 py-1 text-xs bg-slate-700 hover:bg-slate-600 text-white rounded transition-colors";
-const btnOutline = "px-3 py-1 text-xs border border-slate-300 dark:border-slate-600 text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-700 rounded transition-colors";
-const btnDanger = "px-3 py-1 text-xs text-red-500 dark:text-red-400 hover:text-red-700 dark:hover:text-red-300 border border-red-200 dark:border-red-800 hover:bg-red-50 dark:hover:bg-red-900/20 rounded transition-colors";
-
 export default function Leads() {
   const navigate = useNavigate();
   const [leads, setLeads] = useState([]);
@@ -35,47 +30,50 @@ export default function Leads() {
     <EmployeeLayout>
       <div className="space-y-6">
 
-        <h2 className="text-xl sm:text-2xl font-semibold text-gray-800 dark:text-gray-200">Customer Leads</h2>
+        <div>
+          <h1 className="apple-title">Customer Leads</h1>
+          <p className="apple-subtitle mt-1">Track and manage your assigned leads</p>
+        </div>
 
         {loading ? (
-          <SkeletonTable rows={5} cols={6} />
+          <SkeletonTable rows={5} />
         ) : (
-          <div className="bg-white dark:bg-slate-900 border border-gray-200 dark:border-slate-800 rounded-xl shadow-sm overflow-x-auto">
+          <div className="apple-card overflow-x-auto">
             <table className="w-full text-sm min-w-[750px]">
-              <thead className="bg-gray-50 dark:bg-slate-800 text-gray-500 dark:text-gray-400">
+              <thead className="border-b border-[#e5e5ea] dark:border-[#2c2c2e]">
                 <tr>
-                  <th className="p-4 text-left font-medium">Name</th>
-                  <th className="p-4 text-left font-medium">Phone</th>
-                  <th className="p-4 text-left font-medium">City</th>
-                  <th className="p-4 text-left font-medium">Source</th>
-                  <th className="p-4 text-left font-medium">Model</th>
-                  <th className="p-4 text-left font-medium">Status</th>
-                  <th className="p-4 text-left font-medium">Actions</th>
+                  <th className="apple-table-header">Name</th>
+                  <th className="apple-table-header">Phone</th>
+                  <th className="apple-table-header">City</th>
+                  <th className="apple-table-header">Source</th>
+                  <th className="apple-table-header">Model</th>
+                  <th className="apple-table-header">Status</th>
+                  <th className="apple-table-header">Actions</th>
                 </tr>
               </thead>
               <tbody>
                 {leads.length === 0 ? (
-                  <tr><td colSpan="7" className="text-center p-6 text-gray-400">No leads found</td></tr>
+                  <tr><td colSpan="7" className="text-center py-10 apple-subtitle">No leads found</td></tr>
                 ) : leads.map(l => (
-                  <tr key={l.customerId} className="border-t border-gray-100 dark:border-slate-800 hover:bg-gray-50 dark:hover:bg-slate-800/50 transition">
-                    <td className="p-4 font-medium text-gray-800 dark:text-gray-200">{l.name}</td>
-                    <td className="p-4 text-gray-500 dark:text-gray-400">{l.phone}</td>
-                    <td className="p-4 text-gray-500 dark:text-gray-400">{l.city}</td>
-                    <td className="p-4 text-gray-500 dark:text-gray-400">{l.leadSource}</td>
-                    <td className="p-4 text-gray-500 dark:text-gray-400">{l.interestedModel}</td>
-                    <td className="p-4">
-                      <span className="px-2.5 py-1 text-xs rounded-full bg-slate-100 dark:bg-slate-700 text-slate-600 dark:text-slate-300">
+                  <tr key={l.customerId} className="apple-table-row">
+                    <td className="apple-table-cell font-medium">{l.name}</td>
+                    <td className="apple-table-cell text-[#86868b]">{l.phone}</td>
+                    <td className="apple-table-cell text-[#86868b]">{l.city}</td>
+                    <td className="apple-table-cell text-[#86868b]">{l.leadSource}</td>
+                    <td className="apple-table-cell text-[#86868b]">{l.interestedModel}</td>
+                    <td className="apple-table-cell">
+                      <span className="apple-badge bg-[#f5f5f7] dark:bg-[#2c2c2e] text-[#1d1d1f] dark:text-[#f5f5f7]">
                         {l.leadStatus}
                       </span>
                     </td>
-                    <td className="p-4">
+                    <td className="apple-table-cell">
                       <div className="flex flex-wrap gap-1.5">
-                        <button className={btnPrimary} onClick={() => scheduleTestDrive(l)}>Schedule Test Drive</button>
-                        <button className={btnOutline} onClick={() => updateStatus(l.customerId, "CONTACTED")}>Mark Contacted</button>
-                        <button className={btnOutline} onClick={() => updateStatus(l.customerId, "VISITED_SHOWROOM")}>Visited Showroom</button>
-                        <button className={btnOutline} onClick={() => updateStatus(l.customerId, "TEST_DRIVE_SCHEDULED")}>Test Drive Done</button>
-                        <button className={btnOutline} onClick={() => updateStatus(l.customerId, "BOOKED")}>Mark Booked</button>
-                        <button className={btnDanger} onClick={() => updateStatus(l.customerId, "LOST")}>Mark Lost</button>
+                        <button className="apple-btn-primary !px-3 !py-1.5 !text-xs" onClick={() => scheduleTestDrive(l)}>Schedule Test Drive</button>
+                        <button className="apple-btn-secondary !px-3 !py-1.5 !text-xs" onClick={() => updateStatus(l.customerId, "CONTACTED")}>Mark Contacted</button>
+                        <button className="apple-btn-secondary !px-3 !py-1.5 !text-xs" onClick={() => updateStatus(l.customerId, "VISITED_SHOWROOM")}>Visited Showroom</button>
+                        <button className="apple-btn-secondary !px-3 !py-1.5 !text-xs" onClick={() => updateStatus(l.customerId, "TEST_DRIVE_SCHEDULED")}>Test Drive Done</button>
+                        <button className="apple-btn-secondary !px-3 !py-1.5 !text-xs" onClick={() => updateStatus(l.customerId, "BOOKED")}>Mark Booked</button>
+                        <button className="px-3 py-1.5 text-xs text-red-500 border border-red-200 dark:border-red-800 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-lg transition-colors" onClick={() => updateStatus(l.customerId, "LOST")}>Mark Lost</button>
                       </div>
                     </td>
                   </tr>

@@ -10,7 +10,8 @@ import org.springframework.stereotype.Service;
 
 import java.util.List;
 import java.util.stream.Collectors;
-
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 @Service
 public class BookingService {
 
@@ -120,5 +121,48 @@ public class BookingService {
         }
 
         throw new RuntimeException("Unauthorized");
+    }
+    public Page<BookingDTO> getBookingsPaged(Pageable pageable) {
+
+        String email = SecurityContextHolder.getContext()
+                .getAuthentication()
+                .getName();
+
+        String role = SecurityContextHolder.getContext()
+                .getAuthentication()
+                .getAuthorities()
+                .iterator()
+                .next()
+                .getAuthority();
+
+        // ✅ ADMIN → all bookings
+        if (role.equals("ROLE_ADMIN")) {
+            return bookingRepository.findAll(pageable)
+                    .map(BookingMapper::toDTO);
+        }
+
+        // ✅ EMPLOYEE → own bookings
+        if (role.equals("ROLE_EMPLOYEE")) {
+
+            Employee employee = employeeRepository.findByEmail(email)
+                    .orElseThrow(() -> new RuntimeException("Employee not found"));
+
+            return bookingRepository
+                    .findByEmployeeEmployeeId(employee.getEmployeeId(), pageable)
+                    .map(BookingMapper::toDTO);
+        }
+
+        // ✅ DEALER → bookings under dealer
+        if (role.equals("ROLE_DEALER")) {
+
+            Dealer dealer = dealerRepository.findByEmail(email)
+                    .orElseThrow(() -> new RuntimeException("Dealer not found"));
+
+            return bookingRepository
+                    .findByEmployeeDealerDealerId(dealer.getDealerId(), pageable)
+                    .map(BookingMapper::toDTO);
+        }
+
+        throw new RuntimeException("Unauthorized access");
     }
 }

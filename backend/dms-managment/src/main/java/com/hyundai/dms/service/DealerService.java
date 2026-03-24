@@ -10,6 +10,8 @@ import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
 import java.util.List;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 
 @Service
 public class DealerService {
@@ -77,5 +79,17 @@ public class DealerService {
         }
 
         return result;
+    }
+
+    public Page<Dealer> getDealersPaged(String search, Pageable pageable) {
+
+        // ✅ Search
+        if (search != null && !search.isEmpty()) {
+            return dealerRepository
+                    .searchDealers(search.toLowerCase(), pageable);
+        }
+
+        // ✅ Default pagination
+        return dealerRepository.findAll(pageable);
     }
 }

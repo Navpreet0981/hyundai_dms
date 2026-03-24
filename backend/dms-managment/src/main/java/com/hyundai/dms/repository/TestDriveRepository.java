@@ -5,6 +5,8 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 
 import java.util.List;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 
 public interface TestDriveRepository extends JpaRepository<TestDrive, Long> {
 
@@ -21,4 +23,10 @@ public interface TestDriveRepository extends JpaRepository<TestDrive, Long> {
     long countByEmployeeEmployeeId(Long employeeId);
 
     long countByEmployeeDealerDealerId(Long dealerId);
+
+    //  EMPLOYEE → own test drives
+    Page<TestDrive> findByEmployeeEmployeeId(Long employeeId, Pageable pageable);
+
+    // DEALER → dealer test drives
+    Page<TestDrive> findByEmployeeDealerDealerId(Long dealerId, Pageable pageable);
 }

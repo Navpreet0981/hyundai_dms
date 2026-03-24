@@ -3,7 +3,10 @@ package com.hyundai.dms.controller;
 import com.hyundai.dms.dto.CustomerDTO;
 import com.hyundai.dms.service.CustomerService;
 import org.springframework.web.bind.annotation.*;
-
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import java.util.List;
 
 @RestController
@@ -42,5 +45,24 @@ public class CustomerController {
             @RequestParam String status
     ){
         return customerService.updateLeadStatus(id, status);
+    }
+
+    @GetMapping("/paged")
+    public Page<CustomerDTO> getCustomersPaged(
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "10") int size,
+            @RequestParam(required = false) String search,
+            @RequestParam(defaultValue = "createdDate,desc") String[] sort
+    ) {
+
+        Sort sorting = Sort.by(
+                sort[1].equalsIgnoreCase("asc") ?
+                        Sort.Direction.ASC : Sort.Direction.DESC,
+                sort[0]
+        );
+
+        Pageable pageable = PageRequest.of(page, size, sorting);
+
+        return customerService.getCustomersPaged(search, pageable);
     }
 }

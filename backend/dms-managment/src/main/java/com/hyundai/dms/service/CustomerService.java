@@ -11,6 +11,8 @@ import com.hyundai.dms.repository.DealerRepository;
 import com.hyundai.dms.repository.EmployeeRepository;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 
 import java.time.LocalDate;
 import java.util.List;
@@ -33,7 +35,7 @@ public class CustomerService {
         this.employeeRepository = employeeRepository;
     }
 
-    // ✅ CREATE CUSTOMER (Employee)
+    // CREATE CUSTOMER (Employee)
     public CustomerDTO createCustomer(CustomerDTO dto) {
 
         String email = SecurityContextHolder
@@ -59,7 +61,7 @@ public class CustomerService {
         return CustomerMapper.toDTO(saved);
     }
 
-    // ✅ ROLE-BASED FETCH (CORE LOGIC)
+    // ROLE-BASED FETCH (CORE LOGIC)
     public List<CustomerDTO> getAllCustomers() {
 
         String email = SecurityContextHolder.getContext()
@@ -73,7 +75,7 @@ public class CustomerService {
                 .next()
                 .getAuthority();
 
-        // ✅ ADMIN → all
+        //  ADMIN → all
         if (role.equals("ROLE_ADMIN")) {
             return customerRepository.findAll()
                     .stream()
@@ -81,7 +83,7 @@ public class CustomerService {
                     .collect(Collectors.toList());
         }
 
-        // ✅ EMPLOYEE → own leads
+        //  EMPLOYEE → own leads
         if (role.equals("ROLE_EMPLOYEE")) {
 
             Employee employee = employeeRepository.findByEmail(email)
@@ -93,7 +95,7 @@ public class CustomerService {
                     .collect(Collectors.toList());
         }
 
-        // ✅ DEALER → all leads under dealer
+        //  DEALER → all leads under dealer
         if (role.equals("ROLE_DEALER")) {
 
             Dealer dealer = dealerRepository.findByEmail(email)
@@ -268,5 +270,68 @@ public class CustomerService {
         }
 
         throw new RuntimeException("Unauthorized");
+    }
+
+    public Page<CustomerDTO> getCustomersPaged(String search, Pageable pageable) {
+
+        String email = SecurityContextHolder.getContext()
+                .getAuthentication()
+                .getName();
+
+        String role = SecurityContextHolder.getContext()
+                .getAuthentication()
+                .getAuthorities()
+                .iterator()
+                .next()
+                .getAuthority();
+
+        // ✅ ADMIN
+        if (role.equals("ROLE_ADMIN")) {
+
+            if (search != null && !search.isEmpty()) {
+                return customerRepository
+                        .searchAll(search.toLowerCase(), pageable)
+                        .map(this::mapToDTO);
+            }
+
+            return customerRepository.findAll(pageable)
+                    .map(this::mapToDTO);
+        }
+
+        // ✅ EMPLOYEE
+        if (role.equals("ROLE_EMPLOYEE")) {
+
+            Employee employee = employeeRepository.findByEmail(email)
+                    .orElseThrow(() -> new RuntimeException("Employee not found"));
+
+            if (search != null && !search.isEmpty()) {
+                return customerRepository
+                        .searchByEmployee(employee.getEmployeeId(), search.toLowerCase(), pageable)
+                        .map(this::mapToDTO);
+            }
+
+            return customerRepository
+                    .findByEmployee_EmployeeId(employee.getEmployeeId(), pageable)
+                    .map(this::mapToDTO);
+        }
+
+        // ✅ DEALER
+        if (role.equals("ROLE_DEALER")) {
+
+            Dealer dealer = dealerRepository.findByEmail(email)
+                    .orElseThrow(() -> new RuntimeException("Dealer not found"));
+
+            if (search != null && !search.isEmpty()) {
+                return customerRepository
+                        .searchByDealer(dealer.getDealerId(), search.toLowerCase(), pageable)
+                        .map(this::mapToDTO);
+            }
+
+            return customerRepository
+                    .findByEmployee_Dealer_DealerId(dealer.getDealerId(), pageable)
+                    .map(this::mapToDTO);
+        }
+
+        throw new RuntimeException("Unauthorized access");
     }
 }
