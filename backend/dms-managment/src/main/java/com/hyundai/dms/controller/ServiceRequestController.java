@@ -27,12 +27,12 @@ public class ServiceRequestController {
     }
 
     @GetMapping("/{id}")
-    public ServiceRequestDTO getRequest(@PathVariable Long id) {
+    public ServiceRequestDTO getRequest(@PathVariable("id") Long id) {
         return serviceRequestService.getRequestById(id);
     }
 
     @DeleteMapping("/{id}")
-    public void deleteRequest(@PathVariable Long id) {
+    public void deleteRequest(@PathVariable("id") Long id) {
         serviceRequestService.deleteRequest(id);
     }
 }

@@ -29,7 +29,7 @@ public class DealerEmployeeController {
     }
 
     @DeleteMapping("/{id}")
-    public void deleteEmployee(@PathVariable Long id) {
+    public void deleteEmployee(@PathVariable("id") Long id) {
         employeeService.deleteEmployee(id);
     }
 }

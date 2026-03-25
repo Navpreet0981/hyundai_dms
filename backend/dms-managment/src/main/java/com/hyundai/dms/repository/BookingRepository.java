@@ -6,16 +6,15 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 
 import java.util.List;
+import java.util.Optional;
+
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.repository.query.Param;
+
 public interface BookingRepository extends JpaRepository<Booking, Long> {
 
-    List<Booking> findByDealerDealerId(Long dealerId);
-
-    List<Booking> findByEmployeeEmployeeId(Long employeeId);
-
-    List<Booking> findByCustomerCustomerId(Long customerId);
-
+    Optional<Booking> findByCustomerCustomerId(Long customerId);
     Long countByDealer(Dealer dealer);
 
     long countByEmployeeEmployeeId(Long employeeId);
@@ -36,10 +35,10 @@ public interface BookingRepository extends JpaRepository<Booking, Long> {
     List<Object[]> getYearlySales();
 
     @Query("SELECT MONTH(b.bookingDate), COUNT(b) FROM Booking b WHERE b.dealer.dealerId = :dealerId GROUP BY MONTH(b.bookingDate)")
-    List<Object[]> getMonthlySalesByDealer(Long dealerId);
+    List<Object[]> getMonthlySalesByDealer(@Param("dealerId") Long dealerId);
 
     @Query("SELECT YEAR(b.bookingDate), COUNT(b) FROM Booking b WHERE b.dealer.dealerId = :dealerId GROUP BY YEAR(b.bookingDate)")
-    List<Object[]> getYearlySalesByDealer(Long dealerId);
+    List<Object[]> getYearlySalesByDealer(@Param("dealerId") Long dealerId);
 
     @Query("SELECT d.dealerName, COUNT(b) FROM Booking b JOIN b.dealer d GROUP BY d.dealerName")
     List<Object[]> getSalesPerDealer();
@@ -52,5 +51,5 @@ public interface BookingRepository extends JpaRepository<Booking, Long> {
     Long getTotalBookings();
 
     @Query("SELECT COALESCE(SUM(v.price),0) FROM Booking b JOIN b.carVariant v WHERE b.dealer.dealerId = :dealerId")
-    Double getTotalRevenueByDealer(Long dealerId);
+    Double getTotalRevenueByDealer(@Param("dealerId") Long dealerId);
 }

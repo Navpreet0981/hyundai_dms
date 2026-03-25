@@ -1,9 +1,11 @@
 package com.hyundai.dms.entity;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
+import com.hyundai.dms.enums.EmployeeRole;
 import com.hyundai.dms.enums.EmployeeStatus;
 import jakarta.persistence.*;
 import lombok.*;
-import com.hyundai.dms.enums.EmployeeRole;
+
 @Entity
 @Table(name = "employees")
 @Getter
@@ -13,17 +15,17 @@ import com.hyundai.dms.enums.EmployeeRole;
 @Builder
 public class Employee {
 
-    private String password;
-
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long employeeId;
 
     private String name;
-
     private String email;
-
     private String phone;
+
+    // WRITE_ONLY: never returned in API responses, but readable by Java code
+    @JsonProperty(access = JsonProperty.Access.WRITE_ONLY)
+    private String password;
 
     @Enumerated(EnumType.STRING)
     private EmployeeRole role;

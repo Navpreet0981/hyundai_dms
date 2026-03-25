@@ -19,6 +19,7 @@ export default function Sidebar({ mobileOpen, onMobileClose }) {
       { name: "Test Drives",     path: "/testdrives",         icon: Car },
       { name: "Bookings",        path: "/bookings",           icon: CalendarCheck },
       { name: "Service Requests",path: "/service-requests",   icon: Wrench },
+      { name: "Add Service Requests",path: "/add-service-requests",   icon: Wrench },
       { name: "My Customers",    path: "/my-customers",       icon: Users },
       { name: "Reports",         path: "/reports",            icon: FileText },
       { name: "Profile",         path: "/profile",            icon: User },

@@ -9,6 +9,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 
 import java.util.List;
+
 @RestController
 @RequestMapping("/employees")
 public class EmployeeController {
@@ -29,28 +30,23 @@ public class EmployeeController {
         return employeeService.getAllEmployees();
     }
 
-    // GET logged-in employee profile
     @GetMapping("/me")
-    public EmployeeDTO getCurrentEmployee(){
+    public EmployeeDTO getCurrentEmployee() {
         return employeeService.getLoggedInEmployee();
     }
 
     @GetMapping("/paged")
     public Page<EmployeeDTO> getEmployeesPaged(
-            @RequestParam(defaultValue = "0") int page,
-            @RequestParam(defaultValue = "10") int size,
-            @RequestParam(required = false) String search,
-            @RequestParam(defaultValue = "employeeId,desc") String[] sort
+            @RequestParam(name = "page", defaultValue = "0") int page,
+            @RequestParam(name = "size", defaultValue = "10") int size,
+            @RequestParam(name = "search", required = false) String search,
+            @RequestParam(name = "sort", defaultValue = "employeeId,desc") String[] sort
     ) {
-
         Sort sorting = Sort.by(
-                sort[1].equalsIgnoreCase("asc") ?
-                        Sort.Direction.ASC : Sort.Direction.DESC,
+                sort[1].equalsIgnoreCase("asc") ? Sort.Direction.ASC : Sort.Direction.DESC,
                 sort[0]
         );
-
         Pageable pageable = PageRequest.of(page, size, sorting);
-
         return employeeService.getEmployeesPaged(search, pageable);
     }
 }

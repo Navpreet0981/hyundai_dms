@@ -19,7 +19,7 @@ export default function AddEmployee() {
     if (!form.name || !form.phone || !form.email || !form.password || !form.role) { alert("Please fill all required fields"); return; }
     if (form.phone.length !== 10) { alert("Phone must be 10 digits"); return; }
     setLoading(true);
-    api.post("/dealer/employees", { ...form, phone: `+91${form.phone}` })
+    api.post("/employees", { ...form, phone: `+91${form.phone}` })
       .then(() => { alert("Employee added successfully"); navigate("/dealer/employees"); })
       .catch(err => console.log(err))
       .finally(() => setLoading(false));

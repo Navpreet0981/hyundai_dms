@@ -86,14 +86,11 @@ public class BookingService {
         bookingRepository.deleteById(id);
     }
 
-    public Booking updateStatus(Long id, BookingStatus status){
-
+    public BookingDTO updateStatus(Long id, BookingStatus status) {
         Booking booking = bookingRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Booking not found"));
-
         booking.setStatus(status);
-
-        return bookingRepository.save(booking);
+        return BookingMapper.toDTO(bookingRepository.save(booking));
     }
 
     public long getTotalBookingsByRole() {

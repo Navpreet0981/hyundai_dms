@@ -5,13 +5,11 @@ import lombok.*;
 
 @Entity
 @Table(name = "cars")
-
 @Getter
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
-
 public class Car {
 
     @Id
@@ -22,10 +20,9 @@ public class Car {
     private String modelName;
 
     private String fuelType;
-
     private String transmission;
-
     private double basePrice;
 
-    private boolean active;
+    // Fix #5: Boolean wrapper — handles null from JSON without throwing
+    private Boolean active;
 }

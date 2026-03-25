@@ -68,8 +68,44 @@ public class TestDriveService {
     }
     public List<TestDriveDTO> getAllTestDrives() {
 
-        return testDriveRepository.findAll()
-                .stream()
+        String email = SecurityContextHolder.getContext().getAuthentication().getName();
+        String role = SecurityContextHolder.getContext().getAuthentication()
+                .getAuthorities().iterator().next().getAuthority();
+
+        List<TestDrive> testDrives;
+
+        // ✅ ADMIN → all test drives
+        if (role.equals("ROLE_ADMIN")) {
+            testDrives = testDriveRepository.findAll();
+        }
+
+        // ✅ EMPLOYEE → own test drives
+        else if (role.equals("ROLE_EMPLOYEE")) {
+
+            Employee employee = employeeRepository.findByEmail(email)
+                    .orElseThrow(() -> new RuntimeException("Employee not found"));
+
+            testDrives = testDriveRepository
+                    .findByEmployeeEmployeeId(employee.getEmployeeId());
+        }
+
+        // ✅ DEALER → dealer's test drives
+        else if (role.equals("ROLE_DEALER")) {
+
+            Dealer dealer = dealerRepository.findByEmail(email)
+                    .orElseThrow(() -> new RuntimeException("Dealer not found"));
+
+            testDrives = testDriveRepository
+                    .findByEmployeeDealerDealerId(dealer.getDealerId());
+        }
+
+        // ❌ Unauthorized
+        else {
+            throw new RuntimeException("Unauthorized");
+        }
+
+        // ✅ Convert to DTO
+        return testDrives.stream()
                 .map(TestDriveMapper::toDTO)
                 .collect(Collectors.toList());
     }

@@ -24,19 +24,18 @@ public class CarVariantController {
 
     // Get Variants by Car
     @GetMapping("/car/{carId}")
-    public List<CarVariantDTO> getVariantsByCar(@PathVariable Long carId) {
+    public List<CarVariantDTO> getVariantsByCar(@PathVariable("carId") Long carId) {
         return variantService.getVariantsByCar(carId);
     }
-
     // Get Variant by ID
     @GetMapping("/{id}")
-    public CarVariantDTO getVariant(@PathVariable Long id) {
+    public CarVariantDTO getVariant(@PathVariable("id") Long id) {
         return variantService.getVariantById(id);
     }
 
     // Delete Variant
     @DeleteMapping("/{id}")
-    public void deleteVariant(@PathVariable Long id) {
+    public void deleteVariant(@PathVariable("id") Long id) {
         variantService.deleteVariant(id);
     }
 }

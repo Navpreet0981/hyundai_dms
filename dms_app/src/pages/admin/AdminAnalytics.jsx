@@ -51,7 +51,8 @@ export default function AdminAnalytics() {
                 <h3 className="text-sm font-semibold text-[#1d1d1f] dark:text-[#f5f5f7] mb-4">Lead Sources</h3>
                 <ResponsiveContainer width="100%" height={280}>
                   <PieChart>
-                    <Pie data={leadSources} dataKey="count" nameKey="source" outerRadius={100} label>
+                {/* Fix #18: dataKey matches LeadSourceDTO field 'totalLeads', not 'count' */}
+                <Pie data={leadSources} dataKey="totalLeads" nameKey="source" outerRadius={100} label>
                       {leadSources.map((_, index) => (
                         <Cell key={index} fill={COLORS[index % COLORS.length]} />
                       ))}
@@ -71,9 +72,10 @@ export default function AdminAnalytics() {
             <h3 className="text-sm font-semibold text-[#1d1d1f] dark:text-[#f5f5f7] mb-4">Lead Conversion</h3>
             <div className="grid grid-cols-3 gap-4 sm:gap-6 text-center">
               {[
-                { label: "Total Leads", value: conversion.totalLeads || 0, color: "text-[#0071e3]" },
-                { label: "Test Drives", value: conversion.testDrives || 0, color: "text-purple-600" },
-                { label: "Bookings", value: conversion.bookings || 0, color: "text-[#34c759]" }
+                // Fix #7: Use correct DTO field names from LeadConversionDTO
+                { label: "Total Leads",  value: conversion.totalLeads     || 0, color: "text-[#0071e3]" },
+                { label: "Test Drives",  value: conversion.totalTestDrives || 0, color: "text-purple-600" },
+                { label: "Bookings",     value: conversion.totalBookings   || 0, color: "text-[#34c759]" }
               ].map((item, i) => (
                 <div key={i} className="apple-card p-4">
                   <p className="apple-label mb-1">{item.label}</p>

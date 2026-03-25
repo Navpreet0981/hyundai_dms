@@ -16,36 +16,56 @@ public class ServiceRequestService {
     private final ServiceRequestRepository requestRepository;
     private final CustomerRepository customerRepository;
     private final DealerRepository dealerRepository;
-    private final CarVariantRepository variantRepository;
     private final EmployeeRepository employeeRepository;
+    private final BookingRepository bookingRepository; // ✅ NEW
 
     public ServiceRequestService(ServiceRequestRepository requestRepository,
                                  CustomerRepository customerRepository,
                                  DealerRepository dealerRepository,
-                                 CarVariantRepository variantRepository, EmployeeRepository employeeRepository) {
+                                 EmployeeRepository employeeRepository,
+                                 BookingRepository bookingRepository) {
 
         this.requestRepository = requestRepository;
         this.customerRepository = customerRepository;
         this.dealerRepository = dealerRepository;
-        this.variantRepository = variantRepository;
         this.employeeRepository = employeeRepository;
+        this.bookingRepository = bookingRepository;
     }
 
     public ServiceRequestDTO createRequest(ServiceRequestDTO dto) {
 
+        // ✅ STEP 1: Get Customer
         Customer customer = customerRepository.findById(dto.getCustomerId())
                 .orElseThrow(() -> new RuntimeException("Customer not found"));
 
-        CarVariant variant = variantRepository.findById(dto.getVariantId())
-                .orElseThrow(() -> new RuntimeException("Variant not found"));
+        // ✅ STEP 2: Get Booking (VERY IMPORTANT)
+        Booking booking = bookingRepository
+                .findByCustomerCustomerId(customer.getCustomerId())
+                .orElseThrow(() -> new RuntimeException("Customer has no booking"));
 
-        Employee employee = employeeRepository.findByEmail(
-                SecurityContextHolder.getContext().getAuthentication().getName()
-        ).orElseThrow(() -> new RuntimeException("Employee not found"));
+        // ✅ STEP 3: Get Variant FROM BOOKING
+        CarVariant variant = booking.getCarVariant();
 
+        if (variant == null) {
+            throw new RuntimeException("No variant found for booking");
+        }
+
+        // ✅ STEP 4: Auth check
+        String email = SecurityContextHolder.getContext().getAuthentication().getName();
+        String role  = SecurityContextHolder.getContext().getAuthentication()
+                .getAuthorities().iterator().next().getAuthority();
+
+        if (!role.equals("ROLE_EMPLOYEE")) {
+            throw new RuntimeException("Only employees can create service requests");
+        }
+
+        // ✅ STEP 5: Get employee + dealer
+        Employee employee = employeeRepository.findByEmail(email)
+                .orElseThrow(() -> new RuntimeException("Employee not found"));
 
         Dealer dealer = employee.getDealer();
 
+        // ✅ STEP 6: Create request
         ServiceRequest request = ServiceRequest.builder()
                 .serviceDate(dto.getServiceDate())
                 .issueDescription(dto.getIssueDescription())
@@ -53,7 +73,7 @@ public class ServiceRequestService {
                 .customer(customer)
                 .dealer(dealer)
                 .employee(employee)
-                .carVariant(variant)
+                .carVariant(variant) // ✅ auto assigned
                 .build();
 
         ServiceRequest saved = requestRepository.save(request);
@@ -63,14 +83,39 @@ public class ServiceRequestService {
 
     public List<ServiceRequestDTO> getAllRequests() {
 
-        return requestRepository.findAll()
-                .stream()
+        String email = SecurityContextHolder.getContext().getAuthentication().getName();
+        String role = SecurityContextHolder.getContext().getAuthentication()
+                .getAuthorities().iterator().next().getAuthority();
+
+        List<ServiceRequest> requests;
+
+        if (role.equals("ROLE_ADMIN")) {
+            requests = requestRepository.findAll();
+        }
+
+        else if (role.equals("ROLE_EMPLOYEE")) {
+
+            Employee employee = employeeRepository.findByEmail(email)
+                    .orElseThrow(() -> new RuntimeException("Employee not found"));
+
+            requests = requestRepository.findByEmployeeEmployeeId(employee.getEmployeeId());
+        }
+
+        else if (role.equals("ROLE_DEALER")) {
+
+            Dealer dealer = dealerRepository.findByEmail(email)
+                    .orElseThrow(() -> new RuntimeException("Dealer not found"));
+
+            requests = requestRepository.findByDealerDealerId(dealer.getDealerId());
+        }
+
+        else {
+            throw new RuntimeException("Unauthorized");
+        }
+
+        return requests.stream()
                 .map(ServiceRequestMapper::toDTO)
                 .collect(Collectors.toList());
-    }
-
-    public long getTotalServiceRequests() {
-        return requestRepository.count();
     }
 
     public ServiceRequestDTO getRequestById(Long id) {

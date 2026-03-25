@@ -27,6 +27,7 @@ import Leads from "../pages/employee/Leads";
 import TestDrives from "../pages/employee/TestDrives";
 import Bookings from "../pages/employee/Bookings";
 import ServiceRequests from "../pages/employee/ServiceRequests";
+import AddServiceRequest from "../pages/employee/AddServiceRequest";
 import EmployeeDashboard from "../pages/employee/EmployeeDashboard";
 import AddCustomer from "../pages/employee/AddCustomer";
 import MyCustomers from "../pages/employee/MyCustomers";
@@ -149,6 +150,10 @@ export default function AppRoutes() {
           <ProtectedRoute role="EMPLOYEE"><ServiceRequests /></ProtectedRoute>
         } />
 
+        <Route path="/add-service-requests" element={
+          <ProtectedRoute role="EMPLOYEE"><AddServiceRequest /></ProtectedRoute>
+        } />
+        
         <Route path="/my-customers" element={
           <ProtectedRoute role="EMPLOYEE"><MyCustomers /></ProtectedRoute>
         } />

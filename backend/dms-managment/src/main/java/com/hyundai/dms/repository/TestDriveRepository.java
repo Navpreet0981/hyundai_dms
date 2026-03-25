@@ -10,7 +10,8 @@ import org.springframework.data.domain.Pageable;
 
 public interface TestDriveRepository extends JpaRepository<TestDrive, Long> {
 
-    List<TestDrive> findByDealerDealerId(Long dealerId);
+    List<TestDrive> findByEmployeeDealerDealerId(Long dealerId);
+
 
     List<TestDrive> findByEmployeeEmployeeId(Long employeeId);
 
@@ -29,4 +30,5 @@ public interface TestDriveRepository extends JpaRepository<TestDrive, Long> {
 
     // DEALER → dealer test drives
     Page<TestDrive> findByEmployeeDealerDealerId(Long dealerId, Pageable pageable);
+
 }

@@ -1,7 +1,7 @@
 import { useEffect, useState, useCallback } from "react";
 import api from "../../api/axiosClient";
 import AdminLayout from "../../layouts/AdminLayout";
-import { PlusCircle, X, Search } from "lucide-react";
+import { PlusCircle, X, Search, Eye, EyeOff } from "lucide-react";
 import { SkeletonTable } from "../../components/Skeleton";
 import usePagination from "../../hooks/usePagination";
 import Pagination from "../../components/Pagination";
@@ -18,7 +18,10 @@ export default function Dealers() {
   const [showModal, setShowModal]   = useState(false);
   const [search, setSearch]         = useState("");
   const [debouncedSearch, setDebouncedSearch] = useState("");
-  const [form, setForm] = useState({ dealerName: "", email: "", phone: "", city: "", state: "", address: "" });
+  const [showPassword, setShowPassword] = useState(false);
+  const [error, setError] = useState("");
+  const emptyForm = { dealerName: "", email: "", phone: "", city: "", state: "", address: "", password: "", active: true };
+  const [form, setForm] = useState(emptyForm);
   const { page, size, totalPages, setPage, setTotalPages } = usePagination(0, 10);
 
   useEffect(() => {
@@ -39,13 +42,19 @@ export default function Dealers() {
   const handleChange = (e) => setForm({ ...form, [e.target.name]: e.target.value });
 
   const addDealer = () => {
+    if (!form.password || form.password.length < 6) {
+      setError("Password must be at least 6 characters.");
+      return;
+    }
+    setError("");
     api.post("/dealers", form)
       .then(() => {
         setShowModal(false);
-        setForm({ dealerName: "", email: "", phone: "", city: "", state: "", address: "" });
+        setForm(emptyForm);
+        setShowPassword(false);
         fetchData();
       })
-      .catch(err => console.log(err));
+      .catch(err => setError(err.response?.data?.message || "Failed to create dealer."));
   };
 
   const deleteDealer = (id) => {
@@ -137,12 +146,13 @@ export default function Dealers() {
             <div className="flex justify-between items-center mb-1">
               <h2 className="text-base font-semibold text-[#1d1d1f] dark:text-[#f5f5f7]">Add New Dealer</h2>
               <button
-                onClick={() => setShowModal(false)}
+                onClick={() => { setShowModal(false); setError(""); setShowPassword(false); setForm(emptyForm); }}
                 className="p-1.5 rounded-lg hover:bg-[#f5f5f7] dark:hover:bg-[#2c2c2e] text-[#86868b] transition-colors"
               >
                 <X size={16} />
               </button>
             </div>
+
             {["dealerName","email","phone","city","state","address"].map(field => (
               <input
                 key={field}
@@ -153,8 +163,39 @@ export default function Dealers() {
                 className="apple-input"
               />
             ))}
+
+            {/* Password field with show/hide */}
+            <div className="relative">
+              <input
+                name="password"
+                type={showPassword ? "text" : "password"}
+                placeholder="Password (min 6 characters)"
+                value={form.password}
+                onChange={handleChange}
+                className="apple-input pr-10"
+              />
+              <button
+                type="button"
+                onClick={() => setShowPassword(p => !p)}
+                className="absolute right-3 top-1/2 -translate-y-1/2 text-[#86868b] hover:text-[#1d1d1f] dark:hover:text-[#f5f5f7] transition-colors"
+              >
+                {showPassword ? <EyeOff size={15} /> : <Eye size={15} />}
+              </button>
+            </div>
+
+            {error && (
+              <p className="text-xs text-red-500 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg px-3 py-2">
+                {error}
+              </p>
+            )}
+
             <div className="flex gap-3 pt-1">
-              <button onClick={() => setShowModal(false)} className="apple-btn-secondary flex-1">Cancel</button>
+              <button
+                onClick={() => { setShowModal(false); setError(""); setShowPassword(false); setForm(emptyForm); }}
+                className="apple-btn-secondary flex-1"
+              >
+                Cancel
+              </button>
               <button onClick={addDealer} className="apple-btn-primary flex-1">Create Dealer</button>
             </div>
           </div>

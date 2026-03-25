@@ -1,7 +1,7 @@
 package com.hyundai.dms.controller;
 
 import com.hyundai.dms.dto.LeadSourceDTO;
-import com.hyundai.dms.repository.LeadSourceService;
+import com.hyundai.dms.service.LeadSourceService;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;

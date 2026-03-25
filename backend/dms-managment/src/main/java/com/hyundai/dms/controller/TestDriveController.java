@@ -30,25 +30,27 @@ public class TestDriveController {
     }
 
     @GetMapping("/{id}")
-    public TestDriveDTO getTestDrive(@PathVariable Long id) {
+    public TestDriveDTO getTestDrive(@PathVariable("id") Long id) {
         return testDriveService.getTestDriveById(id);
     }
 
     @PutMapping("/{id}/status")
-    public TestDriveDTO updateStatus(@PathVariable Long id,
-                                     @RequestParam String status) {
+    public TestDriveDTO updateStatus(
+            @PathVariable("id") Long id,
+            @RequestParam(name = "status") String status
+    ) {
         return testDriveService.updateStatus(id, status);
     }
 
     @DeleteMapping("/{id}")
-    public void deleteTestDrive(@PathVariable Long id) {
+    public void deleteTestDrive(@PathVariable("id") Long id) {
         testDriveService.deleteTestDrive(id);
     }
 
     @GetMapping("/paged")
     public Page<TestDriveDTO> getTestDrivesPaged(
-            @RequestParam(defaultValue = "0") int page,
-            @RequestParam(defaultValue = "10") int size
+            @RequestParam(name = "page", defaultValue = "0") int page,
+            @RequestParam(name = "size", defaultValue = "10") int size
     ) {
         Pageable pageable = PageRequest.of(page, size);
         return testDriveService.getTestDrivesPaged(pageable);

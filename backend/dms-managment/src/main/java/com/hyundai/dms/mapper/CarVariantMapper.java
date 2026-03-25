@@ -6,13 +6,12 @@ import com.hyundai.dms.entity.CarVariant;
 public class CarVariantMapper {
 
     public static CarVariantDTO toDTO(CarVariant variant) {
-
         return CarVariantDTO.builder()
                 .variantId(variant.getVariantId())
                 .variantName(variant.getVariantName())
                 .engineType(variant.getEngineType())
                 .price(variant.getPrice())
-                .active(variant.isActive())
+                .active(variant.getActive() != null && variant.getActive())
                 .carId(variant.getCar().getCarId())
                 .build();
     }

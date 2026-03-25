@@ -7,6 +7,7 @@ import com.hyundai.dms.enums.EmployeeStatus;
 import com.hyundai.dms.repository.DealerRepository;
 import com.hyundai.dms.repository.EmployeeRepository;
 import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -19,7 +20,7 @@ public class EmployeeService {
 
     private final EmployeeRepository employeeRepository;
     private final DealerRepository dealerRepository;
-
+    private final PasswordEncoder passwordEncoder;
     public List<EmployeeDTO> getEmployeesByDealer(Long dealerId) {
 
         return employeeRepository
@@ -30,9 +31,10 @@ public class EmployeeService {
     }
 
     public EmployeeService(EmployeeRepository employeeRepository,
-                           DealerRepository dealerRepository) {
+                           DealerRepository dealerRepository, PasswordEncoder passwordEncoder) {
         this.employeeRepository = employeeRepository;
         this.dealerRepository = dealerRepository;
+        this.passwordEncoder = passwordEncoder;
     }
 
 
@@ -67,19 +69,39 @@ public class EmployeeService {
 
     public EmployeeDTO createEmployee(EmployeeDTO dto) {
 
-        Dealer dealer = dealerRepository.findById(dto.getDealerId())
+        String email = SecurityContextHolder
+                .getContext()
+                .getAuthentication()
+                .getName();
+
+        Dealer dealer = dealerRepository.findByEmail(email)
                 .orElseThrow(() -> new RuntimeException("Dealer not found"));
 
+        // ✅ validations
+        if (dto.getPassword() == null || dto.getPassword().isBlank()) {
+            throw new RuntimeException("Password is required");
+        }
+
+        if (employeeRepository.findByEmail(dto.getEmail()).isPresent()) {
+            throw new RuntimeException("Employee already exists with this email");
+        }
+
         Employee employee = new Employee();
-        employee.setName(dto.getName());
-        employee.setEmail(dto.getEmail());
-        employee.setPhone(dto.getPhone());
+        employee.setName(dto.getName().trim());
+        employee.setEmail(dto.getEmail().toLowerCase());
+        employee.setPhone(dto.getPhone().trim());
         employee.setRole(dto.getRole());
         employee.setDealer(dealer);
         employee.setActive(true);
 
-        Employee saved = employeeRepository.save(employee);
+        // ✅ set before save
         employee.setStatus(EmployeeStatus.ACTIVE);
+
+        // 🔐 hashing
+        employee.setPassword(passwordEncoder.encode(dto.getPassword()));
+
+        Employee saved = employeeRepository.save(employee);
+
         return mapToDTO(saved);
     }
 

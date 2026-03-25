@@ -20,6 +20,8 @@ public class EmployeeDTO {
 
     private EmployeeRole role;
 
+    private String password;
+
     // Dealer Info
     private Long dealerId;
 
