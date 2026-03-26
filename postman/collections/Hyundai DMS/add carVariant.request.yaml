@@ -1,0 +1,21 @@
+$kind: http-request
+url: http://localhost:8080/variants
+method: POST
+headers:
+  Content-Type: application/json
+body:
+  type: text
+  content: "{\r
+
+    \  \"variantName\": \"SX\",\r
+
+    \  \"engineType\": \"1.5L\",\r
+
+    \  \"price\": 1450000,\r
+
+    \  \"active\": true,\r
+
+    \  \"carId\": 2\r
+
+    }"
+order: 9000

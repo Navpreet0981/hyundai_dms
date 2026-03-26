@@ -1,0 +1,25 @@
+$kind: http-request
+url: http://localhost:8080/dealers
+method: POST
+headers:
+  Content-Type: application/json
+body:
+  type: json
+  content: "{\r
+
+    \  \"dealerName\": \"Hyundai Punjab Central\",\r
+
+    \  \"email\": \"dealer1@hyundai.com\",\r
+
+    \  \"phone\": \"98765478210\",\r
+
+    \  \"city\": \"Patiala\",\r
+
+    \  \"state\": \"Punjab\",\r
+
+    \  \"address\": \"Rajpura\",\r
+
+    \  \"active\": true\r
+
+    }"
+order: 2000

@@ -1,0 +1,27 @@
+$kind: http-request
+url: http://localhost:8080/customers
+method: POST
+headers:
+  content-type: application/json
+body:
+  type: json
+  content: "{\r
+
+    \  \"name\": \"Navv\",\r
+
+    \  \"phone\": \"9876540002\",\r
+
+    \  \"email\": \"Navv@gmail.com\",\r
+
+    \  \"city\": \"Patiala\",\r
+
+    \  \"leadSource\": \"WEBSITE\",\r
+
+    \  \"interestedModel\": \"i20\",\r
+
+    \  \"leadStatus\": \"NEW\",\r
+
+    \  \"dealerId\": 1\r
+
+    }"
+order: 3000

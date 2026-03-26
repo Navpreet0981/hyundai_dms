@@ -1,0 +1,6 @@
+$kind: http-request
+url: http://localhost:8080/testdrives/1/status?status=COMPLETED
+method: PUT
+queryParams:
+  status: COMPLETED
+order: 15000

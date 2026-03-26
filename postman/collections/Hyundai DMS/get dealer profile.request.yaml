@@ -1,0 +1,7 @@
+$kind: http-request
+url: http://localhost:8080/dealer/profile
+method: GET
+headers:
+  Authorization: Bearer
+    eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJjaGVubmFpQGh5dW5kYWkuY29tIiwicm9sZSI6IkRFQUxFUiIsImlhdCI6MTc3NDExMzM3MCwiZXhwIjoxNzc0MTk5NzcwfQ.uFlxJKkhmJXCrP9fJpsgYfoDkglg-sxhSMxGP00FPBc
+order: 37000

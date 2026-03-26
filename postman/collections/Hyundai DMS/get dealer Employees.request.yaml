@@ -1,0 +1,7 @@
+$kind: http-request
+url: http://localhost:8080/dealer/employees
+method: GET
+headers:
+  Authorization: Bearer
+    eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJjaGVubmFpQGh5dW5kYWkuY29tIiwicm9sZSI6IkRFQUxFUiIsImlhdCI6MTc3NDA5MDg4OSwiZXhwIjoxNzc0MTc3Mjg5fQ.tNinchxOrZfQlJT-e3VLxe1-G6rkMTq9mLyHnLAbeow
+order: 34000

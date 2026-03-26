@@ -1,0 +1,7 @@
+$kind: http-request
+url: http://localhost:8080/dealer/sales/yearly/1
+method: GET
+headers:
+  Authorization: Bearer
+    eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJkZWFsZXIzQGh5dW5kYWkuY29tIiwicm9sZSI6IkRFQUxFUiIsImlhdCI6MTc3MzQ2ODUzNCwiZXhwIjoxNzczNTU0OTM0fQ.MncWzrJhckHu6gdhIpd0Cgqfs9q4QV3sLSeyYkI8O-w
+order: 30000

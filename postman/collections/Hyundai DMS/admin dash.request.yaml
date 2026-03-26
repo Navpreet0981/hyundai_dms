@@ -1,0 +1,11 @@
+$kind: http-request
+url: http://localhost:8080/admin/dashboard
+method: GET
+headers:
+  Content-Type: application/json
+  Authorization: Bearer
+    eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJhZG1pbkBoeXVuZGFpLmNvbSIsInJvbGUiOiJBRE1JTiIsImlhdCI6MTc3MzIwNzU3NCwiZXhwIjoxNzczMjkzOTc0fQ.9oGX0dCxmZG29j91zWMfQgilv9rENPHxfefUL1k_m58
+body:
+  type: json
+  content: ""
+order: 23000

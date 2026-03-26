@@ -1,0 +1,8 @@
+$kind: http-request
+url: http://localhost:8080/employees
+method: GET
+headers:
+  content-type: application/json
+  Authorization: Bearer
+    eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJhZG1pbkBoeXVuZGFpLmNvbSIsInJvbGUiOiJBRE1JTiIsImlhdCI6MTc3MzU5ODE3MSwiZXhwIjoxNzczNjg0NTcxfQ.wR1RUSKNrCvkRPr6sNHgYPPtpuOcLUsJVePJl0hzWgM
+order: 6000

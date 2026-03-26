@@ -1,0 +1,29 @@
+$kind: http-request
+url: http://localhost:8080/customers/2
+method: DELETE
+headers:
+  content-type: application/json
+body:
+  type: text
+  content: "{\r
+
+    \  \"name\": \"Rahul Sharma\",\r
+
+    \  \"phone\": \"9876543210\",\r
+
+    \  \"email\": \"rahul@gmail.com\",\r
+
+    \  \"city\": \"Chennai\",\r
+
+    \  \"leadSource\": \"WEBSITE\",\r
+
+    \  \"interestedModel\": \"Creta\",\r
+
+    \  \"leadStatus\": \"NEW\",\r
+
+    \  \"dealerId\": 1,\r
+
+    \  \"employeeId\": 1\r
+
+    }\r\n"
+order: 7000

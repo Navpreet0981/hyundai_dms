@@ -1,0 +1,7 @@
+$kind: http-request
+url: http://localhost:8080/variants/car/2
+method: GET
+headers:
+  Authorization: Bearer
+    eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJhZG1pbkBoeXVuZGFpLmNvbSIsInJvbGUiOiJBRE1JTiIsImlhdCI6MTc3MzU5OTc0MCwiZXhwIjoxNzczNjg2MTQwfQ.G5oiVOVH2rKFrwa1onW_eolG6vIY_PxK_FyWh6D1gWg
+order: 11000

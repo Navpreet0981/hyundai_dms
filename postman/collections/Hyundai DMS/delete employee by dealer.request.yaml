@@ -1,0 +1,7 @@
+$kind: http-request
+url: http://localhost:8080/dealer/employees/2
+method: DELETE
+headers:
+  Authorization: Bearer
+    eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJjaGVubmFpQGh5dW5kYWkuY29tIiwicm9sZSI6IkRFQUxFUiIsImlhdCI6MTc3NDA5MTUwMywiZXhwIjoxNzc0MTc3OTAzfQ.5ND8qodPNuSKplC-rn6XJD34G2OTUc-vx979QtWlAVY
+order: 35000

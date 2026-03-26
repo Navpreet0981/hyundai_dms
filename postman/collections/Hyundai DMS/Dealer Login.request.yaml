@@ -1,0 +1,17 @@
+$kind: http-request
+url: http://localhost:8080/auth/login
+method: POST
+headers:
+  Content-Type: application/json
+body:
+  type: text
+  content: "{\r
+
+    \  \"email\": \"navpreet.singh@hyundai.com\",\r
+
+    \  \"password\": \"navv@123\",\r
+
+    \  \"role\": \"DEALER\"\r
+
+    }\r\n"
+order: 22000

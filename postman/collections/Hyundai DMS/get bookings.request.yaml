@@ -1,0 +1,7 @@
+$kind: http-request
+url: http://localhost:8080/bookings
+method: GET
+headers:
+  Authorization: Bearer
+    eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJrYXJhbkBoeXVuZGFpLmNvbSIsInJvbGUiOiJFTVBMT1lFRSIsImlhdCI6MTc3MzU1OTYxMSwiZXhwIjoxNzczNjQ2MDExfQ.3yJkB8PE-sU8iH9jrT6wmsO3yFYhCzzHTQ-qse-aTx0
+order: 17000

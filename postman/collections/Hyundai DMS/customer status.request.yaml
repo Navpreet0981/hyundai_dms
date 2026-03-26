@@ -1,0 +1,9 @@
+$kind: http-request
+url: http://localhost:8080/customers/1/status?status=CONTACTED
+method: PUT
+headers:
+  Authorization: Bearer
+    eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJrYXJhbkBoeXVuZGFpLmNvbSIsInJvbGUiOiJFTVBMT1lFRSIsImlhdCI6MTc3MzU2NDI5NiwiZXhwIjoxNzczNjUwNjk2fQ.RwuzbXOR_7bKR7uN_pr2canJHiaKOAhn_6KQkEPGeEM
+queryParams:
+  status: CONTACTED
+order: 32000

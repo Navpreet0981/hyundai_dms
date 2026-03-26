@@ -1,0 +1,23 @@
+$kind: http-request
+url: http://localhost:8080/cars
+method: GET
+headers:
+  Content-Type: application/json
+  Authorization: Bearer
+    eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJhZG1pbkBoeXVuZGFpLmNvbSIsInJvbGUiOiJBRE1JTiIsImlhdCI6MTc3MzU5OTc0MCwiZXhwIjoxNzczNjg2MTQwfQ.G5oiVOVH2rKFrwa1onW_eolG6vIY_PxK_FyWh6D1gWg
+body:
+  type: text
+  content: "{\r
+
+    \  \"variantName\": \"SX\",\r
+
+    \  \"engineType\": \"1.5L\",\r
+
+    \  \"price\": 1450000,\r
+
+    \  \"active\": true,\r
+
+    \  \"carId\": 1\r
+
+    }"
+order: 10000

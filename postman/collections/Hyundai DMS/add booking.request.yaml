@@ -1,0 +1,23 @@
+$kind: http-request
+url: http://localhost:8080/bookings
+method: POST
+headers:
+  Content-Type: application/json
+body:
+  type: json
+  content: "{\r
+
+    \  \"bookingDate\": \"2026-03-10\",\r
+
+    \  \"status\": \"PENDING\",\r
+
+    \  \"customerId\": 1,\r
+
+    \  \"dealerId\": 1,\r
+
+    \  \"employeeId\": 1,\r
+
+    \  \"variantId\": 1\r
+
+    }"
+order: 16000

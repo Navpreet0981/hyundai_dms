@@ -1,0 +1,7 @@
+$kind: http-request
+url: http://localhost:8080/admin/lead-conversion
+method: GET
+headers:
+  Authorization: Bearer
+    eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJhZG1pbkBoeXVuZGFpLmNvbSIsInJvbGUiOiJBRE1JTiIsImlhdCI6MTc3MzQ2NjkzOCwiZXhwIjoxNzczNTUzMzM4fQ.bTRYkl5_wZyBZOh8Mtb9cTB-BxKU70cZrPO_m7fRx58
+order: 25000

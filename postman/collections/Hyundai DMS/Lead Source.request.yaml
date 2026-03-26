@@ -1,0 +1,7 @@
+$kind: http-request
+url: http://localhost:8080/admin/lead-source-analytics
+method: GET
+headers:
+  Authorization: Bearer
+    eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJhZG1pbkBoeXVuZGFpLmNvbSIsInJvbGUiOiJBRE1JTiIsImlhdCI6MTc3MzQ2NzcxOSwiZXhwIjoxNzczNTU0MTE5fQ.RaeCw-u9vsdDq0zruRc2tHscZuplerrM9iqXGlqRxz8
+order: 26000

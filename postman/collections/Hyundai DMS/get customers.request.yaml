@@ -1,0 +1,31 @@
+$kind: http-request
+url: http://localhost:8080/customers
+method: GET
+headers:
+  content-type: application/json
+  Authorization: Bearer
+    eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJhZG1pbkBoeXVuZGFpLmNvbSIsInJvbGUiOiJBRE1JTiIsImlhdCI6MTc3MzU5ODc4MCwiZXhwIjoxNzczNjg1MTgwfQ.ua0omL6KzMLrDqmwg5fbcy5U-JeWwZyLB8np1TyOOJE
+body:
+  type: text
+  content: "{\r
+
+    \  \"name\": \"Rahul Sharma\",\r
+
+    \  \"phone\": \"9876543210\",\r
+
+    \  \"email\": \"rahul@gmail.com\",\r
+
+    \  \"city\": \"Chennai\",\r
+
+    \  \"leadSource\": \"WEBSITE\",\r
+
+    \  \"interestedModel\": \"Creta\",\r
+
+    \  \"leadStatus\": \"NEW\",\r
+
+    \  \"dealerId\": 1,\r
+
+    \  \"employeeId\": 1\r
+
+    }\r\n"
+order: 4000

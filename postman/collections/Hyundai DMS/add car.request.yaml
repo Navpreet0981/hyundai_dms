@@ -1,0 +1,21 @@
+$kind: http-request
+url: http://localhost:8080/cars
+method: POST
+headers:
+  Content-Type: application/json
+body:
+  type: text
+  content: "{\r
+
+    \  \"modelName\": \"Venue\",\r
+
+    \  \"fuelType\": \"Petrol\",\r
+
+    \  \"transmission\": \"Automatic\",\r
+
+    \  \"basePrice\": 1000000,\r
+
+    \  \"active\": true\r
+
+    }"
+order: 8000

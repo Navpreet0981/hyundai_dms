@@ -1,0 +1,7 @@
+$kind: http-request
+url: http://localhost:8080/testdrives
+method: GET
+headers:
+  Authorization: Bearer
+    eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJrYXJhbkBoeXVuZGFpLmNvbSIsInJvbGUiOiJFTVBMT1lFRSIsImlhdCI6MTc3MzU2MDc3NiwiZXhwIjoxNzczNjQ3MTc2fQ.VuZPlGRcjGNNeYWwdbr7Yttgba7PZIE4stnUbdY-io0
+order: 13000

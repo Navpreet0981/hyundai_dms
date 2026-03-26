@@ -1,0 +1,17 @@
+$kind: http-request
+url: http://localhost:8080/auth/login
+method: POST
+headers:
+  Content-Type: application/json
+body:
+  type: json
+  content: "{\r
+
+    \  \"email\": \"super@hyundai.com\",\r
+
+    \  \"password\": \"admin@123\",\r
+
+    \  \"role\": \"ADMIN\"\r
+
+    }"
+order: 21000

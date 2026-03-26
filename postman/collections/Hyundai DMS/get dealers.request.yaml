@@ -1,0 +1,7 @@
+$kind: http-request
+url: http://localhost:8080/dealers
+method: GET
+headers:
+  Authorization: Bearer
+    eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJhZG1pbkBoeXVuZGFpLmNvbSIsInJvbGUiOiJBRE1JTiIsImlhdCI6MTc3MzU5ODc4MCwiZXhwIjoxNzczNjg1MTgwfQ.ua0omL6KzMLrDqmwg5fbcy5U-JeWwZyLB8np1TyOOJE
+order: 1000

@@ -1,0 +1,10 @@
+$kind: http-request
+url: http://localhost:8080/bookings/paged?page=0&size=5
+method: GET
+headers:
+  Authorization: Bearer
+    eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJrYXJhbkBoeXVuZGFpLmNvbSIsInJvbGUiOiJFTVBMT1lFRSIsImlhdCI6MTc3NDM2NzYzNywiZXhwIjoxNzc0NDU0MDM3fQ.MxWmcdpVrZhtZbTI8s2AF0syaHowByhspY3HK4Yh95E
+queryParams:
+  page: "0"
+  size: "5"
+order: 40000

@@ -1,0 +1,10 @@
+$kind: http-request
+url: http://localhost:8080/customers/paged?page=0&size=5
+method: GET
+headers:
+  Authorization: Bearer
+    eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJhZG1pbkBoeXVuZGFpLmNvbSIsInJvbGUiOiJBRE1JTiIsImlhdCI6MTc3NDM2NTkyNywiZXhwIjoxNzc0NDUyMzI3fQ.C61FcAJ5M5d5k8xbpQ-eKXIBhxiNVvcL6Z7Ldp9i9NU
+queryParams:
+  page: "0"
+  size: "5"
+order: 38000

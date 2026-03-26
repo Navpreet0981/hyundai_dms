@@ -1,0 +1,17 @@
+$kind: http-request
+url: http://localhost:8080/auth/register
+method: POST
+headers:
+  Content-Type: application/json
+body:
+  type: text
+  content: "{\r
+
+    \  \"name\": \"Super Admin\",\r
+
+    \  \"email\": \"super@hyundai.com\",\r
+
+    \  \"password\": \"admin@123\"\r
+
+    }\r\n"
+order: 41000

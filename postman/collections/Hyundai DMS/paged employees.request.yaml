@@ -1,0 +1,10 @@
+$kind: http-request
+url: http://localhost:8080/employees/paged?page=0&size=5
+method: GET
+headers:
+  Authorization: Bearer
+    eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJhZG1pbkBoeXVuZGFpLmNvbSIsInJvbGUiOiJBRE1JTiIsImlhdCI6MTc3NDM2NzQzMywiZXhwIjoxNzc0NDUzODMzfQ.BEZjk-5t2Ud-jLqJyZMFW8NsWPqBQ_4esnXF0UZ2GQ4
+queryParams:
+  page: "0"
+  size: "5"
+order: 39000

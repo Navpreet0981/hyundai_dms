@@ -72,6 +72,8 @@ SELECT * FROM dealers;
 SELECT * FROM employees;
 SELECT * FROM customers;
 select * from service_requests;
+select * from test_drives;
+select * from bookings;
 DELETE FROM service_requests WHERE employee_id IS NULL;
 show tables;
 desc admins;

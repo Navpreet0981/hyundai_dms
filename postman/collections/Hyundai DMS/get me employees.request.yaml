@@ -1,0 +1,11 @@
+$kind: http-request
+url: http://localhost:8080/employees/me
+method: GET
+headers:
+  - key: content-type
+    value: application/json
+    disabled: true
+  - key: Authorization
+    value: Bearer
+      eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJrYXJhbkBoeXVuZGFpLmNvbSIsInJvbGUiOiJFTVBMT1lFRSIsImlhdCI6MTc3MzU2OTIzNiwiZXhwIjoxNzczNjU1NjM2fQ.RaZdt1EB5xr7EWyKmngU50HQCWA1xEr1n9Hmbufv2NI
+order: 33000

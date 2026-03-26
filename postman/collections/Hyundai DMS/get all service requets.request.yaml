@@ -1,0 +1,7 @@
+$kind: http-request
+url: http://localhost:8080/service-requests
+method: GET
+headers:
+  Authorization: Bearer
+    eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJjaGVubmFpQGh5dW5kYWkuY29tIiwicm9sZSI6IkRFQUxFUiIsImlhdCI6MTc3NDEwNDU4OSwiZXhwIjoxNzc0MTkwOTg5fQ.KtTICOULjKTeEjBJ5s-zk8k28YljZslkNOUuURlv67o
+order: 19000

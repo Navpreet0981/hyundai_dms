@@ -1,0 +1,23 @@
+$kind: http-request
+url: http://localhost:8080/employees
+method: POST
+headers:
+  content-type: application/json
+  Authorization: Bearer
+    eyJhbGciOiJIUzUxMiJ9.eyJzdWIiOiJuYXZwcmVldC5zaW5naEBoeXVuZGFpLmNvbSIsInJvbGUiOiJERUFMRVIiLCJpYXQiOjE3NzQ0NTg4ODUsImV4cCI6MTc3NDU0NTI4NX0.dPaamy4VmjK1uCOneAj-uu_GxAa9S6qST8GpTCDbzg8gPm55uhXctfKAa6B0zLfj6NoEr8U5914kjFwZc8sOIA
+body:
+  type: json
+  content: "{\r
+
+    \  \"name\": \"Lakshya\",\r
+
+    \  \"email\": \"lakshya@hyundai.com\",\r
+
+    \  \"phone\": \"9999993433\",\r
+
+    \  \"password\": \"lakshya123\",\r
+
+    \  \"role\": \"SALES_MANAGER\"\r
+
+    }"
+order: 5000

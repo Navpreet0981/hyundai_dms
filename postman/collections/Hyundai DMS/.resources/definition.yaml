@@ -1,0 +1,26 @@
+$kind: collection
+description: >-
+  This collection contains API requests for a local **DMS (Dealer/Distribution
+  Management System)** backend running at `http://localhost:8080`. It’s intended
+  for quickly validating and manually testing core workflows across multiple
+  roles and modules, including:
+
+
+  - **Authentication / role-based access**: login flows
+  for **Admin**, **Dealer**, and **Employee** (e.g., `/auth/login` with
+  different `role` values).
+      
+  - **Admin & Dealer dashboards / analytics**: endpoints such as the admin
+  dashboard and dealer sales summaries (for example, yearly sales).
+      
+  - **Core business resources & operations**: requests covering entities and
+  workflows like **dealers**, **employees** (including “me”
+  profile), **bookings**, **service requests**, **car variants**, and **test
+  drives** (create and fetch by ID).
+      
+
+  Use this collection as a functional checklist to verify that the main DMS
+  features and permissions behave correctly during development and debugging.
+
+
+  EndFragment

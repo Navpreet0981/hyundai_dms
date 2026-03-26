@@ -1,0 +1,7 @@
+$kind: http-request
+url: http://localhost:8080/admin/dealer-performance
+method: GET
+headers:
+  Authorization: Bearer
+    eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJjaGVubmFpQGh5dW5kYWkuY29tIiwicm9sZSI6IkRFQUxFUiIsImlhdCI6MTc3NDExMjgwNywiZXhwIjoxNzc0MTk5MjA3fQ.a_y-6tt_MlNRcnkkslks6TbqqQ4wDIzCGLb02hILvWU
+order: 31000
