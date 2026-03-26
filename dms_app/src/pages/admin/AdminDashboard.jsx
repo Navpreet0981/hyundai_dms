@@ -1,32 +1,23 @@
-import { useEffect, useState } from "react";
-import api from "../../api/axiosClient";
 import AdminLayout from "../../layouts/AdminLayout";
 import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, PieChart, Pie, Cell, Legend } from "recharts";
 import { Building2, Users, User, CalendarCheck } from "lucide-react";
 import { SkeletonCard, SkeletonChart } from "../../components/Skeleton";
+import { useAdminDashboard, useAdminMonthlySales } from "../../hooks/useQueries";
 
 export default function AdminDashboard() {
-  const [data, setData] = useState({});
-  const [chartData, setChartData] = useState([]);
-  const [loading, setLoading] = useState(true);
-
-  useEffect(() => {
-    Promise.all([
-      api.get("/admin/dashboard").then(res => setData(res.data)),
-      api.get("/admin/sales/monthly").then(res => setChartData(res.data))
-    ]).finally(() => setLoading(false));
-  }, []);
+  const { data = {}, isLoading: l1 }       = useAdminDashboard();
+  const { data: chartData = [], isLoading: l2 } = useAdminMonthlySales();
+  const loading = l1 || l2;
 
   const pieData = [
-    { name: "Dealers", value: data.totalDealers || 0 },
-    { name: "Employees", value: data.totalEmployees || 0 }
+    { name: "Dealers",   value: data.totalDealers   || 0 },
+    { name: "Employees", value: data.totalEmployees || 0 },
   ];
   const COLORS = ["#0071e3", "#30d158"];
 
   return (
     <AdminLayout>
       <div className="space-y-6 sm:space-y-8">
-
         <h1 className="apple-title">Admin Dashboard</h1>
 
         <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-4">
@@ -51,12 +42,7 @@ export default function AdminDashboard() {
         </div>
 
         <div className="grid grid-cols-1 xl:grid-cols-2 gap-4">
-          {loading ? (
-            <>
-              <SkeletonChart />
-              <SkeletonChart />
-            </>
-          ) : (
+          {loading ? <><SkeletonChart /><SkeletonChart /></> : (
             <>
               <div className="apple-card p-5 sm:p-6 h-[300px] sm:h-[360px]">
                 <h2 className="text-sm font-semibold text-[#1d1d1f] dark:text-[#f5f5f7] mb-5">Monthly Bookings</h2>
@@ -74,9 +60,7 @@ export default function AdminDashboard() {
                 <ResponsiveContainer width="100%" height="85%">
                   <PieChart>
                     <Pie data={pieData} dataKey="value" nameKey="name" outerRadius={90} innerRadius={45} paddingAngle={3} label>
-                      {pieData.map((_, index) => (
-                        <Cell key={index} fill={COLORS[index % COLORS.length]} />
-                      ))}
+                      {pieData.map((_, index) => <Cell key={index} fill={COLORS[index % COLORS.length]} />)}
                     </Pie>
                     <Legend iconType="circle" iconSize={8} />
                   </PieChart>
@@ -85,7 +69,6 @@ export default function AdminDashboard() {
             </>
           )}
         </div>
-
       </div>
     </AdminLayout>
   );

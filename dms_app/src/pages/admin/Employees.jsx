@@ -1,10 +1,10 @@
-import { useEffect, useState, useCallback } from "react";
-import api from "../../api/axiosClient";
+import { useState, useEffect } from "react";
 import AdminLayout from "../../layouts/AdminLayout";
 import { SkeletonTable } from "../../components/Skeleton";
 import usePagination from "../../hooks/usePagination";
 import Pagination from "../../components/Pagination";
 import { Search, ChevronUp, ChevronDown, ChevronsUpDown } from "lucide-react";
+import { useEmployeesPaged } from "../../hooks/useQueries";
 
 const SORT_FIELDS = [
   { label: "Name", value: "name" },
@@ -18,16 +18,16 @@ function SortIcon({ field, sort }) {
     : <ChevronDown size={13} className="text-[#0071e3]" />;
 }
 
-function buildUrl(page, size, search, sort) {
-  const params = new URLSearchParams({ page, size });
-  if (search.trim()) params.set("search", search.trim());
-  if (sort) params.set("sort", sort);
-  return `/employees/paged?${params.toString()}`;
-}
+const headers = [
+  { label: "Name",   sortable: true,  field: "name" },
+  { label: "Phone",  sortable: false },
+  { label: "Email",  sortable: false },
+  { label: "Dealer", sortable: false },
+  { label: "City",   sortable: false },
+  { label: "Role",   sortable: true,  field: "role" },
+];
 
 export default function Employees() {
-  const [employees, setEmployees]   = useState([]);
-  const [loading, setLoading]       = useState(true);
   const [search, setSearch]         = useState("");
   const [debouncedSearch, setDebouncedSearch] = useState("");
   const [sort, setSort]             = useState("");
@@ -38,15 +38,10 @@ export default function Employees() {
     return () => clearTimeout(t);
   }, [search, setPage]);
 
-  const fetchData = useCallback(() => {
-    setLoading(true);
-    api.get(buildUrl(page, size, debouncedSearch, sort))
-      .then(res => { setEmployees(res.data.content); setTotalPages(res.data.totalPages); })
-      .catch(err => console.log(err))
-      .finally(() => setLoading(false));
-  }, [page, size, debouncedSearch, sort, setTotalPages]);
+  const { data, isLoading: loading } = useEmployeesPaged(page, size, debouncedSearch, sort);
+  const employees = data?.content ?? [];
 
-  useEffect(() => { fetchData(); }, [fetchData]);
+  useEffect(() => { if (data?.totalPages !== undefined) setTotalPages(data.totalPages); }, [data?.totalPages, setTotalPages]);
 
   const toggleSort = (field) => {
     if (sort === `${field},asc`)       { setSort(`${field},desc`); setPage(0); }
@@ -54,49 +49,25 @@ export default function Employees() {
     else                               { setSort(`${field},asc`); setPage(0); }
   };
 
-  const deleteEmployee = (id) => {
-    api.delete(`/employees/${id}`).then(() => fetchData()).catch(err => console.log(err));
-  };
-
-  const headers = [
-    { label: "Name",   sortable: true,  field: "name" },
-    { label: "Phone",  sortable: false },
-    { label: "Email",  sortable: false },
-    { label: "Dealer", sortable: false },
-    { label: "City",   sortable: false },
-    { label: "Role",   sortable: true,  field: "role" },
-    { label: "",       sortable: false },
-  ];
-
   return (
     <AdminLayout>
       <div className="space-y-5">
-
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
           <h1 className="apple-title">Employees</h1>
-
           <div className="flex items-center gap-2 flex-wrap">
             <div className="relative">
               <Search size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-[#86868b]" />
-              <input
-                type="text"
-                placeholder="Search employees…"
-                value={search}
+              <input type="text" placeholder="Search employees…" value={search}
                 onChange={e => setSearch(e.target.value)}
                 className="pl-8 pr-3 py-2 text-sm rounded-xl border border-[#e5e5ea] dark:border-[#3a3a3c]
                   bg-white dark:bg-[#2c2c2e] text-[#1d1d1f] dark:text-[#f5f5f7]
-                  placeholder-[#86868b] focus:outline-none focus:ring-2 focus:ring-[#0071e3]
-                  w-52 transition-all"
+                  placeholder-[#86868b] focus:outline-none focus:ring-2 focus:ring-[#0071e3] w-52 transition-all"
               />
             </div>
-
-            <select
-              value={sort}
-              onChange={e => { setSort(e.target.value); setPage(0); }}
+            <select value={sort} onChange={e => { setSort(e.target.value); setPage(0); }}
               className="text-sm rounded-xl border border-[#e5e5ea] dark:border-[#3a3a3c]
                 bg-white dark:bg-[#2c2c2e] text-[#1d1d1f] dark:text-[#f5f5f7]
-                px-3 py-2 focus:outline-none focus:ring-2 focus:ring-[#0071e3] transition-all"
-            >
+                px-3 py-2 focus:outline-none focus:ring-2 focus:ring-[#0071e3] transition-all">
               <option value="">Sort: Default</option>
               {SORT_FIELDS.map(f => (
                 <>
@@ -108,9 +79,7 @@ export default function Employees() {
           </div>
         </div>
 
-        {loading ? (
-          <SkeletonTable rows={6} />
-        ) : (
+        {loading ? <SkeletonTable rows={6} /> : (
           <div className="apple-card overflow-x-auto">
             <table className="w-full text-left min-w-[650px]">
               <thead className="border-b border-[#e5e5ea] dark:border-[#2c2c2e]">
@@ -118,12 +87,9 @@ export default function Employees() {
                   {headers.map((h, i) => (
                     <th key={i} className="apple-table-header">
                       {h.sortable ? (
-                        <button
-                          onClick={() => toggleSort(h.field)}
-                          className="flex items-center gap-1 hover:text-[#1d1d1f] dark:hover:text-[#f5f5f7] transition-colors"
-                        >
-                          {h.label}
-                          <SortIcon field={h.field} sort={sort} />
+                        <button onClick={() => toggleSort(h.field)}
+                          className="flex items-center gap-1 hover:text-[#1d1d1f] dark:hover:text-[#f5f5f7] transition-colors">
+                          {h.label}<SortIcon field={h.field} sort={sort} />
                         </button>
                       ) : h.label}
                     </th>
@@ -132,7 +98,7 @@ export default function Employees() {
               </thead>
               <tbody>
                 {employees.length === 0 ? (
-                  <tr><td colSpan="7" className="text-center py-10 text-[#86868b] text-sm">
+                  <tr><td colSpan="6" className="text-center py-10 text-[#86868b] text-sm">
                     {debouncedSearch ? `No employees found for "${debouncedSearch}"` : "No employees found"}
                   </td></tr>
                 ) : employees.map(e => (
@@ -143,14 +109,6 @@ export default function Employees() {
                     <td className="apple-table-cell text-[#86868b]">{e.dealerName || "—"}</td>
                     <td className="apple-table-cell text-[#86868b]">{e.dealerCity || "—"}</td>
                     <td className="apple-table-cell text-[#86868b]">{e.role}</td>
-                    <td className="apple-table-cell">
-                      <button
-                        onClick={() => deleteEmployee(e.employeeId)}
-                        className="text-xs text-red-500 border border-red-200 dark:border-red-900 hover:bg-red-50 dark:hover:bg-red-900/20 px-3 py-1 rounded-lg transition-colors"
-                      >
-                        Remove
-                      </button>
-                    </td>
                   </tr>
                 ))}
               </tbody>
@@ -158,7 +116,6 @@ export default function Employees() {
             <Pagination page={page} totalPages={totalPages} setPage={setPage} />
           </div>
         )}
-
       </div>
     </AdminLayout>
   );

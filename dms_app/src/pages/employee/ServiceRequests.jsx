@@ -1,51 +1,32 @@
-import { useEffect, useState } from "react";
+import { useQueryClient } from "@tanstack/react-query";
 import api from "../../api/axiosClient";
 import EmployeeLayout from "../../layouts/EmployeeLayout";
 import { SkeletonTable } from "../../components/Skeleton";
+import { useServiceRequests } from "../../hooks/useQueries";
 
 export default function ServiceRequests() {
-  const [requests, setRequests] = useState([]);
-  const [loading, setLoading] = useState(true);
-
-  const loadRequests = () => {
-    api.get("/service-requests")
-      .then(res => setRequests(res.data))
-      .catch(err => console.log(err))
-      .finally(() => setLoading(false));
-  };
-
-  useEffect(() => { loadRequests(); }, []);
+  const qc = useQueryClient();
+  const { data: requests = [], isLoading: loading } = useServiceRequests();
 
   const updateStatus = (id, status) => {
     api.put(`/service-requests/${id}/status?status=${status}`)
-      .then(() => loadRequests())
+      .then(() => qc.invalidateQueries({ queryKey: ['service-requests'] }))
       .catch(err => console.log(err));
   };
 
   return (
     <EmployeeLayout>
       <div className="space-y-6">
-
         <div>
           <h1 className="apple-title">Service Requests</h1>
           <p className="apple-subtitle mt-1">Manage customer service and repair requests</p>
         </div>
 
-        {loading ? (
-          <SkeletonTable rows={5} />
-        ) : (
+        {loading ? <SkeletonTable rows={5} /> : (
           <div className="apple-card overflow-x-auto">
             <table className="w-full text-sm min-w-[650px]">
               <thead className="border-b border-[#e5e5ea] dark:border-[#2c2c2e]">
-                <tr>
-                  <th className="apple-table-header">Customer</th>
-                  <th className="apple-table-header">Variant</th>
-                  <th className="apple-table-header">Dealer</th>
-                  <th className="apple-table-header">Issue</th>
-                  <th className="apple-table-header">Date</th>
-                  <th className="apple-table-header">Status</th>
-                  <th className="apple-table-header">Actions</th>
-                </tr>
+                <tr>{["Customer","Variant","Dealer","Issue","Date","Status","Actions"].map((h, i) => <th key={i} className="apple-table-header">{h}</th>)}</tr>
               </thead>
               <tbody>
                 {requests.length === 0 ? (
@@ -58,9 +39,7 @@ export default function ServiceRequests() {
                     <td className="apple-table-cell text-[#86868b]">{r.issueDescription}</td>
                     <td className="apple-table-cell text-[#86868b]">{r.serviceDate}</td>
                     <td className="apple-table-cell">
-                      <span className="apple-badge bg-[#f5f5f7] dark:bg-[#2c2c2e] text-[#1d1d1f] dark:text-[#f5f5f7]">
-                        {r.status}
-                      </span>
+                      <span className="apple-badge bg-[#f5f5f7] dark:bg-[#2c2c2e] text-[#1d1d1f] dark:text-[#f5f5f7]">{r.status}</span>
                     </td>
                     <td className="apple-table-cell">
                       <div className="flex flex-wrap gap-1.5">
@@ -74,7 +53,6 @@ export default function ServiceRequests() {
             </table>
           </div>
         )}
-
       </div>
     </EmployeeLayout>
   );

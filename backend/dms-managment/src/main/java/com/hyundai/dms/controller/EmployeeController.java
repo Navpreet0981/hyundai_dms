@@ -35,6 +35,18 @@ public class EmployeeController {
         return employeeService.getLoggedInEmployee();
     }
 
+    @DeleteMapping("/{id}")
+    public void deleteEmployee(@PathVariable("id") Long id) {
+        employeeService.deleteEmployee(id);
+    }
+
+    @PutMapping("/{id}/reassign")
+    public void reassignAndDeleteEmployee(
+            @PathVariable("id") Long oldEmployeeId,
+            @RequestParam("targetEmployeeId") Long targetEmployeeId) {
+        employeeService.reassignAndDeleteEmployee(oldEmployeeId, targetEmployeeId);
+    }
+
     @GetMapping("/paged")
     public Page<EmployeeDTO> getEmployeesPaged(
             @RequestParam(name = "page", defaultValue = "0") int page,

@@ -61,6 +61,13 @@ public class DealerController {
         dealerService.deleteDealer(id);
     }
 
+    @PutMapping("/{id}/reassign")
+    public void reassignAndDeleteDealer(
+            @PathVariable("id") Long oldDealerId,
+            @RequestParam("targetDealerId") Long targetDealerId) {
+        dealerService.reassignAndDeleteDealer(oldDealerId, targetDealerId);
+    }
+
     // Fix #8: Added missing endpoint called by DealerPerformance.jsx toggleDealer
     @PutMapping("/{id}/status")
     public Dealer updateDealerStatus(@PathVariable("id") Long id, @RequestBody java.util.Map<String, Boolean> body) {

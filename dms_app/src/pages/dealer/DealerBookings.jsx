@@ -1,58 +1,40 @@
-import { useEffect, useState } from "react";
+import { useEffect } from "react";
+import { useQueryClient } from "@tanstack/react-query";
 import api from "../../api/axiosClient";
 import DealerLayout from "../../layouts/DealerLayout";
 import { SkeletonTable } from "../../components/Skeleton";
 import usePagination from "../../hooks/usePagination";
 import Pagination from "../../components/Pagination";
+import { useBookingsPaged } from "../../hooks/useQueries";
 
 const btnPrimary = "px-3 py-1 text-xs bg-[#0071e3] hover:bg-[#0077ed] text-white rounded-lg transition-colors";
 const btnOutline = "px-3 py-1 text-xs border border-[#e5e5ea] dark:border-[#3a3a3c] text-[#1d1d1f] dark:text-[#f5f5f7] hover:bg-[#f5f5f7] dark:hover:bg-[#2c2c2e] rounded-lg transition-colors";
 const btnDanger  = "px-3 py-1 text-xs text-red-500 border border-red-200 dark:border-red-900 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-lg transition-colors";
 
 export default function DealerBookings() {
-  const [bookings, setBookings] = useState([]);
-  const [loading, setLoading] = useState(true);
+  const qc = useQueryClient();
   const { page, size, totalPages, setPage, setTotalPages } = usePagination(0, 10);
+  const { data, isLoading: loading } = useBookingsPaged(page, size);
+  const bookings = data?.content ?? [];
 
-  useEffect(() => {
-    setLoading(true);
-    api.get(`/bookings/paged?page=${page}&size=${size}`)
-      .then(res => {
-        setBookings(res.data.content);
-        setTotalPages(res.data.totalPages);
-      })
-      .catch(err => console.log(err))
-      .finally(() => setLoading(false));
-  }, [page, size, setTotalPages]);
+  useEffect(() => { if (data?.totalPages !== undefined) setTotalPages(data.totalPages); }, [data?.totalPages, setTotalPages]);
+
+  const invalidate = () => qc.invalidateQueries({ queryKey: ['bookings-paged'] });
 
   const updateStatus = (id, status) => {
-    api.put(`/bookings/${id}/status?status=${status}`)
-      .then(() => {
-        api.get(`/bookings/paged?page=${page}&size=${size}`).then(res => {
-          setBookings(res.data.content);
-          setTotalPages(res.data.totalPages);
-        });
-      })
-      .catch(err => console.log(err));
+    api.put(`/bookings/${id}/status?status=${status}`).then(invalidate).catch(err => console.log(err));
   };
 
   return (
     <DealerLayout>
       <div className="space-y-6">
-
         <h1 className="apple-title">Bookings</h1>
 
-        {loading ? (
-          <SkeletonTable rows={5} />
-        ) : (
+        {loading ? <SkeletonTable rows={5} /> : (
           <div className="apple-card overflow-x-auto">
             <table className="w-full text-left min-w-[600px]">
               <thead className="border-b border-[#e5e5ea] dark:border-[#2c2c2e]">
-                <tr>
-                  {["Customer","Variant","Employee","Date","Status","Actions"].map((h, i) => (
-                    <th key={i} className="apple-table-header">{h}</th>
-                  ))}
-                </tr>
+                <tr>{["Customer","Variant","Employee","Date","Status","Actions"].map((h, i) => <th key={i} className="apple-table-header">{h}</th>)}</tr>
               </thead>
               <tbody>
                 {bookings.length === 0 ? (
@@ -64,9 +46,7 @@ export default function DealerBookings() {
                     <td className="apple-table-cell text-[#86868b]">{b.employeeName}</td>
                     <td className="apple-table-cell text-[#86868b]">{b.bookingDate}</td>
                     <td className="apple-table-cell">
-                      <span className="apple-badge bg-[#f5f5f7] dark:bg-[#2c2c2e] text-[#6e6e73] dark:text-[#86868b]">
-                        {b.status}
-                      </span>
+                      <span className="apple-badge bg-[#f5f5f7] dark:bg-[#2c2c2e] text-[#6e6e73] dark:text-[#86868b]">{b.status}</span>
                     </td>
                     <td className="apple-table-cell">
                       <div className="flex flex-wrap gap-1.5">
@@ -82,7 +62,6 @@ export default function DealerBookings() {
             <Pagination page={page} totalPages={totalPages} setPage={setPage} />
           </div>
         )}
-
       </div>
     </DealerLayout>
   );

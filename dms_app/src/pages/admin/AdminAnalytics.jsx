@@ -1,40 +1,27 @@
-import { useEffect, useState } from "react";
-import api from "../../api/axiosClient";
 import AdminLayout from "../../layouts/AdminLayout";
 import { BarChart, Bar, XAxis, YAxis, Tooltip, PieChart, Pie, Cell, ResponsiveContainer } from "recharts";
 import { SkeletonChart, SkeletonTable } from "../../components/Skeleton";
+import { useAdminMonthlySales, useAdminLeadSources, useAdminLeadConv, useAdminDealerPerf } from "../../hooks/useQueries";
 
 const COLORS = ["#0071e3", "#0ea5e9", "#34c759", "#ff9f0a"];
 
 export default function AdminAnalytics() {
-  const [monthlySales, setMonthlySales] = useState([]);
-  const [leadSources, setLeadSources] = useState([]);
-  const [conversion, setConversion] = useState({});
-  const [dealerPerformance, setDealerPerformance] = useState([]);
-  const [loading, setLoading] = useState(true);
-
-  useEffect(() => {
-    Promise.all([
-      api.get("/admin/sales/monthly").then(res => setMonthlySales(res.data)).catch(() => {}),
-      api.get("/admin/lead-source-analytics").then(res => setLeadSources(res.data)).catch(() => {}),
-      api.get("/admin/lead-conversion").then(res => setConversion(res.data)).catch(() => {}),
-      api.get("/admin/dealer-performance").then(res => setDealerPerformance(res.data)).catch(() => {})
-    ]).finally(() => setLoading(false));
-  }, []);
+  const { data: monthlySales = [],      isLoading: l1 } = useAdminMonthlySales();
+  const { data: leadSources = [],       isLoading: l2 } = useAdminLeadSources();
+  const { data: conversion = {},        isLoading: l3 } = useAdminLeadConv();
+  const { data: dealerPerformance = [], isLoading: l4 } = useAdminDealerPerf();
+  const loading = l1 || l2 || l3 || l4;
 
   return (
     <AdminLayout>
       <div className="space-y-6">
-
         <div>
           <h1 className="apple-title">Analytics Dashboard</h1>
           <p className="apple-subtitle mt-1">Lead conversion and dealer performance insights</p>
         </div>
 
         <div className="grid grid-cols-1 xl:grid-cols-2 gap-4 sm:gap-6">
-          {loading ? (
-            <><SkeletonChart /><SkeletonChart /></>
-          ) : (
+          {loading ? <><SkeletonChart /><SkeletonChart /></> : (
             <>
               <div className="apple-card p-5 sm:p-6">
                 <h3 className="text-sm font-semibold text-[#1d1d1f] dark:text-[#f5f5f7] mb-4">Monthly Sales</h3>
@@ -51,11 +38,8 @@ export default function AdminAnalytics() {
                 <h3 className="text-sm font-semibold text-[#1d1d1f] dark:text-[#f5f5f7] mb-4">Lead Sources</h3>
                 <ResponsiveContainer width="100%" height={280}>
                   <PieChart>
-                {/* Fix #18: dataKey matches LeadSourceDTO field 'totalLeads', not 'count' */}
-                <Pie data={leadSources} dataKey="totalLeads" nameKey="source" outerRadius={100} label>
-                      {leadSources.map((_, index) => (
-                        <Cell key={index} fill={COLORS[index % COLORS.length]} />
-                      ))}
+                    <Pie data={leadSources} dataKey="totalLeads" nameKey="source" outerRadius={100} label>
+                      {leadSources.map((_, index) => <Cell key={index} fill={COLORS[index % COLORS.length]} />)}
                     </Pie>
                     <Tooltip contentStyle={{ borderRadius: "12px", border: "1px solid #e5e5ea", boxShadow: "0 4px 20px rgba(0,0,0,0.08)" }} />
                   </PieChart>
@@ -65,17 +49,14 @@ export default function AdminAnalytics() {
           )}
         </div>
 
-        {loading ? (
-          <SkeletonTable rows={3} />
-        ) : (
+        {loading ? <SkeletonTable rows={3} /> : (
           <div className="apple-card p-5 sm:p-6">
             <h3 className="text-sm font-semibold text-[#1d1d1f] dark:text-[#f5f5f7] mb-4">Lead Conversion</h3>
             <div className="grid grid-cols-3 gap-4 sm:gap-6 text-center">
               {[
-                // Fix #7: Use correct DTO field names from LeadConversionDTO
                 { label: "Total Leads",  value: conversion.totalLeads     || 0, color: "text-[#0071e3]" },
                 { label: "Test Drives",  value: conversion.totalTestDrives || 0, color: "text-purple-600" },
-                { label: "Bookings",     value: conversion.totalBookings   || 0, color: "text-[#34c759]" }
+                { label: "Bookings",     value: conversion.totalBookings   || 0, color: "text-[#34c759]" },
               ].map((item, i) => (
                 <div key={i} className="apple-card p-4">
                   <p className="apple-label mb-1">{item.label}</p>
@@ -86,9 +67,7 @@ export default function AdminAnalytics() {
           </div>
         )}
 
-        {loading ? (
-          <SkeletonTable rows={5} />
-        ) : (
+        {loading ? <SkeletonTable rows={5} /> : (
           <div className="apple-card overflow-x-auto">
             <div className="p-5 sm:p-6 border-b border-[#e5e5ea] dark:border-[#2c2c2e]">
               <h3 className="text-sm font-semibold text-[#1d1d1f] dark:text-[#f5f5f7]">Dealer Performance</h3>
@@ -96,11 +75,9 @@ export default function AdminAnalytics() {
             <table className="w-full text-left min-w-[500px]">
               <thead className="border-b border-[#e5e5ea] dark:border-[#2c2c2e]">
                 <tr>
-                  <th className="apple-table-header">Dealer</th>
-                  <th className="apple-table-header">Employees</th>
-                  <th className="apple-table-header">Leads</th>
-                  <th className="apple-table-header">Bookings</th>
-                  <th className="apple-table-header">Conversion</th>
+                  {["Dealer","Employees","Leads","Bookings","Conversion"].map((h, i) => (
+                    <th key={i} className="apple-table-header">{h}</th>
+                  ))}
                 </tr>
               </thead>
               <tbody>
@@ -119,7 +96,6 @@ export default function AdminAnalytics() {
             </table>
           </div>
         )}
-
       </div>
     </AdminLayout>
   );

@@ -1,54 +1,41 @@
-import { useEffect, useState } from "react";
+import { useQueryClient } from "@tanstack/react-query";
 import api from "../../api/axiosClient";
 import AdminLayout from "../../layouts/AdminLayout";
 import { SkeletonTable } from "../../components/Skeleton";
+import { useAdminDealerPerf } from "../../hooks/useQueries";
 
 export default function DealerPerformance() {
-  const [dealers, setDealers] = useState([]);
-  const [loading, setLoading] = useState(true);
+  const qc = useQueryClient();
+  const { data: dealers = [], isLoading: loading } = useAdminDealerPerf();
 
-  const loadDealers = () => {
-    api.get("/admin/dealer-performance")
-      .then(res => setDealers(res.data))
-      .catch(err => console.log(err))
-      .finally(() => setLoading(false));
-  };
-
-  useEffect(() => { loadDealers(); }, []);
+  const invalidate = () => qc.invalidateQueries({ queryKey: ['admin-dealer-perf'] });
 
   const toggleDealer = (id, active) => {
-    api.put(`/dealers/${id}/status`, { active: !active }).then(() => loadDealers());
+    api.put(`/dealers/${id}/status`, { active: !active }).then(invalidate);
   };
 
   const deleteDealer = (id) => {
     if (window.confirm("Delete this dealer?")) {
-      api.delete(`/dealers/${id}`).then(() => loadDealers());
+      api.delete(`/dealers/${id}`).then(invalidate);
     }
   };
 
   return (
     <AdminLayout>
       <div className="space-y-6">
-
         <div>
           <h1 className="apple-title">Dealer Performance</h1>
           <p className="apple-subtitle mt-1">Monitor and manage dealer activity</p>
         </div>
 
-        {loading ? (
-          <SkeletonTable rows={5} />
-        ) : (
+        {loading ? <SkeletonTable rows={5} /> : (
           <div className="apple-card overflow-x-auto">
             <table className="w-full text-left min-w-[650px]">
               <thead className="border-b border-[#e5e5ea] dark:border-[#2c2c2e]">
                 <tr>
-                  <th className="apple-table-header">Dealer</th>
-                  <th className="apple-table-header">Employees</th>
-                  <th className="apple-table-header">Leads</th>
-                  <th className="apple-table-header">Bookings</th>
-                  <th className="apple-table-header">Conversion</th>
-                  <th className="apple-table-header">Status</th>
-                  <th className="apple-table-header">Actions</th>
+                  {["Dealer","Employees","Leads","Bookings","Conversion","Status","Actions"].map((h, i) => (
+                    <th key={i} className="apple-table-header">{h}</th>
+                  ))}
                 </tr>
               </thead>
               <tbody>
@@ -70,16 +57,12 @@ export default function DealerPerformance() {
                     </td>
                     <td className="apple-table-cell">
                       <div className="flex flex-wrap gap-2">
-                        <button
-                          onClick={() => toggleDealer(dealer.dealerId, dealer.active)}
-                          className="apple-btn-secondary !px-3 !py-1.5 !text-xs"
-                        >
+                        <button onClick={() => toggleDealer(dealer.dealerId, dealer.active)}
+                          className="apple-btn-secondary !px-3 !py-1.5 !text-xs">
                           {dealer.active ? "Deactivate" : "Activate"}
                         </button>
-                        <button
-                          onClick={() => deleteDealer(dealer.dealerId)}
-                          className="px-3 py-1.5 text-xs text-red-500 border border-red-200 dark:border-red-800 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-lg transition-colors"
-                        >
+                        <button onClick={() => deleteDealer(dealer.dealerId)}
+                          className="px-3 py-1.5 text-xs text-red-500 border border-red-200 dark:border-red-800 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-lg transition-colors">
                           Remove
                         </button>
                       </div>
@@ -90,7 +73,6 @@ export default function DealerPerformance() {
             </table>
           </div>
         )}
-
       </div>
     </AdminLayout>
   );

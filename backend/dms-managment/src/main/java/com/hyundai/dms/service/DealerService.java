@@ -6,7 +6,10 @@ import com.hyundai.dms.repository.BookingRepository;
 import com.hyundai.dms.repository.CustomerRepository;
 import com.hyundai.dms.repository.DealerRepository;
 import com.hyundai.dms.repository.EmployeeRepository;
+import com.hyundai.dms.repository.ServiceRequestRepository;
+import com.hyundai.dms.repository.TestDriveRepository;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -21,13 +24,20 @@ public class DealerService {
     private final BookingRepository bookingRepository;
     private final CustomerRepository customerRepository;
     private final EmployeeRepository employeeRepository;
+    private final TestDriveRepository testDriveRepository;
+    private final ServiceRequestRepository serviceRequestRepository;
     private final PasswordEncoder passwordEncoder;
 
-    public DealerService(DealerRepository dealerRepository, BookingRepository bookingRepository, CustomerRepository customerRepository, EmployeeRepository employeeRepository, PasswordEncoder passwordEncoder) {
+    public DealerService(DealerRepository dealerRepository, BookingRepository bookingRepository,
+                         CustomerRepository customerRepository, EmployeeRepository employeeRepository,
+                         TestDriveRepository testDriveRepository, ServiceRequestRepository serviceRequestRepository,
+                         PasswordEncoder passwordEncoder) {
         this.dealerRepository = dealerRepository;
         this.bookingRepository = bookingRepository;
         this.customerRepository = customerRepository;
         this.employeeRepository = employeeRepository;
+        this.testDriveRepository = testDriveRepository;
+        this.serviceRequestRepository = serviceRequestRepository;
         this.passwordEncoder = passwordEncoder;
     }
 
@@ -53,6 +63,24 @@ public class DealerService {
                 .orElseThrow(() -> new RuntimeException("Dealer not found"));
         dealer.setActive(active);
         return dealerRepository.save(dealer);
+    }
+
+    // Reassign all data from oldDealerId to newDealerId, then delete the old dealer
+    @Transactional
+    public void reassignAndDeleteDealer(Long oldDealerId, Long newDealerId) {
+        if (oldDealerId.equals(newDealerId)) {
+            throw new RuntimeException("Cannot reassign to the same dealer");
+        }
+        dealerRepository.findById(newDealerId)
+                .orElseThrow(() -> new RuntimeException("Target dealer not found"));
+
+        bookingRepository.reassignDealer(oldDealerId, newDealerId);
+        testDriveRepository.reassignDealer(oldDealerId, newDealerId);
+        customerRepository.reassignDealer(oldDealerId, newDealerId);
+        serviceRequestRepository.reassignDealer(oldDealerId, newDealerId);
+        employeeRepository.reassignDealer(oldDealerId, newDealerId);
+
+        dealerRepository.deleteById(oldDealerId);
     }
 
     // Delete dealer

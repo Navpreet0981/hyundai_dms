@@ -1,33 +1,22 @@
-import { useEffect, useState } from "react";
-import api from "../../api/axiosClient";
 import DealerLayout from "../../layouts/DealerLayout";
 import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, PieChart, Pie, Cell, Legend } from "recharts";
 import { SkeletonCard, SkeletonChart } from "../../components/Skeleton";
+import { useDealerLeads, useAllTestDrives, useAllBookings, useDealerMonthlyRev } from "../../hooks/useQueries";
 
 const COLORS = ["#0071e3", "#bf5af2", "#30d158"];
 
 export default function DealerReports() {
-  const [leads, setLeads] = useState([]);
-  const [testDrives, setTestDrives] = useState([]);
-  const [bookings, setBookings] = useState([]);
-  const [monthly, setMonthly] = useState([]);
-  const [loading, setLoading] = useState(true);
-
-  useEffect(() => {
-    Promise.all([
-      api.get("/customers").then(res => setLeads(res.data)).catch(() => {}),
-      api.get("/testdrives").then(res => setTestDrives(res.data)).catch(() => {}),
-      api.get("/bookings").then(res => setBookings(res.data)).catch(() => {}),
-      api.get("/dealer/revenue/monthly").then(res => setMonthly(res.data)).catch(() => {})
-    ]).finally(() => setLoading(false));
-  }, []);
+  const { data: leads = [],      isLoading: l1 } = useDealerLeads();
+  const { data: testDrives = [], isLoading: l2 } = useAllTestDrives();
+  const { data: bookings = [],   isLoading: l3 } = useAllBookings();
+  const { data: monthly = [],    isLoading: l4 } = useDealerMonthlyRev();
+  const loading = l1 || l2 || l3 || l4;
 
   const kpis = [
-    { label: "Leads",      value: leads.length,      color: "#0071e3", bg: "bg-[#0071e3]/10" },
-    { label: "Test Drives",value: testDrives.length,  color: "#bf5af2", bg: "bg-[#bf5af2]/10" },
-    { label: "Bookings",   value: bookings.length,    color: "#30d158", bg: "bg-[#30d158]/10" },
+    { label: "Leads",       value: leads.length,      color: "#0071e3", bg: "bg-[#0071e3]/10" },
+    { label: "Test Drives", value: testDrives.length, color: "#bf5af2", bg: "bg-[#bf5af2]/10" },
+    { label: "Bookings",    value: bookings.length,   color: "#30d158", bg: "bg-[#30d158]/10" },
   ];
-
   const pieData = kpis.map(k => ({ name: k.label, value: k.value }));
 
   return (

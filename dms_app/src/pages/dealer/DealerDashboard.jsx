@@ -1,39 +1,28 @@
-import { useEffect, useState } from "react";
-import api from "../../api/axiosClient";
 import DealerLayout from "../../layouts/DealerLayout";
 import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, PieChart, Pie, Cell, Legend } from "recharts";
 import { Users, Car, CalendarCheck, TrendingUp } from "lucide-react";
 import { SkeletonCard, SkeletonChart } from "../../components/Skeleton";
+import { useDealerDashboard, useDealerMonthlyRev } from "../../hooks/useQueries";
+
+const COLORS = ["#0071e3", "#30d158"];
 
 export default function DealerDashboard() {
-  const [data, setData] = useState({});
-  const [chartData, setChartData] = useState([]);
-  const [loading, setLoading] = useState(true);
-
-  useEffect(() => {
-    Promise.all([
-      api.get("/dealer/dashboard").then(res => setData(res.data)),
-      api.get("/dealer/revenue/monthly").then(res => setChartData(res.data)).catch(() => {})
-    ]).finally(() => setLoading(false));
-  }, []);
+  const { data = {},          isLoading: l1 } = useDealerDashboard();
+  const { data: chartData = [], isLoading: l2 } = useDealerMonthlyRev();
+  const loading = l1 || l2;
 
   const pieData = [
     { name: "Test Drives", value: data.totalTestDrives || 0 },
-    { name: "Bookings", value: data.totalBookings || 0 }
+    { name: "Bookings",    value: data.totalBookings   || 0 },
   ];
-  const COLORS = ["#0071e3", "#30d158"];
 
   return (
     <DealerLayout>
       <div className="space-y-6 sm:space-y-8">
-
         <h1 className="apple-title">Dealer Dashboard</h1>
 
-        {/* KPI CARDS */}
         <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-4">
-          {loading ? (
-            Array.from({ length: 4 }).map((_, i) => <SkeletonCard key={i} />)
-          ) : (
+          {loading ? Array.from({ length: 4 }).map((_, i) => <SkeletonCard key={i} />) : (
             [
               { label: "Employees",   value: data.totalEmployees  || 0, Icon: Users,         color: "text-[#0071e3]", bg: "bg-[#0071e3]/10" },
               { label: "Total Leads", value: data.totalLeads      || 0, Icon: TrendingUp,    color: "text-[#30d158]", bg: "bg-[#30d158]/10" },
@@ -53,19 +42,11 @@ export default function DealerDashboard() {
           )}
         </div>
 
-        {/* CHARTS */}
         <div className="grid grid-cols-1 xl:grid-cols-2 gap-4">
-          {loading ? (
-            <>
-              <SkeletonChart />
-              <SkeletonChart />
-            </>
-          ) : (
+          {loading ? <><SkeletonChart /><SkeletonChart /></> : (
             <>
               <div className="apple-card p-5 sm:p-6 h-[300px] sm:h-[360px]">
-                <h2 className="text-sm font-semibold text-[#1d1d1f] dark:text-[#f5f5f7] mb-5">
-                  Monthly Bookings
-                </h2>
+                <h2 className="text-sm font-semibold text-[#1d1d1f] dark:text-[#f5f5f7] mb-5">Monthly Bookings</h2>
                 <ResponsiveContainer width="100%" height="85%">
                   <BarChart data={chartData} margin={{ top: 10, right: 10, left: -10, bottom: 5 }}>
                     <XAxis dataKey="period" tick={{ fontSize: 11, fill: "#86868b" }} axisLine={false} tickLine={false} />
@@ -76,15 +57,11 @@ export default function DealerDashboard() {
                 </ResponsiveContainer>
               </div>
               <div className="apple-card p-5 sm:p-6 h-[300px] sm:h-[360px]">
-                <h2 className="text-sm font-semibold text-[#1d1d1f] dark:text-[#f5f5f7] mb-5">
-                  Conversion Overview
-                </h2>
+                <h2 className="text-sm font-semibold text-[#1d1d1f] dark:text-[#f5f5f7] mb-5">Conversion Overview</h2>
                 <ResponsiveContainer width="100%" height="85%">
                   <PieChart>
                     <Pie data={pieData} dataKey="value" nameKey="name" outerRadius={90} innerRadius={45} paddingAngle={3} label>
-                      {pieData.map((_, index) => (
-                        <Cell key={index} fill={COLORS[index % COLORS.length]} />
-                      ))}
+                      {pieData.map((_, index) => <Cell key={index} fill={COLORS[index % COLORS.length]} />)}
                     </Pie>
                     <Legend iconType="circle" iconSize={8} />
                   </PieChart>
@@ -93,7 +70,6 @@ export default function DealerDashboard() {
             </>
           )}
         </div>
-
       </div>
     </DealerLayout>
   );

@@ -3,10 +3,12 @@ package com.hyundai.dms.repository;
 import com.hyundai.dms.entity.Customer;
 import com.hyundai.dms.entity.Dealer;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.stereotype.Repository;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.repository.query.Param;
 
 import java.util.List;
 
@@ -63,4 +65,12 @@ public interface CustomerRepository extends JpaRepository<Customer, Long> {
       )
 """)
     Page<Customer> searchByDealer(Long dealerId, String search, Pageable pageable);
+
+    @Modifying
+    @Query("UPDATE Customer c SET c.dealer.dealerId = :newDealerId WHERE c.dealer.dealerId = :oldDealerId")
+    void reassignDealer(@Param("oldDealerId") Long oldDealerId, @Param("newDealerId") Long newDealerId);
+
+    @Modifying
+    @Query("UPDATE Customer c SET c.employee.employeeId = :newEmployeeId WHERE c.employee.employeeId = :oldEmployeeId")
+    void reassignEmployee(@Param("oldEmployeeId") Long oldEmployeeId, @Param("newEmployeeId") Long newEmployeeId);
 }

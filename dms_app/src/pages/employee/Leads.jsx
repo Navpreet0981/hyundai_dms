@@ -1,54 +1,37 @@
-import { useEffect, useState } from "react";
+import { useQueryClient } from "@tanstack/react-query";
 import api from "../../api/axiosClient";
 import EmployeeLayout from "../../layouts/EmployeeLayout";
 import { useNavigate } from "react-router-dom";
 import { SkeletonTable } from "../../components/Skeleton";
+import { useEmployeeLeads } from "../../hooks/useQueries";
 
 export default function Leads() {
   const navigate = useNavigate();
-  const [leads, setLeads] = useState([]);
-  const [loading, setLoading] = useState(true);
-
-  const loadLeads = () => {
-    api.get("/customers")
-      .then(res => setLeads(res.data))
-      .catch(err => console.log(err))
-      .finally(() => setLoading(false));
-  };
-
-  useEffect(() => { loadLeads(); }, []);
+  const qc = useQueryClient();
+  const { data: leads = [], isLoading: loading } = useEmployeeLeads();
 
   const scheduleTestDrive = (customer) => navigate("/testdrives", { state: { customer } });
 
   const updateStatus = (id, status) => {
     api.put(`/customers/${id}/status?status=${status}`)
-      .then(() => loadLeads())
+      .then(() => qc.invalidateQueries({ queryKey: ['employee-leads'] }))
       .catch(err => console.log(err));
   };
 
   return (
     <EmployeeLayout>
       <div className="space-y-6">
-
         <div>
           <h1 className="apple-title">Customer Leads</h1>
           <p className="apple-subtitle mt-1">Track and manage your assigned leads</p>
         </div>
 
-        {loading ? (
-          <SkeletonTable rows={5} />
-        ) : (
+        {loading ? <SkeletonTable rows={5} /> : (
           <div className="apple-card overflow-x-auto">
             <table className="w-full text-sm min-w-[750px]">
               <thead className="border-b border-[#e5e5ea] dark:border-[#2c2c2e]">
                 <tr>
-                  <th className="apple-table-header">Name</th>
-                  <th className="apple-table-header">Phone</th>
-                  <th className="apple-table-header">City</th>
-                  <th className="apple-table-header">Source</th>
-                  <th className="apple-table-header">Model</th>
-                  <th className="apple-table-header">Status</th>
-                  <th className="apple-table-header">Actions</th>
+                  {["Name","Phone","City","Source","Model","Status","Actions"].map((h, i) => <th key={i} className="apple-table-header">{h}</th>)}
                 </tr>
               </thead>
               <tbody>
@@ -62,9 +45,7 @@ export default function Leads() {
                     <td className="apple-table-cell text-[#86868b]">{l.leadSource}</td>
                     <td className="apple-table-cell text-[#86868b]">{l.interestedModel}</td>
                     <td className="apple-table-cell">
-                      <span className="apple-badge bg-[#f5f5f7] dark:bg-[#2c2c2e] text-[#1d1d1f] dark:text-[#f5f5f7]">
-                        {l.leadStatus}
-                      </span>
+                      <span className="apple-badge bg-[#f5f5f7] dark:bg-[#2c2c2e] text-[#1d1d1f] dark:text-[#f5f5f7]">{l.leadStatus}</span>
                     </td>
                     <td className="apple-table-cell">
                       <div className="flex flex-wrap gap-1.5">
@@ -82,7 +63,6 @@ export default function Leads() {
             </table>
           </div>
         )}
-
       </div>
     </EmployeeLayout>
   );

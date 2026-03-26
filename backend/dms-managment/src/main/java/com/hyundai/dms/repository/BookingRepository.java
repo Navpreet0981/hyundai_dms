@@ -3,6 +3,7 @@ package com.hyundai.dms.repository;
 import com.hyundai.dms.entity.Booking;
 import com.hyundai.dms.entity.Dealer;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 
 import java.util.List;
@@ -52,4 +53,12 @@ public interface BookingRepository extends JpaRepository<Booking, Long> {
 
     @Query("SELECT COALESCE(SUM(v.price),0) FROM Booking b JOIN b.carVariant v WHERE b.dealer.dealerId = :dealerId")
     Double getTotalRevenueByDealer(@Param("dealerId") Long dealerId);
+
+    @Modifying
+    @Query("UPDATE Booking b SET b.dealer.dealerId = :newDealerId WHERE b.dealer.dealerId = :oldDealerId")
+    void reassignDealer(@Param("oldDealerId") Long oldDealerId, @Param("newDealerId") Long newDealerId);
+
+    @Modifying
+    @Query("UPDATE Booking b SET b.employee.employeeId = :newEmployeeId WHERE b.employee.employeeId = :oldEmployeeId")
+    void reassignEmployee(@Param("oldEmployeeId") Long oldEmployeeId, @Param("newEmployeeId") Long newEmployeeId);
 }

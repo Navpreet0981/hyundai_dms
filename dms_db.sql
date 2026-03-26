@@ -57,5 +57,44 @@ DELETE FROM customers;
 DELETE FROM employees;
 DELETE FROM dealers;
 DELETE FROM admins;
+delete from bookings;
 
 SET FOREIGN_KEY_CHECKS = 1;
+
+
+ALTER TABLE customers AUTO_INCREMENT = 1;
+ALTER TABLE employees AUTO_INCREMENT = 1;
+ALTER TABLE dealers AUTO_INCREMENT = 1;
+ALTER TABLE admins AUTO_INCREMENT = 1;
+
+SELECT * FROM admins;
+SELECT * FROM dealers;
+SELECT * FROM employees;
+SELECT * FROM customers;
+select * from service_requests;
+DELETE FROM service_requests WHERE employee_id IS NULL;
+show tables;
+desc admins;
+INSERT INTO admins (name, email, password, active, role)
+VALUES (
+  'Super Admin',
+  'admin@test.com',
+  '$2a$10$7QJzRkGzQk8pJ6z0XyXW7e7X0zWqz5VYkT9VqXbZx1zYp6RkQmW2K',
+  1,
+  'ADMIN'
+);
+
+SELECT * FROM admins;
+
+update dealers 
+Set password = '$2a$10$Ms.BMf5og.I8QvwumIiIo.3WEhwgjqbYjuhFkL93KwR3hel.K077S'
+WHERE email= 'navpreet.singh@hyundai.com';
+
+SELECT email, password FROM dealers;
+
+describe customers;
+ALTER TABLE customers ADD COLUMN variant_id BIGINT;
+
+ALTER TABLE customers
+ADD CONSTRAINT fk_customer_variant
+FOREIGN KEY (variant_id) REFERENCES car_variant(variant_id);
