@@ -5,8 +5,11 @@ import com.hyundai.dms.entity.*;
 import com.hyundai.dms.enums.BookingStatus;
 import com.hyundai.dms.mapper.BookingMapper;
 import com.hyundai.dms.repository.*;
+import com.hyundai.dms.service.InventoryService;
+import org.springframework.context.annotation.Lazy;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 import java.util.stream.Collectors;
@@ -20,24 +23,28 @@ public class BookingService {
     private final DealerRepository dealerRepository;
     private final EmployeeRepository employeeRepository;
     private final CarVariantRepository variantRepository;
+    private final InventoryService inventoryService;
 
     public BookingService(BookingRepository bookingRepository,
                           CustomerRepository customerRepository,
                           DealerRepository dealerRepository,
                           EmployeeRepository employeeRepository,
-                          CarVariantRepository variantRepository) {
+                          CarVariantRepository variantRepository,
+                          @Lazy InventoryService inventoryService) {
 
         this.bookingRepository = bookingRepository;
         this.customerRepository = customerRepository;
         this.dealerRepository = dealerRepository;
         this.employeeRepository = employeeRepository;
         this.variantRepository = variantRepository;
+        this.inventoryService = inventoryService;
     }
 
     public long getTotalBookings() {
         return bookingRepository.count();
     }
 
+    @Transactional
     public BookingDTO createBooking(BookingDTO dto) {
 
         Customer customer = customerRepository.findById(dto.getCustomerId())
@@ -51,6 +58,12 @@ public class BookingService {
 
         CarVariant variant = variantRepository.findById(dto.getVariantId())
                 .orElseThrow(() -> new RuntimeException("Variant not found"));
+
+        // Inventory check — decrement returns false if out of stock
+        boolean decremented = inventoryService.decrementStock(dealer.getDealerId(), variant.getVariantId());
+        if (!decremented) {
+            throw new RuntimeException("OUT_OF_STOCK");
+        }
 
         Booking booking = Booking.builder()
                 .bookingDate(dto.getBookingDate())
@@ -86,11 +99,24 @@ public class BookingService {
         bookingRepository.deleteById(id);
     }
 
+    @Transactional
     public BookingDTO updateStatus(Long id, BookingStatus status) {
         Booking booking = bookingRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Booking not found"));
+
+        BookingStatus previous = booking.getStatus();
         booking.setStatus(status);
-        return BookingMapper.toDTO(bookingRepository.save(booking));
+        Booking saved = bookingRepository.save(booking);
+
+        // Restore inventory when booking is cancelled (only if it wasn't already cancelled)
+        if (status == BookingStatus.CANCELLED && previous != BookingStatus.CANCELLED) {
+            inventoryService.incrementStock(
+                    saved.getDealer().getDealerId(),
+                    saved.getCarVariant().getVariantId()
+            );
+        }
+
+        return BookingMapper.toDTO(saved);
     }
 
     public long getTotalBookingsByRole() {

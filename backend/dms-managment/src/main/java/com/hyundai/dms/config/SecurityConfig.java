@@ -33,6 +33,7 @@ public class SecurityConfig {
                 .requestMatchers("/auth/**").permitAll()
 
                 // DEALER routes first (order matters)
+                .requestMatchers("/dealer/inventory/check").hasAnyRole("DEALER","EMPLOYEE","ADMIN")
                 .requestMatchers("/dealer/**").hasRole("DEALER")
 
                 // Admin-only

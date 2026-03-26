@@ -55,15 +55,31 @@ export default function TestDrives() {
   };
 
   const createBooking = (testDrive) => {
-    api.post("/bookings", {
-      customerId: testDrive.customerId,
-      dealerId: testDrive.dealerId,
-      employeeId: testDrive.employeeId,
-      variantId: testDrive.variantId,
-      bookingDate: new Date().toISOString().split("T")[0],
-      status: "PENDING",
-    })
-      .then(() => alert("Booking Created"))
+    // Check inventory before booking
+    api.get(`/dealer/inventory/check?dealerId=${testDrive.dealerId}&variantId=${testDrive.variantId}`)
+      .then(res => {
+        if (!res.data.inStock) {
+          alert("⚠️ Out of Stock — This variant is not available in the dealer's inventory.");
+          return;
+        }
+        api.post("/bookings", {
+          customerId: testDrive.customerId,
+          dealerId: testDrive.dealerId,
+          employeeId: testDrive.employeeId,
+          variantId: testDrive.variantId,
+          bookingDate: new Date().toISOString().split("T")[0],
+          status: "PENDING",
+        })
+          .then(() => { alert("Booking Created"); invalidate(); })
+          .catch(err => {
+            const msg = err.response?.data?.message || "";
+            if (msg === "OUT_OF_STOCK") {
+              alert("⚠️ Out of Stock — This variant is not available in the dealer's inventory.");
+            } else {
+              console.log(err);
+            }
+          });
+      })
       .catch(err => console.log(err));
   };
 

@@ -81,6 +81,9 @@ export const useServiceRequests    = () => useQuery({ queryKey: ['service-reques
 export const useAllTestDrives      = () => useQuery({ queryKey: ['all-testdrives'],        queryFn: () => fetcher('/testdrives') });
 export const useAllBookings        = () => useQuery({ queryKey: ['all-bookings'],          queryFn: () => fetcher('/bookings') });
 
+// ─── INVENTORY ───────────────────────────────────────────────────────────────
+export const useDealerInventory = () => useQuery({ queryKey: ['dealer-inventory'], queryFn: () => fetcher('/dealer/inventory') });
+
 // ─── MUTATIONS (invalidate cache on success) ─────────────────────────────────
 export const useInvalidate = () => {
   const qc = useQueryClient();
