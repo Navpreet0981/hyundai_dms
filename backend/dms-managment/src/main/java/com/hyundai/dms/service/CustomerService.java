@@ -110,7 +110,7 @@ public class CustomerService {
         throw new RuntimeException("Unauthorized access");
     }
 
-    // ✅ SECURE GET BY ID
+    //  SECURE GET BY ID
     public CustomerDTO getCustomerById(Long id) {
 
         Customer customer = customerRepository.findById(id)
@@ -172,7 +172,7 @@ public class CustomerService {
         String role = SecurityContextHolder.getContext().getAuthentication()
                 .getAuthorities().iterator().next().getAuthority();
 
-        // ✅ EMPLOYEE restriction
+        // EMPLOYEE restriction
         if (role.equals("ROLE_EMPLOYEE")) {
             if (customer.getEmployee() == null ||
                     !customer.getEmployee().getEmail().equals(email)) {
@@ -180,7 +180,7 @@ public class CustomerService {
             }
         }
 
-        // ✅ DEALER restriction
+        //  DEALER restriction
         if (role.equals("ROLE_DEALER")) {
             if (customer.getDealer() == null ||
                     !customer.getDealer().getEmail().equals(email)) {
@@ -246,12 +246,12 @@ public class CustomerService {
                 .next()
                 .getAuthority();
 
-        // ✅ ADMIN → all
+        //  ADMIN → all
         if (role.equals("ROLE_ADMIN")) {
             return customerRepository.count();
         }
 
-        // ✅ EMPLOYEE → own
+        //  EMPLOYEE → own
         if (role.equals("ROLE_EMPLOYEE")) {
 
             Employee employee = employeeRepository.findByEmail(email)
@@ -260,7 +260,7 @@ public class CustomerService {
             return customerRepository.countByEmployee_EmployeeId(employee.getEmployeeId());
         }
 
-        // ✅ DEALER → all under dealer
+        //  DEALER → all under dealer
         if (role.equals("ROLE_DEALER")) {
 
             Dealer dealer = dealerRepository.findByEmail(email)
@@ -285,7 +285,7 @@ public class CustomerService {
                 .next()
                 .getAuthority();
 
-        // ✅ ADMIN
+        //  ADMIN
         if (role.equals("ROLE_ADMIN")) {
 
             if (search != null && !search.isEmpty()) {
@@ -297,8 +297,7 @@ public class CustomerService {
             return customerRepository.findAll(pageable)
                     .map(this::mapToDTO);
         }
-
-        // ✅ EMPLOYEE
+        //  EMPLOYEE
         if (role.equals("ROLE_EMPLOYEE")) {
 
             Employee employee = employeeRepository.findByEmail(email)
@@ -315,7 +314,7 @@ public class CustomerService {
                     .map(this::mapToDTO);
         }
 
-        // ✅ DEALER
+        //  DEALER
         if (role.equals("ROLE_DEALER")) {
 
             Dealer dealer = dealerRepository.findByEmail(email)

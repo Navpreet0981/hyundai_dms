@@ -5,7 +5,7 @@ import com.hyundai.dms.entity.*;
 import com.hyundai.dms.enums.BookingStatus;
 import com.hyundai.dms.mapper.BookingMapper;
 import com.hyundai.dms.repository.*;
-import com.hyundai.dms.service.InventoryService;
+// import com.hyundai.dms.service.InventoryService;
 import org.springframework.context.annotation.Lazy;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
@@ -158,13 +158,13 @@ public class BookingService {
                 .next()
                 .getAuthority();
 
-        // ✅ ADMIN → all bookings
+        // ADMIN → all bookings
         if (role.equals("ROLE_ADMIN")) {
             return bookingRepository.findAll(pageable)
                     .map(BookingMapper::toDTO);
         }
 
-        // ✅ EMPLOYEE → own bookings
+        // EMPLOYEE → own bookings
         if (role.equals("ROLE_EMPLOYEE")) {
 
             Employee employee = employeeRepository.findByEmail(email)
@@ -175,7 +175,7 @@ public class BookingService {
                     .map(BookingMapper::toDTO);
         }
 
-        // ✅ DEALER → bookings under dealer
+        // DEALER → bookings under dealer
         if (role.equals("ROLE_DEALER")) {
 
             Dealer dealer = dealerRepository.findByEmail(email)

@@ -34,23 +34,23 @@ public class ServiceRequestService {
 
     public ServiceRequestDTO createRequest(ServiceRequestDTO dto) {
 
-        // ✅ STEP 1: Get Customer
+        //  STEP 1: Get Customer
         Customer customer = customerRepository.findById(dto.getCustomerId())
                 .orElseThrow(() -> new RuntimeException("Customer not found"));
 
-        // ✅ STEP 2: Get Booking (VERY IMPORTANT)
+        //  STEP 2: Get Booking (VERY IMPORTANT)
         Booking booking = bookingRepository
                 .findByCustomerCustomerId(customer.getCustomerId())
                 .orElseThrow(() -> new RuntimeException("Customer has no booking"));
 
-        // ✅ STEP 3: Get Variant FROM BOOKING
+        //  STEP 3: Get Variant FROM BOOKING
         CarVariant variant = booking.getCarVariant();
 
         if (variant == null) {
             throw new RuntimeException("No variant found for booking");
         }
 
-        // ✅ STEP 4: Auth check
+        //  STEP 4: Auth check
         String email = SecurityContextHolder.getContext().getAuthentication().getName();
         String role  = SecurityContextHolder.getContext().getAuthentication()
                 .getAuthorities().iterator().next().getAuthority();
@@ -59,13 +59,13 @@ public class ServiceRequestService {
             throw new RuntimeException("Only employees can create service requests");
         }
 
-        // ✅ STEP 5: Get employee + dealer
+        //  STEP 5: Get employee + dealer
         Employee employee = employeeRepository.findByEmail(email)
                 .orElseThrow(() -> new RuntimeException("Employee not found"));
 
         Dealer dealer = employee.getDealer();
 
-        // ✅ STEP 6: Create request
+        //  STEP 6: Create request
         ServiceRequest request = ServiceRequest.builder()
                 .serviceDate(dto.getServiceDate())
                 .issueDescription(dto.getIssueDescription())

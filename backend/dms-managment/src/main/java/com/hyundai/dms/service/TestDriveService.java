@@ -74,12 +74,12 @@ public class TestDriveService {
 
         List<TestDrive> testDrives;
 
-        // ✅ ADMIN → all test drives
+        //  ADMIN → all test drives
         if (role.equals("ROLE_ADMIN")) {
             testDrives = testDriveRepository.findAll();
         }
 
-        // ✅ EMPLOYEE → own test drives
+        //  EMPLOYEE → own test drives
         else if (role.equals("ROLE_EMPLOYEE")) {
 
             Employee employee = employeeRepository.findByEmail(email)
@@ -89,7 +89,7 @@ public class TestDriveService {
                     .findByEmployeeEmployeeId(employee.getEmployeeId());
         }
 
-        // ✅ DEALER → dealer's test drives
+        //  DEALER → dealer's test drives
         else if (role.equals("ROLE_DEALER")) {
 
             Dealer dealer = dealerRepository.findByEmail(email)
@@ -99,12 +99,12 @@ public class TestDriveService {
                     .findByEmployeeDealerDealerId(dealer.getDealerId());
         }
 
-        // ❌ Unauthorized
+        //  Unauthorized
         else {
             throw new RuntimeException("Unauthorized");
         }
 
-        // ✅ Convert to DTO
+        //  Convert to DTO
         return testDrives.stream()
                 .map(TestDriveMapper::toDTO)
                 .collect(Collectors.toList());
@@ -179,13 +179,13 @@ public class TestDriveService {
                 .next()
                 .getAuthority();
 
-        // ✅ ADMIN → all
+        //  ADMIN → all
         if (role.equals("ROLE_ADMIN")) {
             return testDriveRepository.findAll(pageable)
                     .map(TestDriveMapper::toDTO);
         }
 
-        // ✅ EMPLOYEE → own test drives
+        //  EMPLOYEE → own test drives
         if (role.equals("ROLE_EMPLOYEE")) {
 
             Employee employee = employeeRepository.findByEmail(email)
@@ -196,7 +196,7 @@ public class TestDriveService {
                     .map(TestDriveMapper::toDTO);
         }
 
-        // ✅ DEALER → dealer test drives
+        //  DEALER → dealer test drives
         if (role.equals("ROLE_DEALER")) {
 
             Dealer dealer = dealerRepository.findByEmail(email)

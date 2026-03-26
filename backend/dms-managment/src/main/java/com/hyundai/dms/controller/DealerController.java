@@ -38,11 +38,11 @@ public class DealerController {
         dealer.setCity(request.getCity());
         dealer.setState(request.getState());
         dealer.setAddress(request.getAddress());
-        // ✅ FIX: Pass password to service - it will encode it
+        // FIX: Pass password to service - it will encode it
         dealer.setPassword(request.getPassword());
         dealer.setActive(request.getActive() != null ? request.getActive() : true);
         dealer.setAdmin(admin);
-        // ✅ FIX: Call saveDealer which ENCODES the password
+        // FIX: Call saveDealer which ENCODES the password
         return dealerService.saveDealer(dealer);
     }
 
