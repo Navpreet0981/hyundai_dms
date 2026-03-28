@@ -10,6 +10,7 @@ import com.hyundai.dms.repository.DealerRepository;
 import com.hyundai.dms.repository.EmployeeRepository;
 import com.hyundai.dms.repository.ServiceRequestRepository;
 import com.hyundai.dms.repository.TestDriveRepository;
+import org.springframework.context.annotation.Lazy;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
@@ -30,6 +31,7 @@ public class EmployeeService {
     private final TestDriveRepository testDriveRepository;
     private final ServiceRequestRepository serviceRequestRepository;
     private final PasswordEncoder passwordEncoder;
+    private final AuditService auditService;
 
     public EmployeeService(EmployeeRepository employeeRepository,
                            DealerRepository dealerRepository,
@@ -37,7 +39,8 @@ public class EmployeeService {
                            CustomerRepository customerRepository,
                            TestDriveRepository testDriveRepository,
                            ServiceRequestRepository serviceRequestRepository,
-                           PasswordEncoder passwordEncoder) {
+                           PasswordEncoder passwordEncoder,
+                           @Lazy AuditService auditService) {
         this.employeeRepository = employeeRepository;
         this.dealerRepository = dealerRepository;
         this.bookingRepository = bookingRepository;
@@ -45,6 +48,7 @@ public class EmployeeService {
         this.testDriveRepository = testDriveRepository;
         this.serviceRequestRepository = serviceRequestRepository;
         this.passwordEncoder = passwordEncoder;
+        this.auditService = auditService;
     }
 
     public List<EmployeeDTO> getEmployeesByDealer(Long dealerId) {
@@ -135,7 +139,13 @@ public class EmployeeService {
         employee.setStatus(EmployeeStatus.ACTIVE);
         employee.setPassword(passwordEncoder.encode(dto.getPassword()));
 
-        return mapToDTO(employeeRepository.save(employee));
+        Employee saved = employeeRepository.save(employee);
+
+        auditService.log(email, "DEALER", dealer.getDealerId(), dealer.getDealerName(),
+                "CREATE", "Employee", String.valueOf(saved.getEmployeeId()),
+                "Added employee: " + saved.getName() + " (" + saved.getRole() + ")");
+
+        return mapToDTO(saved);
     }
 
     public List<EmployeeDTO> getAllEmployees() {
@@ -180,6 +190,10 @@ public class EmployeeService {
 
         employee.setStatus(EmployeeStatus.INACTIVE);
         employeeRepository.save(employee);
+
+        auditService.log(email, "DEALER", dealer.getDealerId(), dealer.getDealerName(),
+                "DELETE", "Employee", String.valueOf(employeeId),
+                "Deactivated employee: " + employee.getName());
     }
 
     public Page<EmployeeDTO> getEmployeesPaged(String search, Pageable pageable) {

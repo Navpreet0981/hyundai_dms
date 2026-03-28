@@ -9,6 +9,7 @@ import com.hyundai.dms.mapper.CustomerMapper;
 import com.hyundai.dms.repository.CustomerRepository;
 import com.hyundai.dms.repository.DealerRepository;
 import com.hyundai.dms.repository.EmployeeRepository;
+import org.springframework.context.annotation.Lazy;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.data.domain.Page;
@@ -24,15 +25,17 @@ public class CustomerService {
     private final CustomerRepository customerRepository;
     private final DealerRepository dealerRepository;
     private final EmployeeRepository employeeRepository;
+    private final AuditService auditService;
 
     public CustomerService(
             CustomerRepository customerRepository,
             DealerRepository dealerRepository,
-            EmployeeRepository employeeRepository) {
-
+            EmployeeRepository employeeRepository,
+            @Lazy AuditService auditService) {
         this.customerRepository = customerRepository;
         this.dealerRepository = dealerRepository;
         this.employeeRepository = employeeRepository;
+        this.auditService = auditService;
     }
 
     // CREATE CUSTOMER (Employee)
@@ -57,6 +60,11 @@ public class CustomerService {
         customer.setCreatedDate(LocalDate.now());
 
         Customer saved = customerRepository.save(customer);
+
+        auditService.logWithDealer("CREATE", "Customer", String.valueOf(saved.getCustomerId()),
+                "Added customer: " + saved.getName(),
+                dealer != null ? dealer.getDealerId() : null,
+                dealer != null ? dealer.getDealerName() : null);
 
         return CustomerMapper.toDTO(saved);
     }
@@ -197,8 +205,12 @@ public class CustomerService {
         }
 
         customer.setLeadStatus(newStatus);
-
         Customer saved = customerRepository.save(customer);
+
+        auditService.logWithDealer("UPDATE", "Customer", String.valueOf(id),
+                "Updated lead status to " + newStatus + " for: " + customer.getName(),
+                customer.getDealer() != null ? customer.getDealer().getDealerId() : null,
+                customer.getDealer() != null ? customer.getDealer().getDealerName() : null);
 
         return mapToDTO(saved);
     }

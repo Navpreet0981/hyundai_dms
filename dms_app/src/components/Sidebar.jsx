@@ -3,7 +3,7 @@ import { useState } from "react";
 import {
   LayoutDashboard, Users, UserPlus, Car, CalendarCheck, Wrench,
   FileText, User, ChevronLeft, ChevronRight, BarChart3, Building2,
-  UserCog, TrendingUp, X
+  UserCog, TrendingUp, X, ShieldCheck
 } from "lucide-react";
 
 export default function Sidebar({ mobileOpen, onMobileClose }) {
@@ -33,6 +33,7 @@ export default function Sidebar({ mobileOpen, onMobileClose }) {
       { name: "Sales Analytics",   path: "/sales",              icon: TrendingUp },
       { name: "Dealer Performance",path: "/dealer-performance", icon: BarChart3 },
       { name: "Admin Analytics",   path: "/analytics",          icon: FileText },
+      { name: "Audit Log",         path: "/audit",              icon: ShieldCheck },
     ],
     DEALER: [
       { name: "Dashboard",  path: "/dealer",             icon: LayoutDashboard },
@@ -44,6 +45,7 @@ export default function Sidebar({ mobileOpen, onMobileClose }) {
       { name: "Cars",       path: "/dealer/cars",        icon: Car },
       { name: "Performance",path: "/dealer/performance", icon: TrendingUp },
       { name: "Reports",    path: "/dealer/reports",     icon: BarChart3 },
+      { name: "Audit Log",  path: "/dealer/audit",       icon: ShieldCheck },
       { name: "Profile",    path: "/dealer/profile",     icon: User },
     ],
   };

@@ -10,6 +10,8 @@ import Employees from "../pages/admin/Employees";
 import Customers from "../pages/admin/Customers";
 import Cars from "../pages/admin/Cars";
 import AdminAnalytics from "../pages/admin/AdminAnalytics";
+import Audit from "../pages/admin/Audit";
+import DealerAudit from "../pages/dealer/DealerAudit";
 
 import DealerDashboard from "../pages/dealer/DealerDashboard";
 import DealerEmployees from "../pages/dealer/DealerEmployees";
@@ -78,6 +80,10 @@ export default function AppRoutes() {
           <ProtectedRoute role="ADMIN"><AdminAnalytics /></ProtectedRoute>
         } />
 
+        <Route path="/audit" element={
+          <ProtectedRoute role="ADMIN"><Audit /></ProtectedRoute>
+        } />
+
         {/* ================= DEALER ROUTES ================= */}
 
         <Route path="/dealer" element={
@@ -122,6 +128,10 @@ export default function AppRoutes() {
 
         <Route path="/dealer/cars" element={
           <ProtectedRoute role="DEALER"><DealerCars /></ProtectedRoute>
+        } />
+
+        <Route path="/dealer/audit" element={
+          <ProtectedRoute role="DEALER"><DealerAudit /></ProtectedRoute>
         } />
 
         {/* ================= EMPLOYEE ROUTES ================= */}

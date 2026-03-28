@@ -84,6 +84,29 @@ export const useAllBookings        = () => useQuery({ queryKey: ['all-bookings']
 // ─── INVENTORY ───────────────────────────────────────────────────────────────
 export const useDealerInventory = () => useQuery({ queryKey: ['dealer-inventory'], queryFn: () => fetcher('/dealer/inventory') });
 
+// ─── AUDIT ───────────────────────────────────────────────────────────────────
+export const useAdminAudit = (page, size, search) =>
+  useQuery({
+    queryKey: ['admin-audit', page, size, search],
+    queryFn: () => {
+      const params = new URLSearchParams({ page, size });
+      if (search?.trim()) params.set('search', search.trim());
+      return fetcher(`/admin/audit?${params}`);
+    },
+    placeholderData: (prev) => prev,
+  });
+
+export const useDealerAudit = (page, size, search) =>
+  useQuery({
+    queryKey: ['dealer-audit', page, size, search],
+    queryFn: () => {
+      const params = new URLSearchParams({ page, size });
+      if (search?.trim()) params.set('search', search.trim());
+      return fetcher(`/dealer/audit?${params}`);
+    },
+    placeholderData: (prev) => prev,
+  });
+
 // ─── MUTATIONS (invalidate cache on success) ─────────────────────────────────
 export const useInvalidate = () => {
   const qc = useQueryClient();
