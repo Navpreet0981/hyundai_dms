@@ -50,11 +50,20 @@ export default function Leads() {
                     <td className="apple-table-cell">
                       <div className="flex flex-wrap gap-1.5">
                         <button className="apple-btn-primary !px-3 !py-1.5 !text-xs" onClick={() => scheduleTestDrive(l)}>Schedule Test Drive</button>
-                        <button className="apple-btn-secondary !px-3 !py-1.5 !text-xs" onClick={() => updateStatus(l.customerId, "CONTACTED")}>Mark Contacted</button>
-                        <button className="apple-btn-secondary !px-3 !py-1.5 !text-xs" onClick={() => updateStatus(l.customerId, "VISITED_SHOWROOM")}>Visited Showroom</button>
-                        <button className="apple-btn-secondary !px-3 !py-1.5 !text-xs" onClick={() => updateStatus(l.customerId, "TEST_DRIVE_SCHEDULED")}>Test Drive Done</button>
-                        <button className="apple-btn-secondary !px-3 !py-1.5 !text-xs" onClick={() => updateStatus(l.customerId, "BOOKED")}>Mark Booked</button>
-                        <button className="px-3 py-1.5 text-xs text-red-500 border border-red-200 dark:border-red-800 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-lg transition-colors" onClick={() => updateStatus(l.customerId, "LOST")}>Mark Lost</button>
+                        <select
+                          defaultValue=""
+                          onChange={e => { if (e.target.value) { updateStatus(l.customerId, e.target.value); e.target.value = ""; } }}
+                          className="text-xs rounded-lg border border-[#e5e5ea] dark:border-[#3a3a3c]
+                            bg-white dark:bg-[#2c2c2e] text-[#1d1d1f] dark:text-[#f5f5f7]
+                            px-2 py-1.5 focus:outline-none focus:ring-2 focus:ring-[#0071e3] transition-all"
+                        >
+                          <option value="" disabled>Update Status…</option>
+                          <option value="CONTACTED">Mark Contacted</option>
+                          <option value="VISITED_SHOWROOM">Visited Showroom</option>
+                          <option value="TEST_DRIVE_SCHEDULED">Test Drive Done</option>
+                          <option value="BOOKED">Mark Booked</option>
+                          <option value="LOST">Mark Lost</option>
+                        </select>
                       </div>
                     </td>
                   </tr>
