@@ -4,11 +4,13 @@ import DealerLayout from "../../layouts/DealerLayout";
 import { SkeletonProfile } from "../../components/Skeleton";
 import { Eye, EyeOff, KeyRound, X } from "lucide-react";
 
+// Reusable password input with show/hide toggle — used for all three password fields
 function PasswordField({ placeholder, value, onChange, show, onToggle }) {
   return (
     <div className="relative">
       <input type={show ? "text" : "password"} placeholder={placeholder}
         value={value} onChange={onChange} className="apple-input pr-10" />
+      {/* Toggle switches between text and password input type */}
       <button type="button" onClick={onToggle}
         className="absolute right-3 top-1/2 -translate-y-1/2 text-[#86868b] hover:text-[#1d1d1f] dark:hover:text-[#f5f5f7] transition-colors">
         {show ? <EyeOff size={15} /> : <Eye size={15} />}
@@ -22,6 +24,7 @@ export default function DealerProfile() {
   const [stats, setStats]     = useState({ employees: 0, leads: 0, bookings: 0 });
   const [loading, setLoading] = useState(true);
 
+  // Change password modal state
   const [showModal, setShowModal] = useState(false);
   const [pwForm, setPwForm]       = useState({ currentPassword: "", newPassword: "", confirmPassword: "" });
   const [show, setShow]           = useState({ current: false, next: false, confirm: false });
@@ -29,6 +32,7 @@ export default function DealerProfile() {
   const [pwSuccess, setPwSuccess] = useState("");
   const [pwLoading, setPwLoading] = useState(false);
 
+  // Fetch profile and dashboard stats in parallel on mount
   useEffect(() => {
     Promise.all([
       api.get("/dealer/profile").then(res => setProfile(res.data)).catch(() => {}),
@@ -40,11 +44,13 @@ export default function DealerProfile() {
     ]).finally(() => setLoading(false));
   }, []);
 
+  // Curried handler — returns onChange for a specific field, clears messages on keystroke
   const set = (field) => (e) => {
     setPwForm(f => ({ ...f, [field]: e.target.value }));
     setPwError(""); setPwSuccess("");
   };
 
+  // Reset all modal state — called on cancel or after successful update
   const closeModal = () => {
     setShowModal(false);
     setPwForm({ currentPassword: "", newPassword: "", confirmPassword: "" });
@@ -52,6 +58,7 @@ export default function DealerProfile() {
     setPwError(""); setPwSuccess("");
   };
 
+  // Validate inputs then call PUT /dealer/change-password — backend verifies current password
   const handleChangePassword = () => {
     if (!pwForm.currentPassword) { setPwError("Current password is required."); return; }
     if (pwForm.newPassword.length < 6) { setPwError("New password must be at least 6 characters."); return; }
@@ -66,6 +73,7 @@ export default function DealerProfile() {
       .finally(() => setPwLoading(false));
   };
 
+  // Profile fields to display in the info grid
   const fields = [
     { label: "Name",    value: profile.dealerName },
     { label: "Email",   value: profile.email },
@@ -75,6 +83,7 @@ export default function DealerProfile() {
     { label: "Address", value: profile.address },
   ];
 
+  // Performance stat cards — values from dashboard API
   const statCards = [
     { label: "Employees", value: stats.employees, color: "#0071e3", bg: "bg-[#0071e3]/10" },
     { label: "Leads",     value: stats.leads,     color: "#bf5af2", bg: "bg-[#bf5af2]/10" },
@@ -87,6 +96,7 @@ export default function DealerProfile() {
         {loading ? <SkeletonProfile /> : (
           <div className="w-full max-w-xl space-y-4">
 
+            {/* Profile info card — shows dealer details and change password trigger */}
             <div className="apple-card p-5 sm:p-6 space-y-4">
               <h1 className="apple-title">Dealer Profile</h1>
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
@@ -99,6 +109,7 @@ export default function DealerProfile() {
               </div>
               <div className="pt-1">
                 <p className="apple-label mb-1">Status</p>
+                {/* Green badge for active, red for inactive */}
                 <span className={`apple-badge ${profile.active
                   ? "bg-[#d1fae5] dark:bg-[#052e16] text-[#065f46] dark:text-[#34d399]"
                   : "bg-red-100 dark:bg-red-900/30 text-red-600 dark:text-red-400"}`}>
@@ -106,7 +117,7 @@ export default function DealerProfile() {
                 </span>
               </div>
 
-              {/* Change password trigger */}
+              {/* Trigger button — opens change password modal */}
               <button
                 onClick={() => setShowModal(true)}
                 className="flex items-center gap-2 text-sm text-[#0071e3] hover:underline mt-1">
@@ -114,6 +125,7 @@ export default function DealerProfile() {
               </button>
             </div>
 
+            {/* Performance summary — quick stats from dashboard data */}
             <div className="apple-card p-5 sm:p-6">
               <h2 className="text-sm font-semibold text-[#1d1d1f] dark:text-[#f5f5f7] mb-4">Performance Summary</h2>
               <div className="grid grid-cols-3 gap-3">
@@ -130,7 +142,7 @@ export default function DealerProfile() {
         )}
       </div>
 
-      {/* CHANGE PASSWORD MODAL */}
+      {/* CHANGE PASSWORD MODAL — conditionally rendered when showModal is true */}
       {showModal && (
         <div className="fixed inset-0 bg-black/40 backdrop-blur-sm flex items-center justify-center z-50 px-4">
           <div className="apple-card w-full max-w-sm p-6 space-y-4 shadow-apple-lg">
@@ -139,12 +151,14 @@ export default function DealerProfile() {
                 <KeyRound size={16} className="text-[#0071e3]" />
                 <h2 className="text-base font-semibold text-[#1d1d1f] dark:text-[#f5f5f7]">Change Password</h2>
               </div>
+              {/* X button resets all modal state */}
               <button onClick={closeModal}
                 className="p-1.5 rounded-lg hover:bg-[#f5f5f7] dark:hover:bg-[#2c2c2e] text-[#86868b] transition-colors">
                 <X size={16} />
               </button>
             </div>
 
+            {/* Three password fields — each has independent show/hide state */}
             <PasswordField placeholder="Current password" value={pwForm.currentPassword}
               onChange={set("currentPassword")} show={show.current}
               onToggle={() => setShow(s => ({ ...s, current: !s.current }))} />
@@ -168,6 +182,7 @@ export default function DealerProfile() {
 
             <div className="flex gap-3 pt-1">
               <button onClick={closeModal} className="apple-btn-secondary flex-1">Cancel</button>
+              {/* Disabled while API call is in flight */}
               <button onClick={handleChangePassword} disabled={pwLoading}
                 className="apple-btn-primary flex-1 flex items-center justify-center gap-2 disabled:opacity-50">
                 {pwLoading && <div className="w-3.5 h-3.5 border-2 border-white border-t-transparent rounded-full animate-spin" />}

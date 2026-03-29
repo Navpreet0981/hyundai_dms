@@ -6,14 +6,17 @@ import { PlusCircle, X, ChevronDown, ChevronUp } from "lucide-react";
 import { SkeletonTable } from "../../components/Skeleton";
 import { useCars, useVariants } from "../../hooks/useQueries";
 
-// Inline variant row — loads variants via TanStack Query when expanded
+// Sub-component that renders variant rows for an expanded car — only mounts when car is expanded
 function VariantRows({ carId, onDelete }) {
+  // Fetch variants for this specific car — query only fires when this component is mounted
   const { data: variants, isLoading } = useVariants(carId);
+
   if (isLoading) return (
     <tr className="bg-[#f5f5f7] dark:bg-[#2c2c2e]">
       <td colSpan="5" className="px-8 py-4 apple-subtitle text-sm">Loading variants…</td>
     </tr>
   );
+
   return (
     <tr className="bg-[#f5f5f7] dark:bg-[#2c2c2e]">
       <td colSpan="5" className="px-8 py-4">
@@ -26,6 +29,7 @@ function VariantRows({ carId, onDelete }) {
                 <span className="font-medium text-[#1d1d1f] dark:text-[#f5f5f7] text-sm">{v.variantName}</span>
                 <span className="apple-subtitle text-sm">{v.engineType}</span>
                 <span className="font-medium text-[#1d1d1f] dark:text-[#f5f5f7] text-sm">₹{v.price?.toLocaleString()}</span>
+                {/* Delete variant — passes both carId and variantId so parent can invalidate correct cache */}
                 <button onClick={() => onDelete(carId, v.variantId)}
                   className="px-2 py-1 text-xs text-red-500 border border-red-200 dark:border-red-800 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-lg w-fit transition-colors">
                   Remove
@@ -41,20 +45,30 @@ function VariantRows({ carId, onDelete }) {
 
 export default function Cars() {
   const qc = useQueryClient();
+
+  // openCar stores the carId of the currently expanded row — null means all collapsed
   const [openCar, setOpenCar]           = useState(null);
   const [showCarModal, setShowCarModal] = useState(false);
   const [carForm, setCarForm]           = useState({ modelName: "", fuelType: "", transmission: "", basePrice: "" });
   const [showVariantModal, setShowVariantModal] = useState(false);
-  const [variantTargetCarId, setVariantTargetCarId] = useState(null);
-  const [variantForm, setVariantForm]   = useState({ variantName: "", engineType: "", price: "" });
 
+  // Tracks which car the "Add Variant" modal is targeting
+  const [variantTargetCarId, setVariantTargetCarId] = useState(null);
+  const [variantForm, setVariantForm] = useState({ variantName: "", engineType: "", price: "" });
+
+  // Fetch all cars — no pagination, full list
   const { data: cars = [], isLoading: loading } = useCars();
 
-  const invalidateCars     = () => qc.invalidateQueries({ queryKey: ['cars'] });
+  // Invalidate all cars cache after add/delete car
+  const invalidateCars = () => qc.invalidateQueries({ queryKey: ['cars'] });
+
+  // Invalidate only the specific car's variants cache — avoids refetching all cars
   const invalidateVariants = (carId) => qc.invalidateQueries({ queryKey: ['variants', carId] });
 
+  // Toggle expand/collapse for a car row — clicking same car again collapses it
   const toggleCar = (carId) => setOpenCar(prev => prev === carId ? null : carId);
 
+  // Validate and submit new car to POST /cars, then refresh car list
   const addCar = () => {
     if (!carForm.modelName || !carForm.basePrice) { alert("Fill required fields"); return; }
     api.post("/cars", { ...carForm, basePrice: parseFloat(carForm.basePrice) })
@@ -62,12 +76,19 @@ export default function Cars() {
       .catch(err => console.log(err));
   };
 
+  // Hard delete a car by ID and refresh the car list
   const deleteCar = (id) => {
     api.delete(`/cars/${id}`).then(invalidateCars).catch(err => console.log(err));
   };
 
-  const openAddVariant = (carId) => { setVariantTargetCarId(carId); setVariantForm({ variantName: "", engineType: "", price: "" }); setShowVariantModal(true); };
+  // Open the add variant modal pre-targeted to a specific car
+  const openAddVariant = (carId) => {
+    setVariantTargetCarId(carId);
+    setVariantForm({ variantName: "", engineType: "", price: "" });
+    setShowVariantModal(true);
+  };
 
+  // Validate and submit new variant to POST /variants, then refresh only that car's variants
   const addVariant = () => {
     if (!variantForm.variantName || !variantForm.price) { alert("Fill required fields"); return; }
     api.post("/variants", { ...variantForm, price: parseFloat(variantForm.price), carId: variantTargetCarId })
@@ -75,6 +96,7 @@ export default function Cars() {
       .catch(err => console.log(err));
   };
 
+  // Delete a variant and refresh only that car's variants cache — not the full car list
   const deleteVariant = (carId, variantId) => {
     api.delete(`/variants/${variantId}`).then(() => invalidateVariants(carId)).catch(err => console.log(err));
   };
@@ -104,6 +126,7 @@ export default function Cars() {
                   <tr><td colSpan="5" className="text-center py-10 apple-subtitle">No cars found</td></tr>
                 ) : cars.map(car => (
                   <>
+                    {/* Clicking the row toggles variant expansion */}
                     <tr key={car.carId} className="apple-table-row cursor-pointer" onClick={() => toggleCar(car.carId)}>
                       <td className="apple-table-cell font-medium">
                         <span className="flex items-center gap-2">
@@ -114,6 +137,7 @@ export default function Cars() {
                       <td className="apple-table-cell text-[#86868b]">{car.fuelType}</td>
                       <td className="apple-table-cell text-[#86868b]">{car.transmission}</td>
                       <td className="apple-table-cell text-[#86868b]">₹{car.basePrice?.toLocaleString()}</td>
+                      {/* stopPropagation prevents row click (expand) from firing when clicking action buttons */}
                       <td className="apple-table-cell" onClick={e => e.stopPropagation()}>
                         <div className="flex gap-2">
                           <button onClick={() => openAddVariant(car.carId)}
@@ -127,6 +151,7 @@ export default function Cars() {
                         </div>
                       </td>
                     </tr>
+                    {/* VariantRows only mounts when this car is expanded — triggers its own query */}
                     {openCar === car.carId && <VariantRows carId={car.carId} onDelete={deleteVariant} />}
                   </>
                 ))}
@@ -136,6 +161,7 @@ export default function Cars() {
         )}
       </div>
 
+      {/* ADD CAR MODAL */}
       {showCarModal && (
         <div className="fixed inset-0 bg-black/40 backdrop-blur-sm flex items-center justify-center z-50 px-4">
           <div className="apple-card w-full max-w-md p-6 space-y-4">
@@ -161,6 +187,7 @@ export default function Cars() {
         </div>
       )}
 
+      {/* ADD VARIANT MODAL — pre-targeted to variantTargetCarId */}
       {showVariantModal && (
         <div className="fixed inset-0 bg-black/40 backdrop-blur-sm flex items-center justify-center z-50 px-4">
           <div className="apple-card w-full max-w-md p-6 space-y-4">

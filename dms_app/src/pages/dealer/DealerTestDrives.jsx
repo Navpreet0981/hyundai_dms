@@ -7,9 +7,12 @@ import { useTestDrivesPaged } from "../../hooks/useQueries";
 
 export default function DealerTestDrives() {
   const { page, size, totalPages, setPage, setTotalPages } = usePagination(0, 10);
+
+  // Fetch paginated test drives — backend scopes to this dealer's test drives automatically
   const { data, isLoading: loading } = useTestDrivesPaged(page, size);
   const testDrives = data?.content ?? [];
 
+  // Sync total pages from query response into pagination hook
   useEffect(() => { if (data?.totalPages !== undefined) setTotalPages(data.totalPages); }, [data?.totalPages, setTotalPages]);
 
   return (
@@ -32,6 +35,7 @@ export default function DealerTestDrives() {
                     <td className="apple-table-cell text-[#86868b]">{t.variantName}</td>
                     <td className="apple-table-cell text-[#86868b]">{t.employeeName}</td>
                     <td className="apple-table-cell text-[#86868b]">{t.testDriveDate}</td>
+                    {/* Status badge — REQUESTED / CONFIRMED / COMPLETED / CANCELLED */}
                     <td className="apple-table-cell">
                       <span className="apple-badge bg-[#f5f5f7] dark:bg-[#2c2c2e] text-[#6e6e73] dark:text-[#86868b]">{t.status}</span>
                     </td>

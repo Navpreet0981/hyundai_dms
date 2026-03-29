@@ -5,20 +5,25 @@ import { useNavigate } from "react-router-dom";
 
 export default function AddEmployee() {
   const navigate = useNavigate();
-  const [form, setForm] = useState({ name: "", phone: "", email: "", password: "", role: "" });
+  const [form, setForm]     = useState({ name: "", phone: "", email: "", password: "", role: "" });
   const [loading, setLoading] = useState(false);
+
+  // Available employee roles matching backend EmployeeRole enum
   const roles = ["SALES_EXECUTIVE", "SALES_MANAGER", "SERVICE_MANAGER", "TECHNICIAN"];
 
+  // Generic field change handler — strips non-digits from phone and enforces 10-digit max
   const handleChange = (e) => {
     let { name, value } = e.target;
     if (name === "phone") { value = value.replace(/\D/g, ""); if (value.length > 10) return; }
     setForm({ ...form, [name]: value });
   };
 
+  // Validates all fields then calls POST /employees — backend links employee to logged-in dealer
   const saveEmployee = () => {
     if (!form.name || !form.phone || !form.email || !form.password || !form.role) { alert("Please fill all required fields"); return; }
     if (form.phone.length !== 10) { alert("Phone must be 10 digits"); return; }
     setLoading(true);
+    // Prepend +91 country code before sending to backend
     api.post("/employees", { ...form, phone: `+91${form.phone}` })
       .then(() => { alert("Employee added successfully"); navigate("/dealer/employees"); })
       .catch(err => console.log(err))
@@ -34,6 +39,7 @@ export default function AddEmployee() {
 
           <input name="name" placeholder="Full Name" value={form.name} onChange={handleChange} className="apple-input" />
 
+          {/* Phone input with +91 prefix — digits only, max 10 */}
           <div className="flex">
             <span className="flex items-center px-3 border border-r-0 border-[#e5e5ea] dark:border-[#3a3a3c] bg-[#f5f5f7] dark:bg-[#2c2c2e] rounded-l-xl text-[#86868b] text-sm">+91</span>
             <input name="phone" placeholder="10 digit phone" value={form.phone} onChange={handleChange} maxLength={10}
@@ -43,16 +49,19 @@ export default function AddEmployee() {
           <input name="email" type="email" placeholder="Email" value={form.email} onChange={handleChange} className="apple-input" />
           <input name="password" type="password" placeholder="Password" value={form.password} onChange={handleChange} className="apple-input" />
 
+          {/* Role dropdown — maps enum values to readable labels */}
           <select name="role" value={form.role} onChange={handleChange} className="apple-input">
             <option value="">Select Role</option>
             {roles.map(r => <option key={r} value={r}>{r.replaceAll("_", " ")}</option>)}
           </select>
 
+          {/* Submit button — disabled and shows spinner while API call is in flight */}
           <button onClick={saveEmployee} disabled={loading} className="apple-btn-primary w-full flex justify-center items-center gap-2">
             {loading && <div className="w-4 h-4 border-2 border-white/40 border-t-white rounded-full animate-spin" />}
             {loading ? "Saving…" : "Save Employee"}
           </button>
 
+          {/* Cancel navigates back to employee list without saving */}
           <button onClick={() => navigate("/dealer/employees")} className="apple-btn-secondary w-full">Cancel</button>
 
         </div>

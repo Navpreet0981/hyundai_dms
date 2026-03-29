@@ -8,10 +8,14 @@ import { useEmployeeLeads } from "../../hooks/useQueries";
 export default function Leads() {
   const navigate = useNavigate();
   const qc = useQueryClient();
+
+  // Fetch all leads assigned to this employee — backend scopes by JWT identity
   const { data: leads = [], isLoading: loading } = useEmployeeLeads();
 
+  // Navigate to TestDrives page with customer pre-filled via router state
   const scheduleTestDrive = (customer) => navigate("/testdrives", { state: { customer } });
 
+  // Updates lead status via PUT /customers/{id}/status then invalidates cache to refresh table
   const updateStatus = (id, status) => {
     api.put(`/customers/${id}/status?status=${status}`)
       .then(() => qc.invalidateQueries({ queryKey: ['employee-leads'] }))
@@ -49,7 +53,9 @@ export default function Leads() {
                     </td>
                     <td className="apple-table-cell">
                       <div className="flex flex-wrap gap-1.5">
+                        {/* Navigates to test drives page with this customer pre-selected */}
                         <button className="apple-btn-primary !px-3 !py-1.5 !text-xs" onClick={() => scheduleTestDrive(l)}>Schedule Test Drive</button>
+                        {/* Status dropdown — resets to empty after selection to allow re-use */}
                         <select
                           defaultValue=""
                           onChange={e => { if (e.target.value) { updateStatus(l.customerId, e.target.value); e.target.value = ""; } }}

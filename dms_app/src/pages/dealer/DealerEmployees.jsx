@@ -9,11 +9,13 @@ import usePagination from "../../hooks/usePagination";
 import Pagination from "../../components/Pagination";
 import { useEmployeesPaged } from "../../hooks/useQueries";
 
+// Sortable fields available in the sort dropdown
 const SORT_FIELDS = [
   { label: "Name", value: "name" },
   { label: "Role", value: "role" },
 ];
 
+// Renders the correct sort direction icon for a column based on current sort state
 function SortIcon({ field, sort }) {
   if (!sort.startsWith(field)) return <ChevronsUpDown size={13} className="text-[#86868b]" />;
   return sort.endsWith("asc")
@@ -24,45 +26,53 @@ function SortIcon({ field, sort }) {
 export default function DealerEmployees() {
   const qc = useQueryClient();
   const navigate = useNavigate();
-  const [search, setSearch]         = useState("");
+  const [search, setSearch]                   = useState("");
   const [debouncedSearch, setDebouncedSearch] = useState("");
-  const [sort, setSort]             = useState("");
+  const [sort, setSort]                       = useState("");
   const { page, size, totalPages, setPage, setTotalPages } = usePagination(0, 10);
 
-  // Reassign modal state
+  // Reassign modal state — null means closed, employee object means open
   const [reassignEmployee, setReassignEmployee] = useState(null);
   const [targetEmployeeId, setTargetEmployeeId] = useState("");
-  const [activeEmployees, setActiveEmployees]   = useState([]);
+  const [activeEmployees, setActiveEmployees]   = useState([]); // other active employees for dropdown
   const [reassignLoading, setReassignLoading]   = useState(false);
   const [reassignError, setReassignError]       = useState("");
 
+  // Debounce search — waits 400ms after user stops typing before firing query
   useEffect(() => {
     const t = setTimeout(() => { setDebouncedSearch(search); setPage(0); }, 400);
     return () => clearTimeout(t);
   }, [search, setPage]);
 
+  // Fetch paginated employees — backend scopes to this dealer's ACTIVE employees only
   const { data, isLoading: loading } = useEmployeesPaged(page, size, debouncedSearch, sort);
   const employees = data?.content ?? [];
 
+  // Sync total pages from query response into pagination hook
   useEffect(() => { if (data?.totalPages !== undefined) setTotalPages(data.totalPages); }, [data?.totalPages, setTotalPages]);
 
+  // Three-state sort toggle: none → asc → desc → none, resets to page 0 on change
   const toggleSort = (field) => {
     if (sort === `${field},asc`)       { setSort(`${field},desc`); setPage(0); }
     else if (sort === `${field},desc`) { setSort(""); setPage(0); }
     else                               { setSort(`${field},asc`); setPage(0); }
   };
 
+  // Open reassign modal and fetch all other active employees for the dropdown
   const openReassignModal = (employee) => {
     setReassignEmployee(employee);
     setTargetEmployeeId("");
     setReassignError("");
+    // Fetch all employees then filter to active ones excluding the one being removed
     api.get("/employees/paged?page=0&size=100")
       .then(res => setActiveEmployees(res.data.content.filter(e => e.employeeId !== employee.employeeId && e.status === "ACTIVE")))
       .catch(() => setActiveEmployees([]));
   };
 
+  // Close reassign modal and clear all its state including the fetched employee list
   const closeReassignModal = () => { setReassignEmployee(null); setTargetEmployeeId(""); setReassignError(""); setActiveEmployees([]); };
 
+  // Bulk-reassign all employee data to target, then soft-deactivate the old employee
   const handleReassignAndDelete = () => {
     if (!targetEmployeeId) { setReassignError("Please select an employee to reassign customers to."); return; }
     setReassignLoading(true);
@@ -73,6 +83,7 @@ export default function DealerEmployees() {
       .finally(() => setReassignLoading(false));
   };
 
+  // Column config — sortable columns get clickable headers with sort icons
   const headers = [
     { label: "Name",   sortable: true,  field: "name" },
     { label: "Phone",  sortable: false },
@@ -97,6 +108,7 @@ export default function DealerEmployees() {
                   placeholder-[#86868b] focus:outline-none focus:ring-2 focus:ring-[#0071e3] w-48 transition-all"
               />
             </div>
+            {/* Sort dropdown — value passed directly as Spring Sort param */}
             <select value={sort} onChange={e => { setSort(e.target.value); setPage(0); }}
               className="text-sm rounded-xl border border-[#e5e5ea] dark:border-[#3a3a3c]
                 bg-white dark:bg-[#2c2c2e] text-[#1d1d1f] dark:text-[#f5f5f7]
@@ -109,6 +121,7 @@ export default function DealerEmployees() {
                 </>
               ))}
             </select>
+            {/* Navigates to AddEmployee form page */}
             <button onClick={() => navigate("/dealer/add-employee")} className="apple-btn-primary flex items-center gap-2">
               <UserPlus size={15} /> Add Employee
             </button>
@@ -144,6 +157,7 @@ export default function DealerEmployees() {
                     <td className="apple-table-cell text-[#86868b]">{e.email}</td>
                     <td className="apple-table-cell text-[#86868b]">{e.role}</td>
                     <td className="apple-table-cell">
+                      {/* Green badge for ACTIVE, grey for INACTIVE */}
                       <span className={`apple-badge ${e.status === "ACTIVE"
                         ? "bg-[#d1fae5] dark:bg-[#052e16] text-[#065f46] dark:text-[#34d399]"
                         : "bg-[#f5f5f7] dark:bg-[#2c2c2e] text-[#86868b]"}`}>
@@ -151,6 +165,7 @@ export default function DealerEmployees() {
                       </span>
                     </td>
                     <td className="apple-table-cell">
+                      {/* Remove button only shown for ACTIVE employees */}
                       {e.status === "ACTIVE" && (
                         <button onClick={() => openReassignModal(e)}
                           className="text-xs text-red-500 border border-red-200 dark:border-red-900 hover:bg-red-50 dark:hover:bg-red-900/20 px-3 py-1 rounded-lg transition-colors">
@@ -167,6 +182,7 @@ export default function DealerEmployees() {
         )}
       </div>
 
+      {/* REASSIGN EMPLOYEE MODAL — shown when reassignEmployee is not null */}
       {reassignEmployee && (
         <div className="fixed inset-0 bg-black/40 backdrop-blur-sm flex items-center justify-center z-50 px-4">
           <div className="apple-card w-full max-w-md p-6 shadow-apple-lg">
@@ -187,6 +203,7 @@ export default function DealerEmployees() {
             <div className="space-y-3">
               <div>
                 <label className="block text-xs font-medium text-[#86868b] mb-1.5">Reassign customers & bookings to</label>
+                {/* Show message if no other active employees exist */}
                 {activeEmployees.length === 0 ? (
                   <p className="text-sm text-[#86868b] bg-[#f5f5f7] dark:bg-[#2c2c2e] rounded-xl px-3 py-2.5">No other active employees available.</p>
                 ) : (
@@ -204,6 +221,7 @@ export default function DealerEmployees() {
               {reassignError && <p className="text-xs text-red-500 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg px-3 py-2">{reassignError}</p>}
               <div className="flex gap-3 pt-1">
                 <button onClick={closeReassignModal} className="apple-btn-secondary flex-1">Cancel</button>
+                {/* Disabled if no target selected or no active employees available */}
                 <button onClick={handleReassignAndDelete} disabled={reassignLoading || !targetEmployeeId || activeEmployees.length === 0}
                   className="flex-1 flex items-center justify-center gap-2 px-4 py-2 text-sm text-white bg-red-500 hover:bg-red-600 disabled:opacity-50 rounded-xl transition-colors">
                   {reassignLoading && <div className="w-3.5 h-3.5 border-2 border-white border-t-transparent rounded-full animate-spin" />}

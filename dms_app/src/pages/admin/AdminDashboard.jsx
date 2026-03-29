@@ -5,10 +5,16 @@ import { SkeletonCard, SkeletonChart } from "../../components/Skeleton";
 import { useAdminDashboard, useAdminMonthlySales } from "../../hooks/useQueries";
 
 export default function AdminDashboard() {
-  const { data = {}, isLoading: l1 }       = useAdminDashboard();
+  // Fetch system-wide counts (dealers, employees, customers, bookings) from /admin/dashboard
+  const { data = {}, isLoading: l1 } = useAdminDashboard();
+
+  // Fetch monthly booking data for the bar chart from /admin/sales/monthly
   const { data: chartData = [], isLoading: l2 } = useAdminMonthlySales();
+
+  // Combined loading flag — skeletons show until both queries resolve
   const loading = l1 || l2;
 
+  // Build pie chart data from dashboard counts — no extra API call needed
   const pieData = [
     { name: "Dealers",   value: data.totalDealers   || 0 },
     { name: "Employees", value: data.totalEmployees || 0 },
@@ -20,6 +26,7 @@ export default function AdminDashboard() {
       <div className="space-y-6 sm:space-y-8">
         <h1 className="apple-title">Admin Dashboard</h1>
 
+        {/* Stat cards — show 4 skeletons while loading, then render real values */}
         <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-4">
           {loading ? Array.from({ length: 4 }).map((_, i) => <SkeletonCard key={i} />) : (
             [
@@ -41,9 +48,11 @@ export default function AdminDashboard() {
           )}
         </div>
 
+        {/* Charts — bar chart for monthly bookings, pie chart for org distribution */}
         <div className="grid grid-cols-1 xl:grid-cols-2 gap-4">
           {loading ? <><SkeletonChart /><SkeletonChart /></> : (
             <>
+              {/* Bar chart: booking count per month */}
               <div className="apple-card p-5 sm:p-6 h-[300px] sm:h-[360px]">
                 <h2 className="text-sm font-semibold text-[#1d1d1f] dark:text-[#f5f5f7] mb-5">Monthly Bookings</h2>
                 <ResponsiveContainer width="100%" height="85%">
@@ -55,6 +64,8 @@ export default function AdminDashboard() {
                   </BarChart>
                 </ResponsiveContainer>
               </div>
+
+              {/* Pie chart: dealers vs employees distribution */}
               <div className="apple-card p-5 sm:p-6 h-[300px] sm:h-[360px]">
                 <h2 className="text-sm font-semibold text-[#1d1d1f] dark:text-[#f5f5f7] mb-5">Organization Distribution</h2>
                 <ResponsiveContainer width="100%" height="85%">

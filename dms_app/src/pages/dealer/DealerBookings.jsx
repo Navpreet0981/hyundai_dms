@@ -7,9 +7,12 @@ import { useBookingsPaged } from "../../hooks/useQueries";
 
 export default function DealerBookings() {
   const { page, size, totalPages, setPage, setTotalPages } = usePagination(0, 10);
+
+  // Fetch paginated bookings — backend scopes to this dealer's bookings automatically
   const { data, isLoading: loading } = useBookingsPaged(page, size);
   const bookings = data?.content ?? [];
 
+  // Sync total pages from query response into pagination hook
   useEffect(() => { if (data?.totalPages !== undefined) setTotalPages(data.totalPages); }, [data?.totalPages, setTotalPages]);
 
   return (
@@ -32,6 +35,7 @@ export default function DealerBookings() {
                     <td className="apple-table-cell text-[#86868b]">{b.variantName}</td>
                     <td className="apple-table-cell text-[#86868b]">{b.employeeName}</td>
                     <td className="apple-table-cell text-[#86868b]">{b.bookingDate}</td>
+                    {/* Status badge — PENDING / CONFIRMED / DELIVERED / CANCELLED */}
                     <td className="apple-table-cell">
                       <span className="apple-badge bg-[#f5f5f7] dark:bg-[#2c2c2e] text-[#6e6e73] dark:text-[#86868b]">{b.status}</span>
                     </td>

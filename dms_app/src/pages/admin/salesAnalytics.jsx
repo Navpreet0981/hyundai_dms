@@ -3,6 +3,7 @@ import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer } from "recha
 import { SkeletonCard, SkeletonChart } from "../../components/Skeleton";
 import { useAdminMonthlySales, useAdminDealerSales, useAdminSalesSummary } from "../../hooks/useQueries";
 
+// Builds KPI card config from stats object — function so it always uses latest stats data
 const KPI_ITEMS = (stats) => [
   { label: "Total Bookings", value: stats.totalBookings || 0,                        valueColor: "text-blue-600",   color: "bg-blue-50 dark:bg-blue-900/20" },
   { label: "Total Revenue",  value: `₹${stats.totalRevenue?.toLocaleString() || 0}`, valueColor: "text-green-600",  color: "bg-green-50 dark:bg-green-900/20" },
@@ -11,9 +12,16 @@ const KPI_ITEMS = (stats) => [
 ];
 
 export default function SalesAnalytics() {
+  // Monthly booking counts for bar chart — reuses same cache key as AdminDashboard
   const { data: monthly = [],     isLoading: l1 } = useAdminMonthlySales();
+
+  // Booking count per dealer for the second bar chart
   const { data: dealerSales = [], isLoading: l2 } = useAdminDealerSales();
+
+  // Summary stats: total bookings, revenue, test drives, conversion rate
   const { data: stats = {},       isLoading: l3 } = useAdminSalesSummary();
+
+  // Combined loading — all three must resolve before skeletons disappear
   const loading = l1 || l2 || l3;
 
   return (
@@ -24,6 +32,7 @@ export default function SalesAnalytics() {
           <p className="apple-subtitle mt-1">Revenue and booking performance overview</p>
         </div>
 
+        {/* KPI cards — 4 skeleton cards while loading, then real values from stats */}
         <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-4 sm:gap-6">
           {loading
             ? Array.from({ length: 4 }).map((_, i) => <SkeletonCard key={i} />)
@@ -39,9 +48,11 @@ export default function SalesAnalytics() {
           }
         </div>
 
+        {/* Two bar charts side by side — monthly sales and per-dealer sales */}
         <div className="grid grid-cols-1 xl:grid-cols-2 gap-4 sm:gap-6">
           {loading ? <><SkeletonChart /><SkeletonChart /></> : (
             <>
+              {/* Bar chart: booking count per month — dataKey matches backend SalesAnalyticsDTO.totalBookings */}
               <div className="apple-card p-5 sm:p-6 h-[300px] sm:h-[360px]">
                 <h2 className="text-base font-semibold text-[#1d1d1f] dark:text-[#f5f5f7] mb-4 sm:mb-6">Monthly Sales</h2>
                 <ResponsiveContainer width="100%" height="85%">
@@ -53,6 +64,8 @@ export default function SalesAnalytics() {
                   </BarChart>
                 </ResponsiveContainer>
               </div>
+
+              {/* Bar chart: booking count per dealer — dataKey matches backend Map key "bookings" */}
               <div className="apple-card p-5 sm:p-6 h-[300px] sm:h-[360px]">
                 <h2 className="text-base font-semibold text-[#1d1d1f] dark:text-[#f5f5f7] mb-4 sm:mb-6">Sales per Dealer</h2>
                 <ResponsiveContainer width="100%" height="85%">

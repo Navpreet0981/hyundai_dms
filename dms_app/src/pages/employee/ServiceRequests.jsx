@@ -6,8 +6,11 @@ import { useServiceRequests } from "../../hooks/useQueries";
 
 export default function ServiceRequests() {
   const qc = useQueryClient();
+
+  // Fetch all service requests assigned to this employee — backend scopes by JWT identity
   const { data: requests = [], isLoading: loading } = useServiceRequests();
 
+  // Updates service request status then invalidates cache to refresh table
   const updateStatus = (id, status) => {
     api.put(`/service-requests/${id}/status?status=${status}`)
       .then(() => qc.invalidateQueries({ queryKey: ['service-requests'] }))
@@ -41,6 +44,7 @@ export default function ServiceRequests() {
                     <td className="apple-table-cell">
                       <span className="apple-badge bg-[#f5f5f7] dark:bg-[#2c2c2e] text-[#1d1d1f] dark:text-[#f5f5f7]">{r.status}</span>
                     </td>
+                    {/* Two status transitions: OPEN → IN_PROGRESS → CLOSED */}
                     <td className="apple-table-cell">
                       <div className="flex flex-wrap gap-1.5">
                         <button className="apple-btn-primary !px-3 !py-1.5 !text-xs" onClick={() => updateStatus(r.serviceRequestId, "IN_PROGRESS")}>Start Service</button>

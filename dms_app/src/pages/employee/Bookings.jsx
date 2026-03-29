@@ -7,6 +7,7 @@ import usePagination from "../../hooks/usePagination";
 import Pagination from "../../components/Pagination";
 import { useBookingsPaged } from "../../hooks/useQueries";
 
+// Reusable button style constants
 const btnPrimary = "px-3 py-1 text-xs bg-[#0071e3] hover:bg-[#0077ed] text-white rounded-lg transition-colors";
 const btnOutline = "px-3 py-1 text-xs border border-[#e5e5ea] dark:border-[#3a3a3c] text-[#1d1d1f] dark:text-[#f5f5f7] hover:bg-[#f5f5f7] dark:hover:bg-[#2c2c2e] rounded-lg transition-colors";
 const btnDanger  = "px-3 py-1 text-xs text-red-500 border border-red-200 dark:border-red-900 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-lg transition-colors";
@@ -14,11 +15,16 @@ const btnDanger  = "px-3 py-1 text-xs text-red-500 border border-red-200 dark:bo
 export default function Bookings() {
   const qc = useQueryClient();
   const { page, size, totalPages, setPage, setTotalPages } = usePagination(0, 10);
+
+  // Fetch paginated bookings — backend scopes to this employee's bookings
   const { data, isLoading: loading } = useBookingsPaged(page, size);
   const bookings = data?.content ?? [];
 
+  // Sync total pages from query response into pagination hook
   useEffect(() => { if (data?.totalPages !== undefined) setTotalPages(data.totalPages); }, [data?.totalPages, setTotalPages]);
 
+  // Updates booking status via PUT /bookings/{id}/status then invalidates cache
+  // Note: CANCELLED status triggers inventory increment on backend (stock restored)
   const updateStatus = (id, status) => {
     api.put(`/bookings/${id}/status?status=${status}`)
       .then(() => qc.invalidateQueries({ queryKey: ['bookings-paged'] }))
@@ -48,6 +54,7 @@ export default function Bookings() {
                     <td className="apple-table-cell">
                       <span className="apple-badge bg-[#f5f5f7] dark:bg-[#2c2c2e] text-[#6e6e73] dark:text-[#86868b]">{b.status}</span>
                     </td>
+                    {/* Status action buttons — Confirm, Delivered, Cancel */}
                     <td className="apple-table-cell">
                       <div className="flex flex-wrap gap-1.5">
                         <button className={btnPrimary} onClick={() => updateStatus(b.bookingId, "CONFIRMED")}>Confirm</button>

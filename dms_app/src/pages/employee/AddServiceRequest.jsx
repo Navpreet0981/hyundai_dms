@@ -10,13 +10,13 @@ export default function AddServiceRequest() {
     customerId: "",
     issueDescription: "",
     serviceDate: "",
-    status: "OPEN"
+    status: "OPEN" // default status on creation
   });
 
   const [customers, setCustomers] = useState([]);
-  const [loading, setLoading] = useState(false);
+  const [loading, setLoading]     = useState(false);
 
-  // ✅ Fetch customers only
+  // Fetch employee's customers on mount to populate the customer dropdown
   useEffect(() => {
     api.get("/customers")
       .then(res => setCustomers(res.data))
@@ -26,11 +26,14 @@ export default function AddServiceRequest() {
       });
   }, []);
 
+  // Generic field change handler — updates matching key in form state
   const handleChange = (e) => {
     const { name, value } = e.target;
     setForm({ ...form, [name]: value });
   };
 
+  // Validates required fields then calls POST /service-requests
+  // Backend auto-resolves the variant from the customer's existing booking
   const saveRequest = () => {
     if (!form.customerId || !form.issueDescription || !form.serviceDate) {
       alert("Please fill all fields");
@@ -42,7 +45,7 @@ export default function AddServiceRequest() {
     api.post("/service-requests", form)
       .then(() => {
         alert("Service request created");
-        navigate("/service-requests");
+        navigate("/service-requests"); // redirect back to list after success
       })
       .catch(err => {
         console.error(err.response?.data || err.message);
@@ -58,7 +61,7 @@ export default function AddServiceRequest() {
 
           <h1 className="apple-title text-center">Add Service Request</h1>
 
-          {/* Customer */}
+          {/* Customer dropdown — only shows customers assigned to this employee */}
           <select
             name="customerId"
             value={form.customerId}
@@ -73,7 +76,7 @@ export default function AddServiceRequest() {
             ))}
           </select>
 
-          {/* Issue */}
+          {/* Issue description — free text field */}
           <textarea
             name="issueDescription"
             placeholder="Describe issue"
@@ -82,7 +85,7 @@ export default function AddServiceRequest() {
             className="apple-input"
           />
 
-          {/* Date */}
+          {/* Service date picker */}
           <input
             type="date"
             name="serviceDate"
@@ -91,7 +94,7 @@ export default function AddServiceRequest() {
             className="apple-input"
           />
 
-          {/* Buttons */}
+          {/* Submit button — disabled and shows text change while loading */}
           <button
             onClick={saveRequest}
             disabled={loading}
@@ -100,6 +103,7 @@ export default function AddServiceRequest() {
             {loading ? "Saving..." : "Save Request"}
           </button>
 
+          {/* Cancel navigates back without saving */}
           <button
             onClick={() => navigate("/service-requests")}
             className="apple-btn-secondary w-full"

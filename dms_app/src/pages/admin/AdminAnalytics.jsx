@@ -3,13 +3,17 @@ import { BarChart, Bar, XAxis, YAxis, Tooltip, PieChart, Pie, Cell, ResponsiveCo
 import { SkeletonChart, SkeletonTable } from "../../components/Skeleton";
 import { useAdminMonthlySales, useAdminLeadSources, useAdminLeadConv, useAdminDealerPerf } from "../../hooks/useQueries";
 
+// Color palette for pie chart slices
 const COLORS = ["#0071e3", "#0ea5e9", "#34c759", "#ff9f0a"];
 
 export default function AdminAnalytics() {
-  const { data: monthlySales = [],      isLoading: l1 } = useAdminMonthlySales();
-  const { data: leadSources = [],       isLoading: l2 } = useAdminLeadSources();
-  const { data: conversion = {},        isLoading: l3 } = useAdminLeadConv();
-  const { data: dealerPerformance = [], isLoading: l4 } = useAdminDealerPerf();
+  // All four queries fire in parallel — same cache keys as other pages so data may already be cached
+  const { data: monthlySales = [],      isLoading: l1 } = useAdminMonthlySales();   // reuses cache from dashboard
+  const { data: leadSources = [],       isLoading: l2 } = useAdminLeadSources();    // lead source breakdown
+  const { data: conversion = {},        isLoading: l3 } = useAdminLeadConv();       // lead → test drive → booking funnel
+  const { data: dealerPerformance = [], isLoading: l4 } = useAdminDealerPerf();     // reuses cache from dealer performance page
+
+  // Combined loading — all four must resolve before skeletons disappear
   const loading = l1 || l2 || l3 || l4;
 
   return (
@@ -20,9 +24,11 @@ export default function AdminAnalytics() {
           <p className="apple-subtitle mt-1">Lead conversion and dealer performance insights</p>
         </div>
 
+        {/* Charts row — bar chart for monthly sales, pie chart for lead sources */}
         <div className="grid grid-cols-1 xl:grid-cols-2 gap-4 sm:gap-6">
           {loading ? <><SkeletonChart /><SkeletonChart /></> : (
             <>
+              {/* Bar chart: booking count per month */}
               <div className="apple-card p-5 sm:p-6">
                 <h3 className="text-sm font-semibold text-[#1d1d1f] dark:text-[#f5f5f7] mb-4">Monthly Sales</h3>
                 <ResponsiveContainer width="100%" height={280}>
@@ -34,6 +40,8 @@ export default function AdminAnalytics() {
                   </BarChart>
                 </ResponsiveContainer>
               </div>
+
+              {/* Pie chart: customers grouped by lead source (WEBSITE / WALKIN / REFERRAL) */}
               <div className="apple-card p-5 sm:p-6">
                 <h3 className="text-sm font-semibold text-[#1d1d1f] dark:text-[#f5f5f7] mb-4">Lead Sources</h3>
                 <ResponsiveContainer width="100%" height={280}>
@@ -49,6 +57,7 @@ export default function AdminAnalytics() {
           )}
         </div>
 
+        {/* Lead conversion funnel — shows total leads, test drives, bookings as stat cards */}
         {loading ? <SkeletonTable rows={3} /> : (
           <div className="apple-card p-5 sm:p-6">
             <h3 className="text-sm font-semibold text-[#1d1d1f] dark:text-[#f5f5f7] mb-4">Lead Conversion</h3>
@@ -67,6 +76,7 @@ export default function AdminAnalytics() {
           </div>
         )}
 
+        {/* Dealer performance table — read-only view, no actions here */}
         {loading ? <SkeletonTable rows={5} /> : (
           <div className="apple-card overflow-x-auto">
             <div className="p-5 sm:p-6 border-b border-[#e5e5ea] dark:border-[#2c2c2e]">

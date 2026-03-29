@@ -7,10 +7,16 @@ import { useDealerDashboard, useDealerMonthlyRev } from "../../hooks/useQueries"
 const COLORS = ["#0071e3", "#30d158"];
 
 export default function DealerDashboard() {
-  const { data = {},          isLoading: l1 } = useDealerDashboard();
+  // Fetch dealer-scoped stats: employees, leads, test drives, bookings, revenue
+  const { data = {},            isLoading: l1 } = useDealerDashboard();
+
+  // Fetch monthly booking counts for the bar chart
   const { data: chartData = [], isLoading: l2 } = useDealerMonthlyRev();
+
+  // Combined loading — both queries must resolve before skeletons disappear
   const loading = l1 || l2;
 
+  // Pie chart data built from dashboard stats — no extra API call needed
   const pieData = [
     { name: "Test Drives", value: data.totalTestDrives || 0 },
     { name: "Bookings",    value: data.totalBookings   || 0 },
@@ -21,6 +27,7 @@ export default function DealerDashboard() {
       <div className="space-y-6 sm:space-y-8">
         <h1 className="apple-title">Dealer Dashboard</h1>
 
+        {/* KPI cards — 4 skeletons while loading, then real values */}
         <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-4">
           {loading ? Array.from({ length: 4 }).map((_, i) => <SkeletonCard key={i} />) : (
             [
@@ -42,9 +49,11 @@ export default function DealerDashboard() {
           )}
         </div>
 
+        {/* Charts — bar chart for monthly bookings, pie for test drive vs booking split */}
         <div className="grid grid-cols-1 xl:grid-cols-2 gap-4">
           {loading ? <><SkeletonChart /><SkeletonChart /></> : (
             <>
+              {/* Bar chart: booking count per month — dataKey matches SalesAnalyticsDTO.totalBookings */}
               <div className="apple-card p-5 sm:p-6 h-[300px] sm:h-[360px]">
                 <h2 className="text-sm font-semibold text-[#1d1d1f] dark:text-[#f5f5f7] mb-5">Monthly Bookings</h2>
                 <ResponsiveContainer width="100%" height="85%">
@@ -56,6 +65,8 @@ export default function DealerDashboard() {
                   </BarChart>
                 </ResponsiveContainer>
               </div>
+
+              {/* Pie chart: test drives vs bookings — shows conversion at a glance */}
               <div className="apple-card p-5 sm:p-6 h-[300px] sm:h-[360px]">
                 <h2 className="text-sm font-semibold text-[#1d1d1f] dark:text-[#f5f5f7] mb-5">Conversion Overview</h2>
                 <ResponsiveContainer width="100%" height="85%">

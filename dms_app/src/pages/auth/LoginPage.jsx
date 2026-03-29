@@ -3,23 +3,30 @@ import api from "../../api/axiosClient";
 import { User, Building2, Shield } from "lucide-react";
 
 export default function LoginPage() {
-  const [email, setEmail] = useState("");
+  const [email, setEmail]       = useState("");
   const [password, setPassword] = useState("");
-  const [role, setRole] = useState("ADMIN");
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState("");
+  const [role, setRole]         = useState("ADMIN"); // default selected role
+  const [loading, setLoading]   = useState(false);
+  const [error, setError]       = useState("");
 
+  // Calls POST /auth/login, stores JWT + role in localStorage, redirects by role
   const login = async () => {
     if (!email || !password) { setError("Please enter your email and password."); return; }
     setError("");
     try {
       setLoading(true);
       const res = await api.post("/auth/login", { email, password, role });
+
+      // Backend may return token under different keys — handle all variants
       const token = res.data.token || res.data.accessToken || res.data.jwt;
       localStorage.setItem("token", token);
       localStorage.setItem("role", role);
-      if (res.data.dealerId)    localStorage.setItem("dealerId", res.data.dealerId);
-      if (res.data.employeeId)  localStorage.setItem("employeeId", res.data.employeeId);
+
+      // Store optional IDs if backend returns them
+      if (res.data.dealerId)   localStorage.setItem("dealerId", res.data.dealerId);
+      if (res.data.employeeId) localStorage.setItem("employeeId", res.data.employeeId);
+
+      // 50ms delay ensures localStorage writes flush before new page reads them
       setTimeout(() => {
         if (role === "ADMIN")    window.location.href = "/admin";
         if (role === "DEALER")   window.location.href = "/dealer";
@@ -32,8 +39,10 @@ export default function LoginPage() {
     }
   };
 
+  // Allow Enter key to submit the form from either input field
   const handleKeyDown = (e) => { if (e.key === "Enter") login(); };
 
+  // Role selector config — each role has a label and icon
   const roles = [
     { id: "ADMIN",    label: "Admin",    Icon: Shield },
     { id: "DEALER",   label: "Dealer",   Icon: Building2 },
@@ -43,7 +52,7 @@ export default function LoginPage() {
   return (
     <div className="min-h-screen bg-[#f5f5f7] dark:bg-black flex items-center justify-center px-4">
 
-      {/* Subtle background gradient */}
+      {/* Decorative background blobs — pointer-events-none so they don't block clicks */}
       <div className="absolute inset-0 overflow-hidden pointer-events-none">
         <div className="absolute -top-40 -right-40 w-96 h-96 bg-[#0071e3]/5 rounded-full blur-3xl" />
         <div className="absolute -bottom-40 -left-40 w-96 h-96 bg-[#0071e3]/5 rounded-full blur-3xl" />
@@ -51,7 +60,6 @@ export default function LoginPage() {
 
       <div className="relative w-full max-w-[400px]">
 
-        {/* Logo + Brand */}
         <div className="text-center mb-8">
           <img src="/hmi_logo.png" alt="Hyundai" className="w-20 mx-auto mb-5 object-contain" />
           <h1 className="text-2xl font-semibold text-[#1d1d1f] dark:text-[#f5f5f7] tracking-tight">
@@ -60,10 +68,9 @@ export default function LoginPage() {
           <p className="text-sm text-[#86868b] mt-1">Sign in to your workspace</p>
         </div>
 
-        {/* Card */}
         <div className="bg-white dark:bg-[#1c1c1e] rounded-2xl border border-[#e5e5ea] dark:border-[#2c2c2e] shadow-apple p-8">
 
-          {/* Role selector */}
+          {/* Role selector — sets which table backend queries for credential check */}
           <div className="mb-6">
             <p className="text-xs font-medium text-[#86868b] uppercase tracking-wider mb-3">Sign in as</p>
             <div className="grid grid-cols-3 gap-2">
@@ -84,7 +91,7 @@ export default function LoginPage() {
             </div>
           </div>
 
-          {/* Fields */}
+          {/* Email and password inputs — both support Enter key submission */}
           <div className="space-y-3 mb-5">
             <input
               className="apple-input"
@@ -106,12 +113,12 @@ export default function LoginPage() {
             />
           </div>
 
-          {/* Error */}
+          {/* Inline error message — shown on bad credentials or empty fields */}
           {error && (
             <p className="text-xs text-red-500 mb-4 text-center">{error}</p>
           )}
 
-          {/* Submit */}
+          {/* Submit button — disabled and shows spinner while API call is in flight */}
           <button
             onClick={login}
             disabled={loading}

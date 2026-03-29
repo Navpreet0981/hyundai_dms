@@ -8,22 +8,31 @@ import { AlertTriangle, X } from "lucide-react";
 
 export default function DealerPerformance() {
   const qc = useQueryClient();
+
+  // Fetch all dealers with their performance stats (employees, leads, bookings, conversion rate)
   const { data: dealers = [], isLoading: loading } = useAdminDealerPerf();
 
-  const [reassignDealer, setReassignDealer] = useState(null);
-  const [targetDealerId, setTargetDealerId] = useState("");
+  // Reassign modal state — null means closed, dealer object means open
+  const [reassignDealer, setReassignDealer]   = useState(null);
+  const [targetDealerId, setTargetDealerId]   = useState("");
   const [reassignLoading, setReassignLoading] = useState(false);
-  const [reassignError, setReassignError] = useState("");
+  const [reassignError, setReassignError]     = useState("");
 
+  // Invalidate dealer performance cache so table refreshes after any mutation
   const invalidate = () => qc.invalidateQueries({ queryKey: ['admin-dealer-perf'] });
 
+  // Toggle dealer active/inactive — flips current state and refreshes table
   const toggleDealer = (id, active) => {
     api.put(`/dealers/${id}/status`, { active: !active }).then(invalidate).catch(err => console.log(err));
   };
 
+  // Open reassign modal for a specific dealer and reset its state
   const openReassignModal = (dealer) => { setReassignDealer(dealer); setTargetDealerId(""); setReassignError(""); };
+
+  // Close reassign modal and clear all its state
   const closeReassignModal = () => { setReassignDealer(null); setTargetDealerId(""); setReassignError(""); };
 
+  // Bulk-reassign all dealer data to target dealer, then soft-deactivate the old one
   const handleReassignAndDelete = () => {
     if (!targetDealerId) { setReassignError("Please select a dealer to reassign to."); return; }
     setReassignLoading(true);
@@ -34,6 +43,7 @@ export default function DealerPerformance() {
       .finally(() => setReassignLoading(false));
   };
 
+  // Filter out the dealer being removed from the reassign dropdown — can't reassign to self
   const otherDealers = reassignDealer
     ? dealers.filter(d => d.dealerId !== reassignDealer.dealerId)
     : [];
@@ -65,6 +75,7 @@ export default function DealerPerformance() {
                     <td className="apple-table-cell text-[#86868b]">{dealer.totalEmployees}</td>
                     <td className="apple-table-cell text-[#86868b]">{dealer.totalLeads}</td>
                     <td className="apple-table-cell text-[#86868b]">{dealer.totalBookings}</td>
+                    {/* Conversion rate: bookings / leads * 100 — calculated on backend */}
                     <td className="apple-table-cell font-semibold text-[#0071e3]">{dealer.conversionRate}%</td>
                     <td className="apple-table-cell">
                       <span className={`apple-badge ${dealer.active
@@ -75,11 +86,13 @@ export default function DealerPerformance() {
                     </td>
                     <td className="apple-table-cell">
                       <div className="flex flex-wrap gap-2">
+                        {/* Toggle button label flips based on current active state */}
                         <button
                           onClick={() => toggleDealer(dealer.dealerId, dealer.active)}
                           className="apple-btn-secondary !px-3 !py-1.5 !text-xs">
                           {dealer.active ? "Deactivate" : "Activate"}
                         </button>
+                        {/* Opens reassign modal — forces data migration before deactivation */}
                         <button
                           onClick={() => openReassignModal(dealer)}
                           className="px-3 py-1.5 text-xs text-red-500 border border-red-200 dark:border-red-800 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-lg transition-colors">
@@ -95,7 +108,7 @@ export default function DealerPerformance() {
         )}
       </div>
 
-      {/* REASSIGN DEALER MODAL */}
+      {/* REASSIGN DEALER MODAL — shown when reassignDealer is not null */}
       {reassignDealer && (
         <div className="fixed inset-0 bg-black/40 backdrop-blur-sm flex items-center justify-center z-50 px-4">
           <div className="apple-card w-full max-w-md p-6 shadow-apple-lg">
@@ -124,6 +137,7 @@ export default function DealerPerformance() {
                 <label className="block text-xs font-medium text-[#86868b] mb-1.5">
                   Reassign employees, bookings & customers to
                 </label>
+                {/* Dropdown excludes the dealer being removed */}
                 <select
                   value={targetDealerId}
                   onChange={e => { setTargetDealerId(e.target.value); setReassignError(""); }}
@@ -145,6 +159,7 @@ export default function DealerPerformance() {
 
               <div className="flex gap-3 pt-1">
                 <button onClick={closeReassignModal} className="apple-btn-secondary flex-1">Cancel</button>
+                {/* Disabled until a target dealer is selected */}
                 <button
                   onClick={handleReassignAndDelete}
                   disabled={reassignLoading || !targetDealerId}

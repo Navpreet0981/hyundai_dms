@@ -6,13 +6,16 @@ import { SkeletonTable } from "../../components/Skeleton";
 import { useDealerInventory, useCars, useVariants } from "../../hooks/useQueries";
 import { PlusCircle, X, Package, Search } from "lucide-react";
 
-// Sub-component: variant selector when adding stock
+// Modal sub-component for adding new stock — handles car/variant selection and quantity
 function AddStockModal({ cars, onClose, onSave }) {
-  const [selectedCarId, setSelectedCarId] = useState("");
+  const [selectedCarId, setSelectedCarId]       = useState("");
   const [selectedVariantId, setSelectedVariantId] = useState("");
-  const [quantity, setQuantity] = useState(1);
+  const [quantity, setQuantity]                 = useState(1);
+
+  // Fetch variants only when a car is selected — enabled: !!carId prevents premature query
   const { data: variants = [] } = useVariants(selectedCarId || null);
 
+  // Validate and call parent's onSave with variantId and quantity
   const handleSave = () => {
     if (!selectedVariantId || quantity < 1) return;
     onSave(Number(selectedVariantId), quantity);
@@ -28,12 +31,14 @@ function AddStockModal({ cars, onClose, onSave }) {
           </button>
         </div>
 
+        {/* Step 1: select car model */}
         <select value={selectedCarId} onChange={e => { setSelectedCarId(e.target.value); setSelectedVariantId(""); }}
           className="apple-input">
           <option value="">Select Car Model</option>
           {cars.map(c => <option key={c.carId} value={c.carId}>{c.modelName}</option>)}
         </select>
 
+        {/* Step 2: select variant — only shown after car is selected */}
         {selectedCarId && (
           <select value={selectedVariantId} onChange={e => setSelectedVariantId(e.target.value)} className="apple-input">
             <option value="">Select Variant</option>
@@ -50,6 +55,7 @@ function AddStockModal({ cars, onClose, onSave }) {
 
         <div className="flex gap-3 pt-1">
           <button onClick={onClose} className="apple-btn-secondary flex-1">Cancel</button>
+          {/* Disabled until a variant is selected */}
           <button onClick={handleSave} disabled={!selectedVariantId}
             className="apple-btn-primary flex-1 disabled:opacity-50">
             Save
@@ -62,41 +68,49 @@ function AddStockModal({ cars, onClose, onSave }) {
 
 export default function DealerCars() {
   const qc = useQueryClient();
-  const { data: inventory = [], isLoading } = useDealerInventory();
-  const { data: cars = [] } = useCars();
-  const [showModal, setShowModal] = useState(false);
-  const [editingId, setEditingId] = useState(null);
-  const [editQty, setEditQty] = useState(0);
-  const [search, setSearch] = useState("");
 
+  // Fetch dealer's current inventory and all available car models
+  const { data: inventory = [], isLoading } = useDealerInventory();
+  const { data: cars = [] }                 = useCars();
+
+  const [showModal, setShowModal]   = useState(false);
+  const [editingId, setEditingId]   = useState(null);  // variantId of row being inline-edited
+  const [editQty, setEditQty]       = useState(0);
+  const [search, setSearch]         = useState("");
+
+  // Client-side filter — searches model name and variant name
   const filtered = inventory.filter(item =>
     item.modelName?.toLowerCase().includes(search.toLowerCase()) ||
     item.variantName?.toLowerCase().includes(search.toLowerCase())
   );
 
-  // simple client-side pagination
+  // Client-side pagination — inventory is small enough to not need server pagination
   const PAGE_SIZE = 10;
-  const [page, setPage] = useState(0);
-  const totalPages = Math.ceil(filtered.length / PAGE_SIZE);
-  const paged = filtered.slice(page * PAGE_SIZE, page * PAGE_SIZE + PAGE_SIZE);
+  const [page, setPage]   = useState(0);
+  const totalPages        = Math.ceil(filtered.length / PAGE_SIZE);
+  const paged             = filtered.slice(page * PAGE_SIZE, page * PAGE_SIZE + PAGE_SIZE);
 
-  // reset to page 0 when search changes
+  // Reset to page 0 whenever search changes so results start from the beginning
   useEffect(() => { setPage(0); }, [search]);
 
+  // Invalidate inventory cache after any stock mutation
   const invalidate = () => qc.invalidateQueries({ queryKey: ['dealer-inventory'] });
 
+  // Calls PUT /dealer/inventory/{variantId} to upsert stock, then refreshes table
   const handleAddStock = (variantId, quantity) => {
     api.put(`/dealer/inventory/${variantId}`, { quantity })
       .then(() => { setShowModal(false); invalidate(); })
       .catch(err => console.log(err));
   };
 
+  // Saves inline quantity edit for a specific variant row
   const handleInlineUpdate = (variantId) => {
     api.put(`/dealer/inventory/${variantId}`, { quantity: editQty })
       .then(() => { setEditingId(null); invalidate(); })
       .catch(err => console.log(err));
   };
 
+  // Returns badge color class based on stock level: red=0, orange=low, green=ok
   const stockBadge = (qty) => {
     if (qty === 0) return "bg-red-50 dark:bg-red-900/20 text-red-600 dark:text-red-400";
     if (qty <= 2) return "bg-orange-50 dark:bg-orange-900/20 text-orange-600 dark:text-orange-400";
@@ -133,12 +147,14 @@ export default function DealerCars() {
 
         {isLoading ? <SkeletonTable rows={5} /> : (
           <div className="apple-card overflow-x-auto">
+            {/* Empty state — no inventory at all */}
             {inventory.length === 0 ? (
               <div className="flex flex-col items-center justify-center py-16 text-[#86868b]">
                 <Package size={40} className="mb-3 opacity-30" />
                 <p className="text-sm">No inventory yet. Add stock to get started.</p>
               </div>
             ) : filtered.length === 0 ? (
+              // Empty state — search returned no results
               <div className="flex flex-col items-center justify-center py-16 text-[#86868b]">
                 <p className="text-sm">No results for "{search}"</p>
               </div>
@@ -160,6 +176,7 @@ export default function DealerCars() {
                       <td className="apple-table-cell text-[#86868b]">{item.engineType}</td>
                       <td className="apple-table-cell text-[#86868b]">₹{item.price?.toLocaleString()}</td>
                       <td className="apple-table-cell">
+                        {/* Inline edit mode — shows number input with save/cancel */}
                         {editingId === item.variantId ? (
                           <div className="flex items-center gap-2">
                             <input type="number" min="0" value={editQty}
@@ -174,12 +191,14 @@ export default function DealerCars() {
                               className="text-xs text-[#86868b]">Cancel</button>
                           </div>
                         ) : (
+                          // Stock badge — color reflects stock level
                           <span className={`apple-badge ${stockBadge(item.quantity)}`}>
                             {item.quantity === 0 ? "Out of Stock" : `${item.quantity} units`}
                           </span>
                         )}
                       </td>
                       <td className="apple-table-cell">
+                        {/* Edit button — enters inline edit mode for this row */}
                         {editingId !== item.variantId && (
                           <button onClick={() => { setEditingId(item.variantId); setEditQty(item.quantity); }}
                             className="text-xs text-[#0071e3] border border-[#0071e3]/30 hover:bg-[#0071e3]/5 px-3 py-1 rounded-lg transition-colors">
@@ -191,7 +210,7 @@ export default function DealerCars() {
                   ))}
                 </tbody>
               </table>
-              {/* Pagination */}
+              {/* Client-side pagination controls — only shown when more than one page */}
               {totalPages > 1 && (
                 <div className="flex items-center justify-between px-4 py-3 border-t border-[#e5e5ea] dark:border-[#2c2c2e]">
                   <p className="text-xs text-[#86868b]">
@@ -215,6 +234,7 @@ export default function DealerCars() {
         )}
       </div>
 
+      {/* Add stock modal — passes car list and callbacks */}
       {showModal && (
         <AddStockModal
           cars={cars}

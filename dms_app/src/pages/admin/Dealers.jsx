@@ -9,35 +9,49 @@ import Pagination from "../../components/Pagination";
 import { useDealersPaged } from "../../hooks/useQueries";
 
 export default function Dealers() {
+  // Access TanStack query client to manually invalidate cache after mutations
   const qc = useQueryClient();
-  const [showModal, setShowModal]   = useState(false);
-  const [search, setSearch]         = useState("");
+
+  const [showModal, setShowModal]             = useState(false);
+  const [search, setSearch]                   = useState("");
   const [debouncedSearch, setDebouncedSearch] = useState("");
-  const [showPassword, setShowPassword] = useState(false);
-  const [error, setError]           = useState("");
+  const [showPassword, setShowPassword]       = useState(false);
+  const [error, setError]                     = useState("");
+
+  // Empty form template — reused to reset form after submit or cancel
   const emptyForm = { dealerName: "", email: "", phone: "", city: "", state: "", address: "", password: "", active: true };
-  const [form, setForm]             = useState(emptyForm);
+  const [form, setForm] = useState(emptyForm);
+
+  // Pagination state: current page, page size, total pages
   const { page, size, totalPages, setPage, setTotalPages } = usePagination(0, 10);
 
+  // Reassign modal state — null means closed, dealer object means open
   const [reassignDealer, setReassignDealer] = useState(null);
   const [targetDealerId, setTargetDealerId] = useState("");
   const [reassignLoading, setReassignLoading] = useState(false);
   const [reassignError, setReassignError]   = useState("");
 
+  // Debounce search input — waits 400ms after user stops typing before firing query
   useEffect(() => {
     const t = setTimeout(() => { setDebouncedSearch(search); setPage(0); }, 400);
-    return () => clearTimeout(t);
+    return () => clearTimeout(t); // cleanup cancels timer if user types again before 400ms
   }, [search, setPage]);
 
+  // Fetch paginated dealers — query key includes page, size, search so cache is per-combination
   const { data, isLoading: loading } = useDealersPaged(page, size, debouncedSearch);
-  const dealers = data?.content ?? [];
+  const dealers = data?.content ?? []; // Spring Page wraps results in .content array
   const totalPagesFromQuery = data?.totalPages ?? 0;
 
+  // Sync total pages from query response into pagination hook
   useEffect(() => { setTotalPages(totalPagesFromQuery); }, [totalPagesFromQuery, setTotalPages]);
 
+  // Invalidate dealers cache so table refetches after any mutation
   const invalidate = () => qc.invalidateQueries({ queryKey: ['dealers-paged'] });
+
+  // Generic form field change handler — updates the matching key in form state
   const handleChange = (e) => setForm({ ...form, [e.target.name]: e.target.value });
 
+  // Validate and submit new dealer to POST /dealers, then reset and refresh table
   const addDealer = () => {
     if (!form.password || form.password.length < 6) { setError("Password must be at least 6 characters."); return; }
     setError("");
@@ -46,9 +60,13 @@ export default function Dealers() {
       .catch(err => setError(err.response?.data?.message || "Failed to create dealer."));
   };
 
+  // Open reassign modal for a specific dealer and reset its state
   const openReassignModal = (dealer) => { setReassignDealer(dealer); setTargetDealerId(""); setReassignError(""); };
+
+  // Close reassign modal and clear all its state
   const closeReassignModal = () => { setReassignDealer(null); setTargetDealerId(""); setReassignError(""); };
 
+  // Bulk-reassign all dealer data to target, then soft-deactivate the old dealer
   const handleReassignAndDelete = () => {
     if (!targetDealerId) { setReassignError("Please select a dealer to reassign to."); return; }
     setReassignLoading(true);
@@ -56,9 +74,10 @@ export default function Dealers() {
     api.put(`/dealers/${reassignDealer.dealerId}/reassign?targetDealerId=${targetDealerId}`)
       .then(() => { closeReassignModal(); invalidate(); })
       .catch(err => setReassignError(err.response?.data?.message || "Failed to reassign dealer."))
-      .finally(() => setReassignLoading(false));
+      .finally(() => setReassignLoading(false)); // always clear spinner regardless of outcome
   };
 
+  // Filter out the dealer being removed from the reassign dropdown — can't reassign to self
   const otherDealers = reassignDealer ? dealers.filter(d => d.dealerId !== reassignDealer.dealerId) : [];
 
   return (
@@ -101,6 +120,7 @@ export default function Dealers() {
                     <td className="apple-table-cell text-[#86868b]">{d.email}</td>
                     <td className="apple-table-cell text-[#86868b]">{d.city}</td>
                     <td className="apple-table-cell">
+                      {/* Active/Inactive badge — green for active, grey for inactive */}
                       <span className={`apple-badge ${d.active
                         ? "bg-[#d1fae5] dark:bg-[#052e16] text-[#065f46] dark:text-[#34d399]"
                         : "bg-[#f5f5f7] dark:bg-[#2c2c2e] text-[#86868b]"}`}>
@@ -108,6 +128,7 @@ export default function Dealers() {
                       </span>
                     </td>
                     <td className="apple-table-cell">
+                      {/* Opens reassign modal — forces data migration before deactivation */}
                       <button onClick={() => openReassignModal(d)}
                         className="text-xs text-red-500 border border-red-200 dark:border-red-900 hover:bg-red-50 dark:hover:bg-red-900/20 px-3 py-1 rounded-lg transition-colors">
                         Remove
@@ -128,16 +149,19 @@ export default function Dealers() {
           <div className="apple-card w-full max-w-md p-6 space-y-3 shadow-apple-lg">
             <div className="flex justify-between items-center mb-1">
               <h2 className="text-base font-semibold text-[#1d1d1f] dark:text-[#f5f5f7]">Add New Dealer</h2>
+              {/* Close button resets form and clears any error */}
               <button onClick={() => { setShowModal(false); setError(""); setShowPassword(false); setForm(emptyForm); }}
                 className="p-1.5 rounded-lg hover:bg-[#f5f5f7] dark:hover:bg-[#2c2c2e] text-[#86868b] transition-colors">
                 <X size={16} />
               </button>
             </div>
+            {/* Dynamically render text inputs for all non-password fields */}
             {["dealerName","email","phone","city","state","address"].map(field => (
               <input key={field} name={field}
                 placeholder={field.charAt(0).toUpperCase() + field.slice(1).replace(/([A-Z])/g, ' $1')}
                 value={form[field]} onChange={handleChange} className="apple-input" />
             ))}
+            {/* Password field with show/hide toggle */}
             <div className="relative">
               <input name="password" type={showPassword ? "text" : "password"}
                 placeholder="Password (min 6 characters)" value={form.password}
@@ -156,7 +180,7 @@ export default function Dealers() {
         </div>
       )}
 
-      {/* REASSIGN DEALER MODAL */}
+      {/* REASSIGN DEALER MODAL — shown when reassignDealer is not null */}
       {reassignDealer && (
         <div className="fixed inset-0 bg-black/40 backdrop-blur-sm flex items-center justify-center z-50 px-4">
           <div className="apple-card w-full max-w-md p-6 shadow-apple-lg">
@@ -177,6 +201,7 @@ export default function Dealers() {
             <div className="space-y-3">
               <div>
                 <label className="block text-xs font-medium text-[#86868b] mb-1.5">Reassign employees, bookings & customers to</label>
+                {/* Dropdown excludes the dealer being removed — otherDealers filters it out */}
                 <select value={targetDealerId} onChange={e => { setTargetDealerId(e.target.value); setReassignError(""); }}
                   className="w-full text-sm rounded-xl border border-[#e5e5ea] dark:border-[#3a3a3c]
                     bg-white dark:bg-[#2c2c2e] text-[#1d1d1f] dark:text-[#f5f5f7]
@@ -188,6 +213,7 @@ export default function Dealers() {
               {reassignError && <p className="text-xs text-red-500 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg px-3 py-2">{reassignError}</p>}
               <div className="flex gap-3 pt-1">
                 <button onClick={closeReassignModal} className="apple-btn-secondary flex-1">Cancel</button>
+                {/* Disabled until a target dealer is selected */}
                 <button onClick={handleReassignAndDelete} disabled={reassignLoading || !targetDealerId}
                   className="flex-1 flex items-center justify-center gap-2 px-4 py-2 text-sm text-white bg-red-500 hover:bg-red-600 disabled:opacity-50 rounded-xl transition-colors">
                   {reassignLoading && <div className="w-3.5 h-3.5 border-2 border-white border-t-transparent rounded-full animate-spin" />}

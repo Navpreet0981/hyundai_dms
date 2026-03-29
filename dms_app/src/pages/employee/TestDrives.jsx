@@ -8,33 +8,43 @@ import usePagination from "../../hooks/usePagination";
 import Pagination from "../../components/Pagination";
 import { useTestDrivesPaged, useCars, useVariants } from "../../hooks/useQueries";
 
+// Reusable button style constants
 const btnPrimary = "px-3 py-1 text-xs bg-[#0071e3] hover:bg-[#0077ed] text-white rounded-lg transition-colors";
 const btnOutline = "px-3 py-1 text-xs border border-[#e5e5ea] dark:border-[#3a3a3c] text-[#1d1d1f] dark:text-[#f5f5f7] hover:bg-[#f5f5f7] dark:hover:bg-[#2c2c2e] rounded-lg transition-colors";
 const btnDanger  = "px-3 py-1 text-xs text-red-500 border border-red-200 dark:border-red-900 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-lg transition-colors";
 
 export default function TestDrives() {
   const location = useLocation();
+
+  // Customer passed via router state from Leads page — pre-fills the schedule form
   const selectedCustomer = location.state?.customer;
   const qc = useQueryClient();
 
-  const [date, setDate]                     = useState("");
-  const [selectedCarId, setSelectedCarId]   = useState("");
+  const [date, setDate]                           = useState("");
+  const [selectedCarId, setSelectedCarId]         = useState("");
   const [selectedVariantId, setSelectedVariantId] = useState("");
   const { page, size, totalPages, setPage, setTotalPages } = usePagination(0, 10);
 
+  // Fetch paginated test drives — backend scopes to this employee's test drives
   const { data: tdData, isLoading: loading } = useTestDrivesPaged(page, size);
   const testDrives = tdData?.content ?? [];
 
+  // Sync total pages from query response into pagination hook
   useEffect(() => { if (tdData?.totalPages !== undefined) setTotalPages(tdData.totalPages); }, [tdData?.totalPages, setTotalPages]);
 
+  // Fetch all car models for the schedule form dropdown
   const { data: cars = [] } = useCars();
+
+  // Fetch variants only when a car is selected — enabled: !!carId prevents premature query
   const { data: variants = [] } = useVariants(selectedCarId || null);
 
-  // reset variant when car changes
+  // Reset variant selection when car changes
   useEffect(() => { setSelectedVariantId(""); }, [selectedCarId]);
 
+  // Invalidate test drives cache after any mutation
   const invalidate = () => qc.invalidateQueries({ queryKey: ['testdrives-paged'] });
 
+  // Validates form then calls POST /testdrives with customer, dealer, employee, variant IDs
   const createTestDrive = () => {
     if (!date) { alert("Please select a date"); return; }
     if (!selectedVariantId) { alert("Please select a car variant"); return; }
@@ -50,18 +60,20 @@ export default function TestDrives() {
       .catch(err => console.log(err));
   };
 
+  // Updates test drive status via PUT /testdrives/{id}/status then refreshes table
   const updateStatus = (id, status) => {
     api.put(`/testdrives/${id}/status?status=${status}`).then(invalidate).catch(err => console.log(err));
   };
 
+  // Checks inventory before creating booking — prevents booking if variant is out of stock
   const createBooking = (testDrive) => {
-    // Check inventory before booking
     api.get(`/dealer/inventory/check?dealerId=${testDrive.dealerId}&variantId=${testDrive.variantId}`)
       .then(res => {
         if (!res.data.inStock) {
           alert("⚠️ Out of Stock — This variant is not available in the dealer's inventory.");
           return;
         }
+        // Inventory available — proceed with booking creation
         api.post("/bookings", {
           customerId: testDrive.customerId,
           dealerId: testDrive.dealerId,
@@ -72,6 +84,7 @@ export default function TestDrives() {
         })
           .then(() => { alert("Booking Created"); invalidate(); })
           .catch(err => {
+            // Backend also guards against out-of-stock — handle race condition
             const msg = err.response?.data?.message || "";
             if (msg === "OUT_OF_STOCK") {
               alert("⚠️ Out of Stock — This variant is not available in the dealer's inventory.");
@@ -88,6 +101,7 @@ export default function TestDrives() {
       <div className="space-y-6">
         <h1 className="apple-title">Test Drives</h1>
 
+        {/* Schedule form — only shown when navigated from Leads page with a customer */}
         {selectedCustomer && (
           <div className="apple-card p-6 max-w-lg">
             <h3 className="text-sm font-semibold text-[#1d1d1f] dark:text-[#f5f5f7] mb-3">Schedule Test Drive</h3>
@@ -97,10 +111,12 @@ export default function TestDrives() {
               <p><span className="text-[#1d1d1f] dark:text-[#f5f5f7] font-medium">Interested In:</span> {selectedCustomer.interestedModel}</p>
             </div>
             <div className="space-y-3">
+              {/* Step 1: select car model */}
               <select value={selectedCarId} onChange={e => setSelectedCarId(e.target.value)} className="apple-input">
                 <option value="">Select Car Model</option>
                 {cars.map(c => <option key={c.carId} value={c.carId}>{c.modelName}</option>)}
               </select>
+              {/* Step 2: select variant — only shown after car is selected */}
               {selectedCarId && (
                 <select value={selectedVariantId} onChange={e => setSelectedVariantId(e.target.value)} className="apple-input">
                   <option value="">Select Variant</option>
@@ -139,6 +155,7 @@ export default function TestDrives() {
                         <button className={btnPrimary} onClick={() => updateStatus(t.testDriveId, "CONFIRMED")}>Confirm</button>
                         <button className={btnOutline} onClick={() => updateStatus(t.testDriveId, "COMPLETED")}>Completed</button>
                         <button className={btnDanger}  onClick={() => updateStatus(t.testDriveId, "CANCELLED")}>Cancel</button>
+                        {/* Booking button only shown for COMPLETED test drives */}
                         {t.status === "COMPLETED" && (
                           <button className={btnPrimary} onClick={() => createBooking(t)}>→ Booking</button>
                         )}

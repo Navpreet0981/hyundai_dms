@@ -3,20 +3,27 @@ import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, PieChart, Pi
 import { SkeletonCard, SkeletonChart } from "../../components/Skeleton";
 import { useDealerLeads, useAllTestDrives, useAllBookings, useDealerMonthlyRev } from "../../hooks/useQueries";
 
+// Color palette for pie chart slices
 const COLORS = ["#0071e3", "#bf5af2", "#30d158"];
 
 export default function DealerReports() {
-  const { data: leads = [],      isLoading: l1 } = useDealerLeads();
-  const { data: testDrives = [], isLoading: l2 } = useAllTestDrives();
-  const { data: bookings = [],   isLoading: l3 } = useAllBookings();
-  const { data: monthly = [],    isLoading: l4 } = useDealerMonthlyRev();
+  // All four queries fire in parallel — combined loading waits for all
+  const { data: leads = [],      isLoading: l1 } = useDealerLeads();       // dealer-scoped leads
+  const { data: testDrives = [], isLoading: l2 } = useAllTestDrives();     // dealer-scoped test drives
+  const { data: bookings = [],   isLoading: l3 } = useAllBookings();       // dealer-scoped bookings
+  const { data: monthly = [],    isLoading: l4 } = useDealerMonthlyRev();  // monthly booking counts
+
+  // Combined loading — all four must resolve before skeletons disappear
   const loading = l1 || l2 || l3 || l4;
 
+  // KPI card config — values are array lengths from the fetched data
   const kpis = [
     { label: "Leads",       value: leads.length,      color: "#0071e3", bg: "bg-[#0071e3]/10" },
     { label: "Test Drives", value: testDrives.length, color: "#bf5af2", bg: "bg-[#bf5af2]/10" },
     { label: "Bookings",    value: bookings.length,   color: "#30d158", bg: "bg-[#30d158]/10" },
   ];
+
+  // Pie chart data reuses KPI values — no extra computation needed
   const pieData = kpis.map(k => ({ name: k.label, value: k.value }));
 
   return (
@@ -27,6 +34,7 @@ export default function DealerReports() {
           <p className="apple-subtitle mt-1">Dealership performance analytics</p>
         </div>
 
+        {/* KPI cards — 3 skeletons while loading */}
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
           {loading ? Array.from({ length: 3 }).map((_, i) => <SkeletonCard key={i} />) : kpis.map((k, i) => (
             <div key={i} className="apple-card p-5 sm:p-6 h-28 flex justify-between items-center hover:shadow-apple transition-shadow">
@@ -39,9 +47,11 @@ export default function DealerReports() {
           ))}
         </div>
 
+        {/* Charts — bar chart for monthly bookings, pie for conversion breakdown */}
         <div className="grid grid-cols-1 xl:grid-cols-2 gap-4">
           {loading ? <><SkeletonChart /><SkeletonChart /></> : (
             <>
+              {/* Bar chart: booking count per month */}
               <div className="apple-card p-5 sm:p-6">
                 <h2 className="text-sm font-semibold text-[#1d1d1f] dark:text-[#f5f5f7] mb-4">Monthly Bookings</h2>
                 <ResponsiveContainer width="100%" height={260}>
@@ -53,6 +63,8 @@ export default function DealerReports() {
                   </BarChart>
                 </ResponsiveContainer>
               </div>
+
+              {/* Pie chart: leads vs test drives vs bookings — shows funnel at a glance */}
               <div className="apple-card p-5 sm:p-6">
                 <h2 className="text-sm font-semibold text-[#1d1d1f] dark:text-[#f5f5f7] mb-4">Conversion Breakdown</h2>
                 <ResponsiveContainer width="100%" height={260}>

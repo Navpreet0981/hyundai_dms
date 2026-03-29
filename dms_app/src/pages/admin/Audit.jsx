@@ -6,6 +6,7 @@ import usePagination from "../../hooks/usePagination";
 import { useAdminAudit } from "../../hooks/useQueries";
 import { Search, ShieldCheck } from "lucide-react";
 
+// Tailwind class map for action badge colors — object lookup avoids if/else chains
 const ACTION_COLORS = {
   LOGIN:  "bg-blue-50 dark:bg-blue-900/20 text-blue-600 dark:text-blue-400",
   LOGOUT: "bg-[#f5f5f7] dark:bg-[#2c2c2e] text-[#86868b]",
@@ -14,12 +15,14 @@ const ACTION_COLORS = {
   DELETE: "bg-red-50 dark:bg-red-900/20 text-red-600 dark:text-red-400",
 };
 
+// Tailwind class map for role badge colors
 const ROLE_COLORS = {
   ADMIN:    "bg-purple-50 dark:bg-purple-900/20 text-purple-600 dark:text-purple-400",
   DEALER:   "bg-[#fff3cd] dark:bg-[#3a2e00] text-[#856404] dark:text-[#ffc107]",
   EMPLOYEE: "bg-blue-50 dark:bg-blue-900/20 text-blue-600 dark:text-blue-400",
 };
 
+// Formats ISO timestamp to Indian locale: "15 Jan 2026, 10:30 AM"
 function formatTime(ts) {
   if (!ts) return "—";
   return new Date(ts).toLocaleString("en-IN", {
@@ -29,18 +32,23 @@ function formatTime(ts) {
 }
 
 export default function Audit() {
-  const [search, setSearch]               = useState("");
+  const [search, setSearch]                   = useState("");
   const [debouncedSearch, setDebouncedSearch] = useState("");
+
+  // Page size 20 — audit logs are dense, more rows per page makes sense
   const { page, size, totalPages, setPage, setTotalPages } = usePagination(0, 20);
 
+  // Debounce search — waits 400ms after user stops typing before firing query
   useEffect(() => {
     const t = setTimeout(() => { setDebouncedSearch(search); setPage(0); }, 400);
     return () => clearTimeout(t);
   }, [search, setPage]);
 
+  // Fetch paginated audit logs — admin sees all logs system-wide
   const { data, isLoading } = useAdminAudit(page, size, debouncedSearch);
   const logs = data?.content ?? [];
 
+  // Sync total pages from query response into pagination hook
   useEffect(() => { if (data?.totalPages !== undefined) setTotalPages(data.totalPages); }, [data?.totalPages, setTotalPages]);
 
   return (
@@ -56,6 +64,7 @@ export default function Audit() {
               <p className="apple-subtitle mt-0.5">All system activity across all users</p>
             </div>
           </div>
+          {/* Search filters across actorEmail, action, entity, description on backend */}
           <div className="relative">
             <Search size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-[#86868b]" />
             <input
@@ -88,25 +97,30 @@ export default function Audit() {
                   </td></tr>
                 ) : logs.map(log => (
                   <tr key={log.id} className="apple-table-row">
+                    {/* formatTime converts ISO string to readable Indian locale format */}
                     <td className="apple-table-cell text-xs text-[#86868b] whitespace-nowrap">
                       {formatTime(log.timestamp)}
                     </td>
                     <td className="apple-table-cell text-sm font-medium truncate max-w-[160px]">
                       {log.actorEmail}
                     </td>
+                    {/* Role badge — color from ROLE_COLORS lookup */}
                     <td className="apple-table-cell">
                       <span className={`apple-badge ${ROLE_COLORS[log.actorRole] || ""}`}>
                         {log.actorRole}
                       </span>
                     </td>
+                    {/* dealerName is null for admin actions — show dash */}
                     <td className="apple-table-cell text-[#86868b] text-sm">
                       {log.dealerName || "—"}
                     </td>
+                    {/* Action badge — color from ACTION_COLORS lookup */}
                     <td className="apple-table-cell">
                       <span className={`apple-badge ${ACTION_COLORS[log.action] || ""}`}>
                         {log.action}
                       </span>
                     </td>
+                    {/* Entity + ID: shows "Customer #42" or just "Auth" for login/logout */}
                     <td className="apple-table-cell text-[#86868b] text-sm">
                       {log.entity}{log.entityId ? ` #${log.entityId}` : ""}
                     </td>

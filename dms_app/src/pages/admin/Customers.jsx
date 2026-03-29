@@ -6,12 +6,14 @@ import Pagination from "../../components/Pagination";
 import { Search, ChevronUp, ChevronDown, ChevronsUpDown } from "lucide-react";
 import { useCustomersPaged } from "../../hooks/useQueries";
 
+// Sortable fields for the customer table
 const SORT_FIELDS = [
   { label: "Name",   value: "name" },
   { label: "City",   value: "city" },
   { label: "Status", value: "leadStatus" },
 ];
 
+// Renders sort direction icon for a column based on current sort state
 function SortIcon({ field, sort }) {
   if (!sort.startsWith(field)) return <ChevronsUpDown size={13} className="text-[#86868b]" />;
   return sort.endsWith("asc")
@@ -19,6 +21,7 @@ function SortIcon({ field, sort }) {
     : <ChevronDown size={13} className="text-[#0071e3]" />;
 }
 
+// Column definitions — sortable columns get clickable headers
 const headers = [
   { label: "Name",   sortable: true,  field: "name" },
   { label: "Phone",  sortable: false },
@@ -30,21 +33,25 @@ const headers = [
 ];
 
 export default function Customers() {
-  const [search, setSearch]         = useState("");
+  const [search, setSearch]                   = useState("");
   const [debouncedSearch, setDebouncedSearch] = useState("");
-  const [sort, setSort]             = useState("");
+  const [sort, setSort]                       = useState("");
   const { page, size, totalPages, setPage, setTotalPages } = usePagination(0, 10);
 
+  // Debounce search input — prevents API call on every keystroke, waits 400ms
   useEffect(() => {
     const t = setTimeout(() => { setDebouncedSearch(search); setPage(0); }, 400);
     return () => clearTimeout(t);
   }, [search, setPage]);
 
+  // Fetch paginated customers — admin sees all, backend scopes by role automatically
   const { data, isLoading: loading } = useCustomersPaged(page, size, debouncedSearch, sort);
   const customers = data?.content ?? [];
 
+  // Keep pagination hook in sync with total pages returned by the backend
   useEffect(() => { if (data?.totalPages !== undefined) setTotalPages(data.totalPages); }, [data?.totalPages, setTotalPages]);
 
+  // Three-state sort toggle per column: none → asc → desc → none
   const toggleSort = (field) => {
     if (sort === `${field},asc`)       { setSort(`${field},desc`); setPage(0); }
     else if (sort === `${field},desc`) { setSort(""); setPage(0); }
@@ -66,6 +73,7 @@ export default function Customers() {
                   placeholder-[#86868b] focus:outline-none focus:ring-2 focus:ring-[#0071e3] w-52 transition-all"
               />
             </div>
+            {/* Sort dropdown — value is passed as Spring Sort param to backend */}
             <select value={sort} onChange={e => { setSort(e.target.value); setPage(0); }}
               className="text-sm rounded-xl border border-[#e5e5ea] dark:border-[#3a3a3c]
                 bg-white dark:bg-[#2c2c2e] text-[#1d1d1f] dark:text-[#f5f5f7]
@@ -109,8 +117,10 @@ export default function Customers() {
                     <td className="apple-table-cell text-[#86868b]">{c.phone}</td>
                     <td className="apple-table-cell text-[#86868b]">{c.email}</td>
                     <td className="apple-table-cell text-[#86868b]">{c.city}</td>
+                    {/* leadSource: WEBSITE / WALKIN / REFERRAL */}
                     <td className="apple-table-cell text-[#86868b]">{c.leadSource}</td>
                     <td className="apple-table-cell text-[#86868b]">{c.interestedModel}</td>
+                    {/* leadStatus badge — NEW / CONTACTED / BOOKED / LOST etc. */}
                     <td className="apple-table-cell">
                       <span className="apple-badge bg-[#f5f5f7] dark:bg-[#2c2c2e] text-[#6e6e73] dark:text-[#86868b]">
                         {c.leadStatus}
