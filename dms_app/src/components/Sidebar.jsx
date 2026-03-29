@@ -34,6 +34,7 @@ export default function Sidebar({ mobileOpen, onMobileClose }) {
       { name: "Dealer Performance",path: "/dealer-performance", icon: BarChart3 },
       { name: "Admin Analytics",   path: "/analytics",          icon: FileText },
       { name: "Audit Log",         path: "/audit",              icon: ShieldCheck },
+      { name: "Profile",           path: "/admin/profile",      icon: User },
     ],
     DEALER: [
       { name: "Dashboard",  path: "/dealer",             icon: LayoutDashboard },

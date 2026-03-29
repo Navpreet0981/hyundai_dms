@@ -54,6 +54,23 @@ public interface BookingRepository extends JpaRepository<Booking, Long> {
     @Query("SELECT COALESCE(SUM(v.price),0) FROM Booking b JOIN b.carVariant v WHERE b.dealer.dealerId = :dealerId")
     Double getTotalRevenueByDealer(@Param("dealerId") Long dealerId);
 
+    // Single aggregated query: returns [employeeId, leadCount, testDriveCount, bookingCount] per employee for a dealer
+    //  N+1: replaces 3 per-employee count queries with one JOIN query
+    @Query("""
+        SELECT e.employeeId, e.name,
+               COUNT(DISTINCT c.customerId),
+               COUNT(DISTINCT t.testDriveId),
+               COUNT(DISTINCT b.bookingId)
+        FROM Employee e
+        LEFT JOIN Customer c ON c.employee.employeeId = e.employeeId
+        LEFT JOIN TestDrive t ON t.employee.employeeId = e.employeeId
+        LEFT JOIN Booking b   ON b.employee.employeeId = e.employeeId
+        WHERE e.dealer.dealerId = :dealerId AND e.active = true
+        GROUP BY e.employeeId, e.name
+        ORDER BY e.employeeId ASC
+    """)
+    List<Object[]> getEmployeePerformanceByDealer(@Param("dealerId") Long dealerId);
+
     @Modifying
     @Query("UPDATE Booking b SET b.dealer.dealerId = :newDealerId WHERE b.dealer.dealerId = :oldDealerId")
     void reassignDealer(@Param("oldDealerId") Long oldDealerId, @Param("newDealerId") Long newDealerId);

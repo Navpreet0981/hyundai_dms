@@ -6,7 +6,6 @@ import com.hyundai.dms.repository.*;
 import com.hyundai.dms.service.DealerDashboardService;
 import org.springframework.stereotype.Service;
 
-// Fix #21: Removed inner @Service LeadConversionServiceImpl — moved to its own file
 @Service
 public class DealerDashboardServiceImpl implements DealerDashboardService {
 
@@ -28,15 +27,23 @@ public class DealerDashboardServiceImpl implements DealerDashboardService {
         this.bookingRepository = bookingRepository;
     }
 
+    // Aggregates all dealer-scoped stats into a single typed DTO
     @Override
     public DealerDashboardDTO getDealerDashboard(Long dealerId) {
+        // Resolve dealer entity to get name
         Dealer dealer = dealerRepository.findById(dealerId)
                 .orElseThrow(() -> new RuntimeException("Dealer not found"));
 
+        // Count all entities scoped to this dealer
         long employees  = employeeRepository.countByDealerDealerId(dealerId);
-        long leads      = customerRepository.countByDealerDealerId(dealerId);
-        long testDrives = testDriveRepository.countByDealerDealerId(dealerId);
-        long bookings   = bookingRepository.countByDealerDealerId(dealerId);
+        long leads      = customerRepository.countByEmployee_Dealer_DealerId(dealerId);
+        long testDrives = testDriveRepository.countByEmployeeDealerDealerId(dealerId);
+        long bookings   = bookingRepository.countByEmployeeDealerDealerId(dealerId);
+
+        // Revenue: sum of variant prices for all bookings under this dealer
+        Double revenue = bookingRepository.getTotalRevenueByDealer(dealerId);
+
+        // Conversion rate: bookings / leads * 100
         double conversionRate = leads > 0 ? ((double) bookings / leads) * 100 : 0;
 
         return DealerDashboardDTO.builder()
@@ -45,7 +52,8 @@ public class DealerDashboardServiceImpl implements DealerDashboardService {
                 .totalLeads(leads)
                 .totalTestDrives(testDrives)
                 .totalBookings(bookings)
-                .conversionRate(conversionRate)
+                .conversionRate(Math.round(conversionRate * 100) / 100.0)
+                .totalRevenue(revenue != null ? revenue : 0)
                 .build();
     }
 }

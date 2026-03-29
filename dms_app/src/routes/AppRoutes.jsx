@@ -3,6 +3,7 @@ import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import LoginPage from "../pages/auth/LoginPage";
 
 import AdminDashboard from "../pages/admin/AdminDashboard";
+import AdminProfile from "../pages/admin/AdminProfile";
 import AdminDealerPerformance from "../pages/admin/DealerPerformance";
 import SalesAnalytics from "../pages/admin/salesAnalytics";
 import Dealers from "../pages/admin/Dealers";
@@ -82,6 +83,10 @@ export default function AppRoutes() {
 
         <Route path="/audit" element={
           <ProtectedRoute role="ADMIN"><Audit /></ProtectedRoute>
+        } />
+
+        <Route path="/admin/profile" element={
+          <ProtectedRoute role="ADMIN"><AdminProfile /></ProtectedRoute>
         } />
 
         {/* ================= DEALER ROUTES ================= */}

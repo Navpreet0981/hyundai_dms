@@ -1,5 +1,6 @@
 import { Sun, Moon, LogOut, Menu } from "lucide-react";
 import { useState, useEffect } from "react";
+import api from "../api/axiosClient";
 
 export default function Navbar({ onMenuToggle }) {
   const [dark, setDark] = useState(false);
@@ -29,8 +30,11 @@ export default function Navbar({ onMenuToggle }) {
   };
 
   const logout = () => {
-    localStorage.clear();
-    window.location.href = "/login";
+    // Fire logout audit log — best effort, always clear and redirect regardless
+    api.post("/auth/logout").finally(() => {
+      localStorage.clear();
+      window.location.href = "/login";
+    });
   };
 
   return (

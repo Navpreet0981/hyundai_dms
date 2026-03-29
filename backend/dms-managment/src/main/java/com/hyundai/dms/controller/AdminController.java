@@ -2,10 +2,9 @@ package com.hyundai.dms.controller;
 
 import com.hyundai.dms.dto.AdminRequest;
 import com.hyundai.dms.entity.Admin;
-import com.hyundai.dms.entity.Dealer;
 import com.hyundai.dms.repository.AdminRepository;
-import com.hyundai.dms.repository.DealerRepository;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.web.bind.annotation.*;
 
@@ -15,49 +14,53 @@ import java.util.Map;
 public class AdminController {
 
     private final AdminRepository adminRepository;
-    private final DealerRepository dealerRepository;
     private final PasswordEncoder passwordEncoder;
 
     public AdminController(AdminRepository adminRepository,
-                           DealerRepository dealerRepository,
                            PasswordEncoder passwordEncoder) {
         this.adminRepository = adminRepository;
-        this.dealerRepository = dealerRepository;
         this.passwordEncoder = passwordEncoder;
     }
 
-    // POST /auth/register → public, creates first admin
+    // POST /auth/register — bootstrap endpoint to create the first admin (public, one-time use)
     @PostMapping("/auth/register")
     public ResponseEntity<Admin> registerAdmin(@RequestBody AdminRequest request) {
+        // Prevent duplicate admin registration with same email
         if (adminRepository.findByEmail(request.getEmail()).isPresent()) {
             throw new RuntimeException("Admin with this email already exists");
         }
         Admin admin = new Admin();
         admin.setName(request.getName());
         admin.setEmail(request.getEmail());
-        admin.setPassword(passwordEncoder.encode(request.getPassword()));
+        admin.setPassword(passwordEncoder.encode(request.getPassword())); // BCrypt encode before save
         admin.setRole("ADMIN");
         admin.setActive(true);
         return ResponseEntity.ok(adminRepository.save(admin));
     }
 
-    // POST /auth/reset-dealer-password → public, resets a dealer's password
-    // Body: { "email": "dealer@email.com", "password": "newpassword" }
-    @PostMapping("/auth/reset-dealer-password")
-    public ResponseEntity<String> resetDealerPassword(@RequestBody Map<String, String> body) {
-        String email = body.get("email");
-        String newPassword = body.get("password");
+    // PUT /admin/change-password — admin changes their own password (must provide current password)
+    @PutMapping("/admin/change-password")
+    public ResponseEntity<String> changePassword(@RequestBody Map<String, String> body) {
+        String currentPassword = body.get("currentPassword");
+        String newPassword     = body.get("newPassword");
 
-        if (email == null || newPassword == null) {
-            return ResponseEntity.badRequest().body("email and password are required");
+        if (currentPassword == null || newPassword == null || newPassword.isBlank()) {
+            return ResponseEntity.badRequest().body("currentPassword and newPassword are required");
         }
 
-        Dealer dealer = dealerRepository.findByEmail(email)
-                .orElseThrow(() -> new RuntimeException("Dealer not found: " + email));
+        // Resolve logged-in admin from JWT
+        String email = SecurityContextHolder.getContext().getAuthentication().getName();
+        Admin admin = adminRepository.findByEmail(email)
+                .orElseThrow(() -> new RuntimeException("Admin not found"));
 
-        dealer.setPassword(passwordEncoder.encode(newPassword));
-        dealerRepository.save(dealer);
+        // Verify current password before allowing change
+        if (!passwordEncoder.matches(currentPassword, admin.getPassword())) {
+            return ResponseEntity.badRequest().body("Current password is incorrect");
+        }
 
-        return ResponseEntity.ok("Password reset successfully for " + email);
+        admin.setPassword(passwordEncoder.encode(newPassword));
+        adminRepository.save(admin);
+
+        return ResponseEntity.ok("Password updated successfully");
     }
 }

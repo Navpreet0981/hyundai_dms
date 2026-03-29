@@ -47,6 +47,17 @@ public class EmployeeController {
         employeeService.reassignAndDeleteEmployee(oldEmployeeId, targetEmployeeId);
     }
 
+    // PUT /employees/change-password — employee changes their own password
+    @PutMapping("/change-password")
+    public void changePassword(@RequestBody java.util.Map<String, String> body) {
+        String current = body.get("currentPassword");
+        String next    = body.get("newPassword");
+        if (current == null || next == null || next.isBlank()) {
+            throw new RuntimeException("currentPassword and newPassword are required");
+        }
+        employeeService.changePassword(current, next);
+    }
+
     @GetMapping("/paged")
     public Page<EmployeeDTO> getEmployeesPaged(
             @RequestParam(name = "page", defaultValue = "0") int page,

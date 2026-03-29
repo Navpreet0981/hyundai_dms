@@ -29,14 +29,13 @@ public class SecurityConfig {
             .cors(cors -> {})
             .csrf(csrf -> csrf.disable())
             .authorizeHttpRequests(auth -> auth
-                // Fix #3: Removed dead /admin/register rule — already covered by /auth/**
                 .requestMatchers("/auth/**").permitAll()
 
                 // DEALER routes first (order matters)
                 .requestMatchers("/dealer/inventory/check").hasAnyRole("DEALER","EMPLOYEE","ADMIN")
                 .requestMatchers("/dealer/**").hasRole("DEALER")
 
-                // Admin-only
+                // Admin-only routes
                 .requestMatchers("/dealers/**").hasRole("ADMIN")
                 .requestMatchers("/admin/**").hasRole("ADMIN")
 

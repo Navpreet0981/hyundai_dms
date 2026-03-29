@@ -19,7 +19,6 @@ export default function Dealers() {
   const [form, setForm]             = useState(emptyForm);
   const { page, size, totalPages, setPage, setTotalPages } = usePagination(0, 10);
 
-  // Reassign modal state
   const [reassignDealer, setReassignDealer] = useState(null);
   const [targetDealerId, setTargetDealerId] = useState("");
   const [reassignLoading, setReassignLoading] = useState(false);
@@ -31,13 +30,12 @@ export default function Dealers() {
   }, [search, setPage]);
 
   const { data, isLoading: loading } = useDealersPaged(page, size, debouncedSearch);
-  const dealers    = data?.content    ?? [];
+  const dealers = data?.content ?? [];
   const totalPagesFromQuery = data?.totalPages ?? 0;
 
   useEffect(() => { setTotalPages(totalPagesFromQuery); }, [totalPagesFromQuery, setTotalPages]);
 
   const invalidate = () => qc.invalidateQueries({ queryKey: ['dealers-paged'] });
-
   const handleChange = (e) => setForm({ ...form, [e.target.name]: e.target.value });
 
   const addDealer = () => {

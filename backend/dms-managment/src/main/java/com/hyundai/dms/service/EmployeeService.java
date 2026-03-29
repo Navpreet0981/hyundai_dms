@@ -196,6 +196,24 @@ public class EmployeeService {
                 "Deactivated employee: " + employee.getName());
     }
 
+    // Employee changes their own password — verifies current password before updating
+    public void changePassword(String currentPassword, String newPassword) {
+        String email = SecurityContextHolder.getContext().getAuthentication().getName();
+        Employee employee = employeeRepository.findByEmail(email)
+                .orElseThrow(() -> new RuntimeException("Employee not found"));
+
+        // Verify current password matches before allowing change
+        if (!passwordEncoder.matches(currentPassword, employee.getPassword())) {
+            throw new RuntimeException("Current password is incorrect");
+        }
+
+        employee.setPassword(passwordEncoder.encode(newPassword));
+        employeeRepository.save(employee);
+
+        auditService.logFromContext("UPDATE", "Employee",
+                String.valueOf(employee.getEmployeeId()), "Employee changed their password");
+    }
+
     public Page<EmployeeDTO> getEmployeesPaged(String search, Pageable pageable) {
         String email = SecurityContextHolder.getContext().getAuthentication().getName();
 

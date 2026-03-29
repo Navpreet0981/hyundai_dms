@@ -10,7 +10,7 @@ import org.springframework.web.filter.CorsFilter;
 @Configuration
 public class CorsConfig {
 
-    // Fix #14: Origin read from application.properties, not hardcoded
+    //Origin read from application.properties, not hardcoded
     @Value("${cors.allowed-origins}")
     private String allowedOrigin;
 
