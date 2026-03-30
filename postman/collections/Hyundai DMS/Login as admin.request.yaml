@@ -1,4 +1,5 @@
 $kind: http-request
+name: Login as admin
 url: http://localhost:8080/auth/login
 method: POST
 headers:
@@ -9,9 +10,7 @@ body:
 
     \  \"email\": \"super@hyundai.com\",\r
 
-    \  \"password\": \"admin@123\",\r
-
-    \  \"role\": \"ADMIN\"\r
+    \  \"password\": \"admin@123\"\r
 
     }"
 order: 21000

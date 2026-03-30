@@ -59,6 +59,17 @@ export const useDealerPerformance = () => useQuery({ queryKey: ['dealer-performa
 
 export const useDealerLeads = () => useQuery({ queryKey: ['dealer-leads'], queryFn: () => fetcher('/customers') });
 
+export const useDealerLeadsPaged = (page, size, search) =>
+  useQuery({
+    queryKey: ['dealer-leads-paged', page, size, search],
+    queryFn: () => {
+      const params = new URLSearchParams({ page, size });
+      if (search?.trim()) params.set('search', search.trim());
+      return fetcher(`/customers/paged?${params}`);
+    },
+    placeholderData: (prev) => prev,
+  });
+
 export const useBookingsPaged = (page, size) =>
   useQuery({
     queryKey: ['bookings-paged', page, size],
@@ -77,6 +88,17 @@ export const useTestDrivesPaged = (page, size) =>
 export const useEmployeeDashboard  = () => useQuery({ queryKey: ['employee-dashboard'],    queryFn: () => fetcher('/employee/dashboard') });
 export const useEmployeeMonthlySales=() => useQuery({ queryKey: ['employee-monthly-sales'],queryFn: () => fetcher('/employee/sales/monthly') });
 export const useEmployeeLeads      = () => useQuery({ queryKey: ['employee-leads'],        queryFn: () => fetcher('/customers') });
+
+export const useEmployeeLeadsPaged = (page, size, search) =>
+  useQuery({
+    queryKey: ['employee-leads-paged', page, size, search],
+    queryFn: () => {
+      const params = new URLSearchParams({ page, size });
+      if (search?.trim()) params.set('search', search.trim());
+      return fetcher(`/customers/paged?${params}`);
+    },
+    placeholderData: (prev) => prev,
+  });
 export const useServiceRequests    = () => useQuery({ queryKey: ['service-requests'],      queryFn: () => fetcher('/service-requests') });
 export const useAllTestDrives      = () => useQuery({ queryKey: ['all-testdrives'],        queryFn: () => fetcher('/testdrives') });
 export const useAllBookings        = () => useQuery({ queryKey: ['all-bookings'],          queryFn: () => fetcher('/bookings') });

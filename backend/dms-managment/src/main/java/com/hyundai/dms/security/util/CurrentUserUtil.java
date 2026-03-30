@@ -19,7 +19,7 @@ public class CurrentUserUtil {
                 .getAuthentication()
                 .getName();
 
-        Dealer dealer = dealerRepository.findByEmail(email)
+        Dealer dealer = dealerRepository.findByUser_Email(email)
                 .orElseThrow(() -> new RuntimeException("Dealer not found"));
 
         return dealer.getDealerId();

@@ -60,7 +60,7 @@ public class ServiceRequestService {
         }
 
         //  STEP 5: Get employee + dealer
-        Employee employee = employeeRepository.findByEmail(email)
+        Employee employee = employeeRepository.findByUser_Email(email)
                 .orElseThrow(() -> new RuntimeException("Employee not found"));
 
         Dealer dealer = employee.getDealer();
@@ -95,7 +95,7 @@ public class ServiceRequestService {
 
         else if (role.equals("ROLE_EMPLOYEE")) {
 
-            Employee employee = employeeRepository.findByEmail(email)
+            Employee employee = employeeRepository.findByUser_Email(email)
                     .orElseThrow(() -> new RuntimeException("Employee not found"));
 
             requests = requestRepository.findByEmployeeEmployeeId(employee.getEmployeeId());
@@ -103,7 +103,7 @@ public class ServiceRequestService {
 
         else if (role.equals("ROLE_DEALER")) {
 
-            Dealer dealer = dealerRepository.findByEmail(email)
+            Dealer dealer = dealerRepository.findByUser_Email(email)
                     .orElseThrow(() -> new RuntimeException("Dealer not found"));
 
             requests = requestRepository.findByDealerDealerId(dealer.getDealerId());
@@ -142,14 +142,14 @@ public class ServiceRequestService {
 
         if (role.equals("ROLE_EMPLOYEE")) {
 
-            Employee employee = employeeRepository.findByEmail(email)
+            Employee employee = employeeRepository.findByUser_Email(email)
                     .orElseThrow(() -> new RuntimeException("Employee not found"));
 
             return requestRepository.countByEmployeeEmployeeId(employee.getEmployeeId());
         }
 
         if (role.equals("ROLE_DEALER")) {
-            Dealer dealer = dealerRepository.findByEmail(email)
+            Dealer dealer = dealerRepository.findByUser_Email(email)
                     .orElseThrow(() -> new RuntimeException("Dealer not found"));
 
             return requestRepository.countByEmployeeDealerDealerId(dealer.getDealerId());

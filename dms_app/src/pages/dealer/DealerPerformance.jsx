@@ -1,23 +1,22 @@
+import { useState } from "react";
 import DealerLayout from "../../layouts/DealerLayout";
 import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer } from "recharts";
 import { SkeletonCard, SkeletonChart, SkeletonTable } from "../../components/Skeleton";
+import Pagination from "../../components/Pagination";
 import { useDealerPerformance, useDealerDashboard, useDealerMonthlyRev } from "../../hooks/useQueries";
 
-// Color constants for KPI cards and charts
 const COLORS = { leads: "#0071e3", drives: "#bf5af2", bookings: "#30d158", revenue: "#ff9f0a" };
+const PAGE_SIZE = 10;
 
 export default function DealerPerformance() {
-  // Per-employee performance stats from the aggregated backend query (no N+1)
-  const { data: performance = [],   isLoading: l1 } = useDealerPerformance();
-
-  // Dealer-level summary stats for KPI cards — reuses dashboard cache
-  const { data: summary = {},       isLoading: l2 } = useDealerDashboard();
-
-  // Monthly booking counts for the revenue bar chart
+  const { data: performance = [],    isLoading: l1 } = useDealerPerformance();
+  const { data: summary = {},        isLoading: l2 } = useDealerDashboard();
   const { data: monthlyRevenue = [], isLoading: l3 } = useDealerMonthlyRev();
-
-  // Combined loading — all three must resolve before skeletons disappear
   const loading = l1 || l2 || l3;
+
+  const [page, setPage] = useState(0);
+  const totalPages = Math.ceil(performance.length / PAGE_SIZE);
+  const paged      = performance.slice(page * PAGE_SIZE, page * PAGE_SIZE + PAGE_SIZE);
 
   // KPI card config built from summary data
   const kpis = [
@@ -86,7 +85,7 @@ export default function DealerPerformance() {
           )}
         </div>
 
-        {/* Per-employee performance table — only rendered when data is available */}
+        {/* Per-employee performance table with pagination */}
         {!loading && performance.length > 0 && (
           <div className="apple-card overflow-x-auto">
             <table className="w-full text-left min-w-[500px]">
@@ -94,18 +93,18 @@ export default function DealerPerformance() {
                 <tr>{["Employee","Leads","Test Drives","Bookings","Conversion"].map((h, i) => <th key={i} className="apple-table-header">{h}</th>)}</tr>
               </thead>
               <tbody>
-                {performance.map((e, i) => (
+                {paged.map((e, i) => (
                   <tr key={i} className="apple-table-row">
                     <td className="apple-table-cell font-medium">{e.employeeName}</td>
                     <td className="apple-table-cell text-[#86868b]">{e.totalLeads}</td>
                     <td className="apple-table-cell text-[#86868b]">{e.totalTestDrives}</td>
                     <td className="apple-table-cell text-[#86868b]">{e.totalBookings}</td>
-                    {/* Conversion rate: bookings / leads * 100 — calculated on backend */}
                     <td className="apple-table-cell font-semibold text-[#0071e3]">{e.conversionRate}%</td>
                   </tr>
                 ))}
               </tbody>
             </table>
+            <Pagination page={page} totalPages={totalPages} setPage={setPage} />
           </div>
         )}
         {/* Show skeleton table while loading */}

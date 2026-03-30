@@ -82,7 +82,7 @@ public class TestDriveService {
         //  EMPLOYEE → own test drives
         else if (role.equals("ROLE_EMPLOYEE")) {
 
-            Employee employee = employeeRepository.findByEmail(email)
+            Employee employee = employeeRepository.findByUser_Email(email)
                     .orElseThrow(() -> new RuntimeException("Employee not found"));
 
             testDrives = testDriveRepository
@@ -92,7 +92,7 @@ public class TestDriveService {
         //  DEALER → dealer's test drives
         else if (role.equals("ROLE_DEALER")) {
 
-            Dealer dealer = dealerRepository.findByEmail(email)
+            Dealer dealer = dealerRepository.findByUser_Email(email)
                     .orElseThrow(() -> new RuntimeException("Dealer not found"));
 
             testDrives = testDriveRepository
@@ -150,14 +150,14 @@ public class TestDriveService {
         }
 
         if (role.equals("ROLE_EMPLOYEE")) {
-            Employee employee = employeeRepository.findByEmail(email)
+            Employee employee = employeeRepository.findByUser_Email(email)
                     .orElseThrow(() -> new RuntimeException("Employee not found"));
 
             return testDriveRepository.countByEmployeeEmployeeId(employee.getEmployeeId());
         }
 
         if (role.equals("ROLE_DEALER")) {
-            Dealer dealer = dealerRepository.findByEmail(email)
+            Dealer dealer = dealerRepository.findByUser_Email(email)
                     .orElseThrow(() -> new RuntimeException("Dealer not found"));
 
             return testDriveRepository.countByEmployeeDealerDealerId(dealer.getDealerId());
@@ -188,7 +188,7 @@ public class TestDriveService {
         //  EMPLOYEE → own test drives
         if (role.equals("ROLE_EMPLOYEE")) {
 
-            Employee employee = employeeRepository.findByEmail(email)
+            Employee employee = employeeRepository.findByUser_Email(email)
                     .orElseThrow(() -> new RuntimeException("Employee not found"));
 
             return testDriveRepository
@@ -199,7 +199,7 @@ public class TestDriveService {
         //  DEALER → dealer test drives
         if (role.equals("ROLE_DEALER")) {
 
-            Dealer dealer = dealerRepository.findByEmail(email)
+            Dealer dealer = dealerRepository.findByUser_Email(email)
                     .orElseThrow(() -> new RuntimeException("Dealer not found"));
 
             return testDriveRepository

@@ -3,36 +3,34 @@ import { useQueryClient } from "@tanstack/react-query";
 import api from "../../api/axiosClient";
 import AdminLayout from "../../layouts/AdminLayout";
 import { SkeletonTable } from "../../components/Skeleton";
+import Pagination from "../../components/Pagination";
 import { useAdminDealerPerf } from "../../hooks/useQueries";
-import { AlertTriangle, X } from "lucide-react";
+import { AlertTriangle, X, Search } from "lucide-react";
+
+const PAGE_SIZE = 10;
 
 export default function DealerPerformance() {
   const qc = useQueryClient();
-
-  // Fetch all dealers with their performance stats (employees, leads, bookings, conversion rate)
   const { data: dealers = [], isLoading: loading } = useAdminDealerPerf();
 
-  // Reassign modal state — null means closed, dealer object means open
+  const [page, setPage]     = useState(0);
+  const [search, setSearch] = useState("");
+  const [input, setInput]   = useState("");
+
   const [reassignDealer, setReassignDealer]   = useState(null);
   const [targetDealerId, setTargetDealerId]   = useState("");
   const [reassignLoading, setReassignLoading] = useState(false);
   const [reassignError, setReassignError]     = useState("");
 
-  // Invalidate dealer performance cache so table refreshes after any mutation
   const invalidate = () => qc.invalidateQueries({ queryKey: ['admin-dealer-perf'] });
 
-  // Toggle dealer active/inactive — flips current state and refreshes table
   const toggleDealer = (id, active) => {
     api.put(`/dealers/${id}/status`, { active: !active }).then(invalidate).catch(err => console.log(err));
   };
 
-  // Open reassign modal for a specific dealer and reset its state
-  const openReassignModal = (dealer) => { setReassignDealer(dealer); setTargetDealerId(""); setReassignError(""); };
-
-  // Close reassign modal and clear all its state
+  const openReassignModal  = (dealer) => { setReassignDealer(dealer); setTargetDealerId(""); setReassignError(""); };
   const closeReassignModal = () => { setReassignDealer(null); setTargetDealerId(""); setReassignError(""); };
 
-  // Bulk-reassign all dealer data to target dealer, then soft-deactivate the old one
   const handleReassignAndDelete = () => {
     if (!targetDealerId) { setReassignError("Please select a dealer to reassign to."); return; }
     setReassignLoading(true);
@@ -43,20 +41,44 @@ export default function DealerPerformance() {
       .finally(() => setReassignLoading(false));
   };
 
-  // Filter out the dealer being removed from the reassign dropdown — can't reassign to self
-  const otherDealers = reassignDealer
-    ? dealers.filter(d => d.dealerId !== reassignDealer.dealerId)
-    : [];
+  // Client-side search + pagination
+  const filtered = dealers.filter(d =>
+    !search || d.dealerName.toLowerCase().includes(search.toLowerCase())
+  );
+  const totalPages = Math.ceil(filtered.length / PAGE_SIZE);
+  const paged      = filtered.slice(page * PAGE_SIZE, page * PAGE_SIZE + PAGE_SIZE);
+
+  const handleSearch = (e) => { e.preventDefault(); setSearch(input.trim()); setPage(0); };
+
+  const otherDealers = reassignDealer ? dealers.filter(d => d.dealerId !== reassignDealer.dealerId) : [];
 
   return (
     <AdminLayout>
       <div className="space-y-6">
-        <div>
-          <h1 className="apple-title">Dealer Performance</h1>
-          <p className="apple-subtitle mt-1">Monitor and manage dealer activity</p>
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+          <div>
+            <h1 className="apple-title">Dealer Performance</h1>
+            <p className="apple-subtitle mt-1">{filtered.length} dealers</p>
+          </div>
+          <form onSubmit={handleSearch} className="flex gap-2">
+            <div className="relative">
+              <Search size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-[#86868b]" />
+              <input
+                className="apple-input !pl-8 !py-2 !text-sm w-52"
+                placeholder="Search dealers…"
+                value={input}
+                onChange={e => setInput(e.target.value)}
+              />
+            </div>
+            <button type="submit" className="apple-btn-primary !py-2 !text-sm">Search</button>
+            {search && (
+              <button type="button" onClick={() => { setSearch(""); setInput(""); setPage(0); }}
+                className="apple-btn-secondary !py-2 !text-sm">Clear</button>
+            )}
+          </form>
         </div>
 
-        {loading ? <SkeletonTable rows={5} /> : (
+        {loading ? <SkeletonTable rows={10} /> : (
           <div className="apple-card overflow-x-auto">
             <table className="w-full text-left min-w-[650px]">
               <thead className="border-b border-[#e5e5ea] dark:border-[#2c2c2e]">
@@ -67,15 +89,14 @@ export default function DealerPerformance() {
                 </tr>
               </thead>
               <tbody>
-                {dealers.length === 0 ? (
+                {paged.length === 0 ? (
                   <tr><td colSpan="7" className="text-center py-10 apple-subtitle">No dealers found</td></tr>
-                ) : dealers.map(dealer => (
+                ) : paged.map(dealer => (
                   <tr key={dealer.dealerId} className="apple-table-row">
                     <td className="apple-table-cell font-medium">{dealer.dealerName}</td>
                     <td className="apple-table-cell text-[#86868b]">{dealer.totalEmployees}</td>
                     <td className="apple-table-cell text-[#86868b]">{dealer.totalLeads}</td>
                     <td className="apple-table-cell text-[#86868b]">{dealer.totalBookings}</td>
-                    {/* Conversion rate: bookings / leads * 100 — calculated on backend */}
                     <td className="apple-table-cell font-semibold text-[#0071e3]">{dealer.conversionRate}%</td>
                     <td className="apple-table-cell">
                       <span className={`apple-badge ${dealer.active
@@ -86,15 +107,11 @@ export default function DealerPerformance() {
                     </td>
                     <td className="apple-table-cell">
                       <div className="flex flex-wrap gap-2">
-                        {/* Toggle button label flips based on current active state */}
-                        <button
-                          onClick={() => toggleDealer(dealer.dealerId, dealer.active)}
+                        <button onClick={() => toggleDealer(dealer.dealerId, dealer.active)}
                           className="apple-btn-secondary !px-3 !py-1.5 !text-xs">
                           {dealer.active ? "Deactivate" : "Activate"}
                         </button>
-                        {/* Opens reassign modal — forces data migration before deactivation */}
-                        <button
-                          onClick={() => openReassignModal(dealer)}
+                        <button onClick={() => openReassignModal(dealer)}
                           className="px-3 py-1.5 text-xs text-red-500 border border-red-200 dark:border-red-800 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-lg transition-colors">
                           Remove
                         </button>
@@ -104,6 +121,7 @@ export default function DealerPerformance() {
                 ))}
               </tbody>
             </table>
+            <Pagination page={page} totalPages={totalPages} setPage={setPage} />
           </div>
         )}
       </div>

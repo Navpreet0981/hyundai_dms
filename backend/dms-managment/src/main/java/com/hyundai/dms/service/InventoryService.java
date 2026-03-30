@@ -32,7 +32,7 @@ public class InventoryService {
     // Get inventory for the logged-in dealer
     public List<InventoryDTO> getMyInventory() {
         String email = SecurityContextHolder.getContext().getAuthentication().getName();
-        Dealer dealer = dealerRepository.findByEmail(email)
+        Dealer dealer = dealerRepository.findByUser_Email(email)
                 .orElseThrow(() -> new RuntimeException("Dealer not found"));
         return inventoryRepository.findByDealer_DealerId(dealer.getDealerId())
                 .stream().map(this::toDTO).collect(Collectors.toList());
@@ -48,7 +48,7 @@ public class InventoryService {
     @Transactional
     public InventoryDTO upsertStock(Long variantId, int quantity) {
         String email = SecurityContextHolder.getContext().getAuthentication().getName();
-        Dealer dealer = dealerRepository.findByEmail(email)
+        Dealer dealer = dealerRepository.findByUser_Email(email)
                 .orElseThrow(() -> new RuntimeException("Dealer not found"));
 
         CarVariant variant = variantRepository.findById(variantId)

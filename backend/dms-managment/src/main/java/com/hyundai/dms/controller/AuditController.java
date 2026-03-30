@@ -38,7 +38,7 @@ public class AuditController {
             @RequestParam(defaultValue = "20") int size,
             @RequestParam(required = false, defaultValue = "") String search) {
         String email = SecurityContextHolder.getContext().getAuthentication().getName();
-        Dealer dealer = dealerRepository.findByEmail(email)
+        Dealer dealer = dealerRepository.findByUser_Email(email)
                 .orElseThrow(() -> new RuntimeException("Dealer not found"));
         Pageable pageable = PageRequest.of(page, size);
         return auditService.getDealerLogs(dealer.getDealerId(), search, pageable);

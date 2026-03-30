@@ -57,7 +57,7 @@ public interface BookingRepository extends JpaRepository<Booking, Long> {
     // Single aggregated query: returns [employeeId, leadCount, testDriveCount, bookingCount] per employee for a dealer
     //  N+1: replaces 3 per-employee count queries with one JOIN query
     @Query("""
-        SELECT e.employeeId, e.name,
+        SELECT e.employeeId, e.user.name,
                COUNT(DISTINCT c.customerId),
                COUNT(DISTINCT t.testDriveId),
                COUNT(DISTINCT b.bookingId)
@@ -65,8 +65,8 @@ public interface BookingRepository extends JpaRepository<Booking, Long> {
         LEFT JOIN Customer c ON c.employee.employeeId = e.employeeId
         LEFT JOIN TestDrive t ON t.employee.employeeId = e.employeeId
         LEFT JOIN Booking b   ON b.employee.employeeId = e.employeeId
-        WHERE e.dealer.dealerId = :dealerId AND e.active = true
-        GROUP BY e.employeeId, e.name
+        WHERE e.dealer.dealerId = :dealerId AND e.user.active = true
+        GROUP BY e.employeeId, e.user.name
         ORDER BY e.employeeId ASC
     """)
     List<Object[]> getEmployeePerformanceByDealer(@Param("dealerId") Long dealerId);

@@ -1,41 +1,73 @@
+import { useState } from "react";
 import { useQueryClient } from "@tanstack/react-query";
 import api from "../../api/axiosClient";
 import EmployeeLayout from "../../layouts/EmployeeLayout";
 import { useNavigate } from "react-router-dom";
 import { SkeletonTable } from "../../components/Skeleton";
-import { useEmployeeLeads } from "../../hooks/useQueries";
+import Pagination from "../../components/Pagination";
+import { useEmployeeLeadsPaged } from "../../hooks/useQueries";
+import { Search } from "lucide-react";
 
 export default function Leads() {
   const navigate = useNavigate();
   const qc = useQueryClient();
+  const [page, setPage]     = useState(0);
+  const [search, setSearch] = useState("");
+  const [input, setInput]   = useState("");
 
-  // Fetch all leads assigned to this employee — backend scopes by JWT identity
-  const { data: leads = [], isLoading: loading } = useEmployeeLeads();
+  const { data, isLoading: loading } = useEmployeeLeadsPaged(page, 10, search);
+  const leads      = data?.content || [];
+  const totalPages = data?.totalPages || 0;
+  const total      = data?.totalElements || 0;
 
-  // Navigate to TestDrives page with customer pre-filled via router state
+  const handleSearch = (e) => {
+    e.preventDefault();
+    setSearch(input.trim());
+    setPage(0);
+  };
+
   const scheduleTestDrive = (customer) => navigate("/testdrives", { state: { customer } });
 
-  // Updates lead status via PUT /customers/{id}/status then invalidates cache to refresh table
   const updateStatus = (id, status) => {
     api.put(`/customers/${id}/status?status=${status}`)
-      .then(() => qc.invalidateQueries({ queryKey: ['employee-leads'] }))
+      .then(() => qc.invalidateQueries({ queryKey: ['employee-leads-paged'] }))
       .catch(err => console.log(err));
   };
 
   return (
     <EmployeeLayout>
       <div className="space-y-6">
-        <div>
-          <h1 className="apple-title">Customer Leads</h1>
-          <p className="apple-subtitle mt-1">Track and manage your assigned leads</p>
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+          <div>
+            <h1 className="apple-title">Customer Leads</h1>
+            <p className="apple-subtitle mt-1">{total} leads assigned to you</p>
+          </div>
+          <form onSubmit={handleSearch} className="flex gap-2">
+            <div className="relative">
+              <Search size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-[#86868b]" />
+              <input
+                className="apple-input !pl-8 !py-2 !text-sm w-56"
+                placeholder="Search leads…"
+                value={input}
+                onChange={e => setInput(e.target.value)}
+              />
+            </div>
+            <button type="submit" className="apple-btn-primary !py-2 !text-sm">Search</button>
+            {search && (
+              <button type="button" onClick={() => { setSearch(""); setInput(""); setPage(0); }}
+                className="apple-btn-secondary !py-2 !text-sm">Clear</button>
+            )}
+          </form>
         </div>
 
-        {loading ? <SkeletonTable rows={5} /> : (
+        {loading ? <SkeletonTable rows={10} /> : (
           <div className="apple-card overflow-x-auto">
             <table className="w-full text-sm min-w-[750px]">
               <thead className="border-b border-[#e5e5ea] dark:border-[#2c2c2e]">
                 <tr>
-                  {["Name","Phone","City","Source","Model","Status","Actions"].map((h, i) => <th key={i} className="apple-table-header">{h}</th>)}
+                  {["Name","Phone","City","Source","Model","Status","Actions"].map((h, i) => (
+                    <th key={i} className="apple-table-header">{h}</th>
+                  ))}
                 </tr>
               </thead>
               <tbody>
@@ -53,9 +85,9 @@ export default function Leads() {
                     </td>
                     <td className="apple-table-cell">
                       <div className="flex flex-wrap gap-1.5">
-                        {/* Navigates to test drives page with this customer pre-selected */}
-                        <button className="apple-btn-primary !px-3 !py-1.5 !text-xs" onClick={() => scheduleTestDrive(l)}>Schedule Test Drive</button>
-                        {/* Status dropdown — resets to empty after selection to allow re-use */}
+                        <button className="apple-btn-primary !px-3 !py-1.5 !text-xs" onClick={() => scheduleTestDrive(l)}>
+                          Schedule Test Drive
+                        </button>
                         <select
                           defaultValue=""
                           onChange={e => { if (e.target.value) { updateStatus(l.customerId, e.target.value); e.target.value = ""; } }}
@@ -76,6 +108,7 @@ export default function Leads() {
                 ))}
               </tbody>
             </table>
+            <Pagination page={page} totalPages={totalPages} setPage={setPage} />
           </div>
         )}
       </div>

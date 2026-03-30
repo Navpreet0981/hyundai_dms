@@ -1,9 +1,9 @@
 package com.hyundai.dms.controller;
 
 import com.hyundai.dms.dto.DealerRequest;
-import com.hyundai.dms.entity.Admin;
 import com.hyundai.dms.entity.Dealer;
-import com.hyundai.dms.repository.AdminRepository;
+import com.hyundai.dms.entity.User;
+import com.hyundai.dms.repository.UserRepository;
 import com.hyundai.dms.service.DealerService;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
@@ -20,55 +20,38 @@ import java.util.Map;
 public class DealerController {
 
     private final DealerService dealerService;
-    private final AdminRepository adminRepository;
+    private final UserRepository userRepository;
 
-    public DealerController(DealerService dealerService, AdminRepository adminRepository) {
+    public DealerController(DealerService dealerService, UserRepository userRepository) {
         this.dealerService = dealerService;
-        this.adminRepository = adminRepository;
+        this.userRepository = userRepository;
     }
 
     // POST /dealers — creates a new dealer linked to the logged-in admin
     @PostMapping
     public Dealer createDealer(@RequestBody DealerRequest request) {
-        // Resolve logged-in admin from JWT to link dealer ownership
         String email = SecurityContextHolder.getContext().getAuthentication().getName();
-        Admin admin = adminRepository.findByEmail(email)
-                .orElseThrow(() -> new RuntimeException("Admin not found"));
+        User adminUser = userRepository.findByEmail(email)
+                .orElseThrow(() -> new RuntimeException("Admin user not found"));
 
-        Dealer dealer = new Dealer();
-        dealer.setDealerName(request.getDealerName());
-        dealer.setEmail(request.getEmail());
-        dealer.setPhone(request.getPhone());
-        dealer.setCity(request.getCity());
-        dealer.setState(request.getState());
-        dealer.setAddress(request.getAddress());
-        dealer.setPassword(request.getPassword()); // raw — service encodes it
-        dealer.setActive(request.getActive() != null ? request.getActive() : true);
-        dealer.setAdmin(admin);
-
-        // saveDealer encodes the password before persisting
-        return dealerService.saveDealer(dealer);
+        return dealerService.createDealer(request, adminUser);
     }
 
-    // GET /dealers — returns all dealers (admin sees all)
     @GetMapping
     public List<Dealer> getAllDealers() {
         return dealerService.getAllDealers();
     }
 
-    // GET /dealers/{id} — returns single dealer by ID
     @GetMapping("/{id}")
     public Dealer getDealerById(@PathVariable("id") Long id) {
         return dealerService.getDealerById(id);
     }
 
-    // DELETE /dealers/{id} — soft deactivates dealer (sets active=false, preserves all data)
     @DeleteMapping("/{id}")
     public Dealer deactivateDealer(@PathVariable("id") Long id) {
         return dealerService.deactivateDealer(id);
     }
 
-    // PUT /dealers/{id}/reassign — bulk-reassigns all dealer data to target, then soft-deactivates old dealer
     @PutMapping("/{id}/reassign")
     public void reassignAndDeactivateDealer(
             @PathVariable("id") Long oldDealerId,
@@ -76,14 +59,12 @@ public class DealerController {
         dealerService.reassignAndDeactivateDealer(oldDealerId, targetDealerId);
     }
 
-    // PUT /dealers/{id}/status — toggles dealer active/inactive status
     @PutMapping("/{id}/status")
     public Dealer updateDealerStatus(@PathVariable("id") Long id,
                                      @RequestBody Map<String, Boolean> body) {
         return dealerService.updateDealerStatus(id, body.get("active"));
     }
 
-    // GET /dealers/paged — paginated + searchable dealer list with dynamic sort
     @GetMapping("/paged")
     public Page<Dealer> getDealersPaged(
             @RequestParam(name = "page", defaultValue = "0") int page,

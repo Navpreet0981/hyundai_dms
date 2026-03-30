@@ -1,20 +1,26 @@
+import { useState } from "react";
 import AdminLayout from "../../layouts/AdminLayout";
 import { BarChart, Bar, XAxis, YAxis, Tooltip, PieChart, Pie, Cell, ResponsiveContainer } from "recharts";
 import { SkeletonChart, SkeletonTable } from "../../components/Skeleton";
+import Pagination from "../../components/Pagination";
 import { useAdminMonthlySales, useAdminLeadSources, useAdminLeadConv, useAdminDealerPerf } from "../../hooks/useQueries";
 
-// Color palette for pie chart slices
 const COLORS = ["#0071e3", "#0ea5e9", "#34c759", "#ff9f0a"];
+const PAGE_SIZE = 10;
 
 export default function AdminAnalytics() {
-  // All four queries fire in parallel — same cache keys as other pages so data may already be cached
-  const { data: monthlySales = [],      isLoading: l1 } = useAdminMonthlySales();   // reuses cache from dashboard
-  const { data: leadSources = [],       isLoading: l2 } = useAdminLeadSources();    // lead source breakdown
-  const { data: conversion = {},        isLoading: l3 } = useAdminLeadConv();       // lead → test drive → booking funnel
-  const { data: dealerPerformance = [], isLoading: l4 } = useAdminDealerPerf();     // reuses cache from dealer performance page
-
-  // Combined loading — all four must resolve before skeletons disappear
+  const { data: monthlySales = [],      isLoading: l1 } = useAdminMonthlySales();
+  const { data: leadSources = [],       isLoading: l2 } = useAdminLeadSources();
+  const { data: conversion = {},        isLoading: l3 } = useAdminLeadConv();
+  const { data: dealerPerformance = [], isLoading: l4 } = useAdminDealerPerf();
   const loading = l1 || l2 || l3 || l4;
+
+  const [page, setPage]     = useState(0);
+  const [search, setSearch] = useState("");
+
+  const filtered   = dealerPerformance.filter(d => !search || d.dealerName.toLowerCase().includes(search.toLowerCase()));
+  const totalPages = Math.ceil(filtered.length / PAGE_SIZE);
+  const paged      = filtered.slice(page * PAGE_SIZE, page * PAGE_SIZE + PAGE_SIZE);
 
   return (
     <AdminLayout>
@@ -76,11 +82,19 @@ export default function AdminAnalytics() {
           </div>
         )}
 
-        {/* Dealer performance table — read-only view, no actions here */}
-        {loading ? <SkeletonTable rows={5} /> : (
+        {/* Dealer performance table with search + pagination */}
+        {loading ? <SkeletonTable rows={10} /> : (
           <div className="apple-card overflow-x-auto">
-            <div className="p-5 sm:p-6 border-b border-[#e5e5ea] dark:border-[#2c2c2e]">
-              <h3 className="text-sm font-semibold text-[#1d1d1f] dark:text-[#f5f5f7]">Dealer Performance</h3>
+            <div className="p-5 sm:p-6 border-b border-[#e5e5ea] dark:border-[#2c2c2e] flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+              <h3 className="text-sm font-semibold text-[#1d1d1f] dark:text-[#f5f5f7]">
+                Dealer Performance <span className="text-[#86868b] font-normal">({filtered.length})</span>
+              </h3>
+              <input
+                className="apple-input !py-1.5 !text-sm w-full sm:w-52"
+                placeholder="Search dealer…"
+                value={search}
+                onChange={e => { setSearch(e.target.value); setPage(0); }}
+              />
             </div>
             <table className="w-full text-left min-w-[500px]">
               <thead className="border-b border-[#e5e5ea] dark:border-[#2c2c2e]">
@@ -91,9 +105,9 @@ export default function AdminAnalytics() {
                 </tr>
               </thead>
               <tbody>
-                {dealerPerformance.length === 0 ? (
+                {paged.length === 0 ? (
                   <tr><td colSpan="5" className="text-center py-10 apple-subtitle">No data available</td></tr>
-                ) : dealerPerformance.map((d, i) => (
+                ) : paged.map((d, i) => (
                   <tr key={i} className="apple-table-row">
                     <td className="apple-table-cell font-medium">{d.dealerName}</td>
                     <td className="apple-table-cell text-[#86868b]">{d.totalEmployees}</td>
@@ -104,6 +118,7 @@ export default function AdminAnalytics() {
                 ))}
               </tbody>
             </table>
+            <Pagination page={page} totalPages={totalPages} setPage={setPage} />
           </div>
         )}
       </div>

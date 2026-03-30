@@ -60,7 +60,7 @@ public class AuditService {
             String dealerName = null;
 
             if (role.equals("DEALER")) {
-                Dealer dealer = dealerRepository.findByEmail(email).orElse(null);
+                Dealer dealer = dealerRepository.findByUser_Email(email).orElse(null);
                 if (dealer != null) {
                     dealerId = dealer.getDealerId();
                     dealerName = dealer.getDealerName();

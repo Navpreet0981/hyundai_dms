@@ -1,9 +1,13 @@
 package com.hyundai.dms.entity;
 
-import com.fasterxml.jackson.annotation.JsonProperty;
 import jakarta.persistence.*;
 import lombok.*;
 
+/**
+ * Admin profile table — stores admin-specific metadata.
+ * Auth credentials (email, password) live in the users table.
+ * One-to-one with User where user.systemRole = ADMIN.
+ */
 @Entity
 @Table(name = "admins")
 @Getter
@@ -17,16 +21,10 @@ public class Admin {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long adminId;
 
-    @Column(nullable = false)
-    private String name;
+    // Link to the central auth user
+    @OneToOne
+    @JoinColumn(name = "user_id", unique = true, nullable = false)
+    private User user;
 
-    @Column(unique = true, nullable = false)
-    private String email;
-
-    @JsonProperty(access = JsonProperty.Access.WRITE_ONLY)
-    @Column(nullable = false)
-    private String password;
-
-    private String role;
-    private Boolean active;
+    // Admin-specific fields can be added here in future (department, permissions level, etc.)
 }

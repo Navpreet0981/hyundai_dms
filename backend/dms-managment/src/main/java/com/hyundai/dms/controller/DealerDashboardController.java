@@ -24,7 +24,7 @@ public class DealerDashboardController {
     public DealerDashboardDTO getDashboard() {
         // Resolve dealer ID from JWT email in SecurityContext
         String email = SecurityContextHolder.getContext().getAuthentication().getName();
-        Long dealerId = dealerRepository.findByEmail(email)
+        Long dealerId = dealerRepository.findByUser_Email(email)
                 .orElseThrow(() -> new RuntimeException("Dealer not found"))
                 .getDealerId();
 

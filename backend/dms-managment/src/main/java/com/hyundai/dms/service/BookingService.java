@@ -130,14 +130,14 @@ public class BookingService {
         }
 
         if (role.equals("ROLE_EMPLOYEE")) {
-            Employee employee = employeeRepository.findByEmail(email)
+            Employee employee = employeeRepository.findByUser_Email(email)
                     .orElseThrow(() -> new RuntimeException("Employee not found"));
 
             return bookingRepository.countByEmployeeEmployeeId(employee.getEmployeeId());
         }
 
         if (role.equals("ROLE_DEALER")) {
-            Dealer dealer = dealerRepository.findByEmail(email)
+            Dealer dealer = dealerRepository.findByUser_Email(email)
                     .orElseThrow(() -> new RuntimeException("Dealer not found"));
 
             return bookingRepository.countByEmployeeDealerDealerId(dealer.getDealerId());
@@ -167,7 +167,7 @@ public class BookingService {
         // EMPLOYEE → own bookings
         if (role.equals("ROLE_EMPLOYEE")) {
 
-            Employee employee = employeeRepository.findByEmail(email)
+            Employee employee = employeeRepository.findByUser_Email(email)
                     .orElseThrow(() -> new RuntimeException("Employee not found"));
 
             return bookingRepository
@@ -178,7 +178,7 @@ public class BookingService {
         // DEALER → bookings under dealer
         if (role.equals("ROLE_DEALER")) {
 
-            Dealer dealer = dealerRepository.findByEmail(email)
+            Dealer dealer = dealerRepository.findByUser_Email(email)
                     .orElseThrow(() -> new RuntimeException("Dealer not found"));
 
             return bookingRepository

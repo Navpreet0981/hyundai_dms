@@ -1,25 +1,30 @@
 $kind: http-request
+name: add dealer
 url: http://localhost:8080/dealers
 method: POST
 headers:
+  Authorization: Bearer
+    eyJhbGciOiJIUzUxMiJ9.eyJzdWIiOiJzdXBlckBoeXVuZGFpLmNvbSIsInJvbGUiOiJBRE1JTiIsImlhdCI6MTc3NDg4NTkyMCwiZXhwIjoxNzc0OTcyMzIwfQ.jh3hUmWvMtAFc6o3qMljwPFwAGANL7Y49DaAA3KAFok997eKiU21S_VslkV_GqwGmCi4Ai0UfWhkd5hCaTw9cQ
   Content-Type: application/json
 body:
   type: json
   content: "{\r
 
-    \  \"dealerName\": \"Hyundai Punjab Central\",\r
+    \  \"dealerName\": \"{{dealerName}}\",\r
 
-    \  \"email\": \"dealer1@hyundai.com\",\r
+    \  \"email\": \"{{email}}\",\r
 
-    \  \"phone\": \"98765478210\",\r
+    \  \"phone\": \"{{phone}}\",\r
 
-    \  \"city\": \"Patiala\",\r
+    \  \"city\": \"{{city}}\",\r
 
-    \  \"state\": \"Punjab\",\r
+    \  \"state\": \"{{state}}\",\r
 
-    \  \"address\": \"Rajpura\",\r
+    \  \"address\": \"{{address}}\",\r
+
+    \  \"password\": \"{{password}}\",\r
 
     \  \"active\": true\r
 
-    }"
+    }\r\n"
 order: 2000

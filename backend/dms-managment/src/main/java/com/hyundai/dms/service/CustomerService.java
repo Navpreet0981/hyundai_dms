@@ -47,7 +47,7 @@ public class CustomerService {
                 .getName();
 
         Employee employee = employeeRepository
-                .findByEmail(email)
+                .findByUser_Email(email)
                 .orElseThrow(() -> new RuntimeException("Employee not found"));
 
         Dealer dealer = employee.getDealer();
@@ -94,7 +94,7 @@ public class CustomerService {
         //  EMPLOYEE → own leads
         if (role.equals("ROLE_EMPLOYEE")) {
 
-            Employee employee = employeeRepository.findByEmail(email)
+            Employee employee = employeeRepository.findByUser_Email(email)
                     .orElseThrow(() -> new RuntimeException("Employee not found"));
 
             return customerRepository.findByEmployee_EmployeeId(employee.getEmployeeId())
@@ -106,7 +106,7 @@ public class CustomerService {
         //  DEALER → all leads under dealer
         if (role.equals("ROLE_DEALER")) {
 
-            Dealer dealer = dealerRepository.findByEmail(email)
+            Dealer dealer = dealerRepository.findByUser_Email(email)
                     .orElseThrow(() -> new RuntimeException("Dealer not found"));
 
             return customerRepository.findByEmployee_Dealer_DealerId(dealer.getDealerId())
@@ -266,7 +266,7 @@ public class CustomerService {
         //  EMPLOYEE → own
         if (role.equals("ROLE_EMPLOYEE")) {
 
-            Employee employee = employeeRepository.findByEmail(email)
+            Employee employee = employeeRepository.findByUser_Email(email)
                     .orElseThrow(() -> new RuntimeException("Employee not found"));
 
             return customerRepository.countByEmployee_EmployeeId(employee.getEmployeeId());
@@ -275,7 +275,7 @@ public class CustomerService {
         //  DEALER → all under dealer
         if (role.equals("ROLE_DEALER")) {
 
-            Dealer dealer = dealerRepository.findByEmail(email)
+            Dealer dealer = dealerRepository.findByUser_Email(email)
                     .orElseThrow(() -> new RuntimeException("Dealer not found"));
 
             return customerRepository.countByEmployee_Dealer_DealerId(dealer.getDealerId());
@@ -312,7 +312,7 @@ public class CustomerService {
         //  EMPLOYEE
         if (role.equals("ROLE_EMPLOYEE")) {
 
-            Employee employee = employeeRepository.findByEmail(email)
+            Employee employee = employeeRepository.findByUser_Email(email)
                     .orElseThrow(() -> new RuntimeException("Employee not found"));
 
             if (search != null && !search.isEmpty()) {
@@ -329,7 +329,7 @@ public class CustomerService {
         //  DEALER
         if (role.equals("ROLE_DEALER")) {
 
-            Dealer dealer = dealerRepository.findByEmail(email)
+            Dealer dealer = dealerRepository.findByUser_Email(email)
                     .orElseThrow(() -> new RuntimeException("Dealer not found"));
 
             if (search != null && !search.isEmpty()) {

@@ -1,0 +1,21 @@
+[
+  {"dealerName":"Hyundai Delhi North","email":"dealer.delhi@hyundai.com","phone":"9810001002","city":"Delhi","state":"Delhi","address":"45 Connaught Place","password":"Dealer@123"},
+  {"dealerName":"Hyundai Bangalore Tech","email":"dealer.bangalore@hyundai.com","phone":"9900001003","city":"Bangalore","state":"Karnataka","address":"78 MG Road","password":"Dealer@123"},
+  {"dealerName":"Hyundai Chennai South","email":"dealer.chennai@hyundai.com","phone":"9840001004","city":"Chennai","state":"Tamil Nadu","address":"12 Anna Salai","password":"Dealer@123"},
+  {"dealerName":"Hyundai Hyderabad Hub","email":"dealer.hyderabad@hyundai.com","phone":"9700001005","city":"Hyderabad","state":"Telangana","address":"56 Banjara Hills","password":"Dealer@123"},
+  {"dealerName":"Hyundai Pune West","email":"dealer.pune@hyundai.com","phone":"9850001006","city":"Pune","state":"Maharashtra","address":"34 FC Road","password":"Dealer@123"},
+  {"dealerName":"Hyundai Kolkata East","email":"dealer.kolkata@hyundai.com","phone":"9830001007","city":"Kolkata","state":"West Bengal","address":"89 Park Street","password":"Dealer@123"},
+  {"dealerName":"Hyundai Ahmedabad Prime","email":"dealer.ahmedabad@hyundai.com","phone":"9870001008","city":"Ahmedabad","state":"Gujarat","address":"23 CG Road","password":"Dealer@123"},
+  {"dealerName":"Hyundai Jaipur Royal","email":"dealer.jaipur@hyundai.com","phone":"9414001009","city":"Jaipur","state":"Rajasthan","address":"67 MI Road","password":"Dealer@123"},
+  {"dealerName":"Hyundai Lucknow Central","email":"dealer.lucknow@hyundai.com","phone":"9415001010","city":"Lucknow","state":"Uttar Pradesh","address":"11 Hazratganj","password":"Dealer@123"},
+  {"dealerName":"Hyundai Surat Diamond","email":"dealer.surat@hyundai.com","phone":"9879001011","city":"Surat","state":"Gujarat","address":"45 Ring Road","password":"Dealer@123"},
+  {"dealerName":"Hyundai Nagpur Orange","email":"dealer.nagpur@hyundai.com","phone":"9823001012","city":"Nagpur","state":"Maharashtra","address":"78 Sitabuldi","password":"Dealer@123"},
+  {"dealerName":"Hyundai Indore Central","email":"dealer.indore@hyundai.com","phone":"9826001013","city":"Indore","state":"Madhya Pradesh","address":"34 MG Road","password":"Dealer@123"},
+  {"dealerName":"Hyundai Bhopal Capital","email":"dealer.bhopal@hyundai.com","phone":"9827001014","city":"Bhopal","state":"Madhya Pradesh","address":"56 New Market","password":"Dealer@123"},
+  {"dealerName":"Hyundai Chandigarh North","email":"dealer.chandigarh@hyundai.com","phone":"9815001015","city":"Chandigarh","state":"Punjab","address":"12 Sector 17","password":"Dealer@123"},
+  {"dealerName":"Hyundai Kochi Kerala","email":"dealer.kochi@hyundai.com","phone":"9895001016","city":"Kochi","state":"Kerala","address":"89 MG Road","password":"Dealer@123"},
+  {"dealerName":"Hyundai Coimbatore South","email":"dealer.coimbatore@hyundai.com","phone":"9842001017","city":"Coimbatore","state":"Tamil Nadu","address":"23 Avinashi Road","password":"Dealer@123"},
+  {"dealerName":"Hyundai Vizag Port","email":"dealer.vizag@hyundai.com","phone":"9848001018","city":"Visakhapatnam","state":"Andhra Pradesh","address":"67 Beach Road","password":"Dealer@123"},
+  {"dealerName":"Hyundai Patna Bihar","email":"dealer.patna@hyundai.com","phone":"9934001019","city":"Patna","state":"Bihar","address":"11 Fraser Road","password":"Dealer@123"},
+  {"dealerName":"Hyundai Guwahati NE","email":"dealer.guwahati@hyundai.com","phone":"9435001020","city":"Guwahati","state":"Assam","address":"45 GS Road","password":"Dealer@123"}
+]

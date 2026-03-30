@@ -1,30 +1,28 @@
 import { useState } from "react";
 import api from "../../api/axiosClient";
-import { User, Building2, Shield } from "lucide-react";
 
 export default function LoginPage() {
   const [email, setEmail]       = useState("");
   const [password, setPassword] = useState("");
-  const [role, setRole]         = useState("ADMIN"); // default selected role
   const [loading, setLoading]   = useState(false);
   const [error, setError]       = useState("");
 
-  // Calls POST /auth/login, stores JWT + role in localStorage, redirects by role
   const login = async () => {
     if (!email || !password) { setError("Please enter your email and password."); return; }
     setError("");
     try {
       setLoading(true);
-      const res = await api.post("/auth/login", { email, password, role });
+      // Role is no longer sent — backend resolves it from the users table
+      const res = await api.post("/auth/login", { email, password });
 
-      // Backend may return token under different keys — handle all variants
-      const token = res.data.token || res.data.accessToken || res.data.jwt;
-      localStorage.setItem("token", token);
-      localStorage.setItem("role", role);
+      const token = res.data.token;
+      const role  = res.data.role;   // ADMIN | DEALER | EMPLOYEE — returned by backend
 
-      // Store optional IDs if backend returns them
-      if (res.data.dealerId)   localStorage.setItem("dealerId", res.data.dealerId);
-      if (res.data.employeeId) localStorage.setItem("employeeId", res.data.employeeId);
+      localStorage.setItem("token",  token);
+      localStorage.setItem("role",   role);
+      localStorage.setItem("userId", res.data.userId);
+      localStorage.setItem("name",   res.data.name);
+      localStorage.setItem("email",  res.data.email);
 
       // 50ms delay ensures localStorage writes flush before new page reads them
       setTimeout(() => {
@@ -39,20 +37,11 @@ export default function LoginPage() {
     }
   };
 
-  // Allow Enter key to submit the form from either input field
   const handleKeyDown = (e) => { if (e.key === "Enter") login(); };
-
-  // Role selector config — each role has a label and icon
-  const roles = [
-    { id: "ADMIN",    label: "Admin",    Icon: Shield },
-    { id: "DEALER",   label: "Dealer",   Icon: Building2 },
-    { id: "EMPLOYEE", label: "Employee", Icon: User },
-  ];
 
   return (
     <div className="min-h-screen bg-[#f5f5f7] dark:bg-black flex items-center justify-center px-4">
 
-      {/* Decorative background blobs — pointer-events-none so they don't block clicks */}
       <div className="absolute inset-0 overflow-hidden pointer-events-none">
         <div className="absolute -top-40 -right-40 w-96 h-96 bg-[#0071e3]/5 rounded-full blur-3xl" />
         <div className="absolute -bottom-40 -left-40 w-96 h-96 bg-[#0071e3]/5 rounded-full blur-3xl" />
@@ -70,28 +59,6 @@ export default function LoginPage() {
 
         <div className="bg-white dark:bg-[#1c1c1e] rounded-2xl border border-[#e5e5ea] dark:border-[#2c2c2e] shadow-apple p-8">
 
-          {/* Role selector — sets which table backend queries for credential check */}
-          <div className="mb-6">
-            <p className="text-xs font-medium text-[#86868b] uppercase tracking-wider mb-3">Sign in as</p>
-            <div className="grid grid-cols-3 gap-2">
-              {roles.map(({ id, label, Icon }) => (
-                <button
-                  key={id}
-                  onClick={() => setRole(id)}
-                  className={`flex flex-col items-center justify-center gap-1.5 py-3 px-2 rounded-xl border text-xs font-medium transition-all duration-200
-                    ${role === id
-                      ? "bg-[#0071e3] border-[#0071e3] text-white shadow-sm"
-                      : "bg-[#f5f5f7] dark:bg-[#2c2c2e] border-[#e5e5ea] dark:border-[#3a3a3c] text-[#86868b] hover:border-[#0071e3] hover:text-[#0071e3] dark:hover:text-[#0071e3]"
-                    }`}
-                >
-                  <Icon size={16} />
-                  {label}
-                </button>
-              ))}
-            </div>
-          </div>
-
-          {/* Email and password inputs — both support Enter key submission */}
           <div className="space-y-3 mb-5">
             <input
               className="apple-input"
@@ -113,12 +80,10 @@ export default function LoginPage() {
             />
           </div>
 
-          {/* Inline error message — shown on bad credentials or empty fields */}
           {error && (
             <p className="text-xs text-red-500 mb-4 text-center">{error}</p>
           )}
 
-          {/* Submit button — disabled and shows spinner while API call is in flight */}
           <button
             onClick={login}
             disabled={loading}
